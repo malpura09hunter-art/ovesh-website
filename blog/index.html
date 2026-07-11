@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ovesh Malpura Blog — cybersecurity, ethical hacking, AI, web development, Linux, cloud security, OSINT and tutorials from OveshMalpura Cyber Labs, Mumbai.">
+<meta name="keywords" content="Ovesh Malpura Blog, Cybersecurity Blog, Ethical Hacking Articles, OSINT Tutorials, Web Development Blog, Linux Tips">
+<meta name="author" content="Ovesh Malpura">
+<meta name="robots" content="index, follow">
+<meta name="geo.region" content="IN-MH">
+<meta name="geo.placename" content="Mumbai, Maharashtra, India">
+<link rel="canonical" href="https://malpuraovesh.vercel.app/blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Blog | Ovesh Malpura - Cybersecurity &amp; Web Development Insights">
+<meta property="og:description" content="Articles on cybersecurity, ethical hacking, AI, web development, Linux, cloud security and OSINT.">
+<meta property="og:url" content="https://malpuraovesh.vercel.app/blog">
+<meta property="og:image" content="https://malpuraovesh.vercel.app/ovesh-malpura.jpg">
+<meta property="og:site_name" content="Ovesh Malpura">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ovesh Malpura Blog">
+<meta name="twitter:description" content="Cybersecurity, ethical hacking, AI, web development and OSINT articles.">
+<meta name="twitter:image" content="https://malpuraovesh.vercel.app/ovesh-malpura.jpg">
+<meta name="twitter:site" content="@OveshMalpura">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Ovesh Malpura Blog",
+  "url": "https://malpuraovesh.vercel.app/blog",
+  "author": {"@type": "Person", "name": "Ovesh Malpura"},
+  "publisher": {"@type": "Organization", "name": "OveshMalpura Cyber Labs"}
+}
+</script>
+<title>Blog | Ovesh Malpura - Cybersecurity, Ethical Hacking &amp; Web Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030a03;
+  --bg2: #060f06;
+  --bg3: #0a160a;
+  --neon: #00ff41;
+  --neon2: #00cc33;
+  --neon3: #39ff14;
+  --dim: #00aa22;
+  --text: #c8ffd4;
+  --muted: #4a7a52;
+  --card: rgba(0,255,65,0.04);
+  --border: rgba(0,255,65,0.15);
+  --glow: 0 0 20px rgba(0,255,65,0.4), 0 0 60px rgba(0,255,65,0.1);
+  --glow-strong: 0 0 30px rgba(0,255,65,0.7), 0 0 80px rgba(0,255,65,0.3);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--neon2); border-radius: 2px; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 1000;
+  padding: 16px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(3,10,3,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: var(--glow);
+  letter-spacing: 3px;
+}
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.nav-links a:hover { color: var(--neon); text-shadow: var(--glow); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.hamburger span { width: 25px; height: 2px; background: var(--neon); transition: 0.3s; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 100px 40px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image: 
+    linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 20s linear infinite;
+}
+@keyframes gridMove { 0% { transform: translateY(0); } 100% { transform: translateY(60px); } }
+.hero-inner {
+  display: flex; align-items: center; gap: 80px;
+  max-width: 1200px; width: 100%;
+  position: relative; z-index: 2;
+}
+.hero-text { flex: 1; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,255,65,0.07);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+.hero-badge::before { content: '◈'; color: var(--neon); }
+h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: #fff;
+}
+h1 span { color: var(--neon); text-shadow: var(--glow); }
+.tagline {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--dim);
+  letter-spacing: 3px;
+  margin: 16px 0 32px;
+  text-transform: uppercase;
+}
+.type-text {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--neon);
+  font-size: 1.1rem;
+  min-height: 1.5em;
+}
+.type-cursor { animation: blink 0.7s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.hero-btns { display: flex; gap: 16px; margin-top: 40px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 13px 32px;
+  background: var(--neon);
+  color: #000;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: none; cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: all 0.3s;
+  box-shadow: var(--glow);
+}
+.btn-primary:hover { background: #fff; box-shadow: var(--glow-strong); transform: translateY(-2px); }
+.btn-outline {
+  padding: 13px 32px;
+  background: transparent;
+  color: var(--neon);
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: 1px solid var(--neon);
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: all 0.3s;
+}
+.btn-outline:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); transform: translateY(-2px); }
+
+/* PROFILE IMAGE */
+.hero-image { flex-shrink: 0; position: relative; }
+.img-frame {
+  width: 300px; height: 370px;
+  position: relative;
+}
+.img-frame::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--neon), transparent, var(--neon));
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  animation: borderRotate 4s linear infinite;
+}
+@keyframes borderRotate {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.img-frame img {
+  position: absolute;
+  inset: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  object-fit: cover;
+  object-position: top;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  filter: saturate(0.9) contrast(1.05);
+}
+.img-frame::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0,255,65,0.15) 100%);
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  pointer-events: none;
+  z-index: 1;
+}
+.img-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--neon);
+  border-style: solid;
+}
+.img-corner.tl { top: -8px; left: -8px; border-width: 2px 0 0 2px; }
+.img-corner.tr { top: -8px; right: -8px; border-width: 2px 2px 0 0; }
+.img-corner.bl { bottom: -8px; left: -8px; border-width: 0 0 2px 2px; }
+.img-corner.br { bottom: -8px; right: -8px; border-width: 0 2px 2px 0; }
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  animation: scan 3s ease-in-out infinite;
+  z-index: 2;
+  opacity: 0.6;
+}
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { top: 100%; opacity: 0; }
+}
+.status-badge {
+  position: absolute;
+  bottom: -15px; left: 50%; transform: translateX(-50%);
+  background: var(--bg);
+  border: 1px solid var(--neon);
+  padding: 5px 16px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--neon);
+  white-space: nowrap;
+  z-index: 3;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon); display: inline-block; margin-right: 6px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+
+/* SECTIONS */
+section { padding: 100px 40px; max-width: 1200px; margin: 0 auto; }
+.section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--dim);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.section-label::before { content: '// '; color: var(--neon); }
+h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 60px;
+  position: relative;
+}
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: -16px; left: 0;
+  width: 60px; height: 2px;
+  background: var(--neon);
+  box-shadow: var(--glow);
+}
+
+/* ABOUT */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 60px;
+  align-items: start;
+  overflow: visible;
+}
+.about-images { display: flex; flex-direction: column; gap: 20px; overflow: visible; }
+.about-img-main {
+  width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  clip-path: none;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.about-img-main img {
+  width: 100%;
+  height: auto !important;
+  max-height: none !important;
+  display: block;
+  filter: saturate(0.85);
+  transition: filter 0.3s;
+}
+.about-img-main:hover img { filter: saturate(1.1); }
+.about-img-sub {
+  width: 65%; align-self: flex-end;
+  overflow: hidden;
+  clip-path: polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px);
+  border: 1px solid var(--border);
+}
+.about-img-sub img {
+  width: 100%; height: auto;
+  display: block;
+  object-fit: contain;
+  filter: saturate(0.85);
+  transition: transform 0.6s;
+}
+.about-img-sub:hover img { transform: scale(1.06); }
+.about-text p { color: var(--text); margin-bottom: 20px; font-size: 1.05rem; opacity: 0.85; }
+.stat-row { display: flex; gap: 30px; margin-top: 40px; flex-wrap: wrap; }
+.stat-box {
+  flex: 1; min-width: 110px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 20px 16px;
+  text-align: center;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+.stat-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: var(--glow);
+  display: block;
+}
+.stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 1px; margin-top: 4px; }
+
+/* SKILLS */
+.skills-bg { background: var(--bg2); }
+.skills-bg section { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.skill-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 28px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.skill-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  transition: left 0.5s;
+}
+.skill-card:hover::before { left: 100%; }
+.skill-card:hover { border-color: var(--neon2); background: rgba(0,255,65,0.07); box-shadow: var(--glow); transform: translateY(-4px); }
+.skill-icon { font-size: 2rem; margin-bottom: 12px; }
+.skill-name { font-family: 'Orbitron', monospace; font-size: 0.85rem; color: var(--neon); margin-bottom: 8px; letter-spacing: 1px; }
+.skill-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+.skill-bar-wrap { margin-top: 16px; height: 3px; background: rgba(0,255,65,0.1); border-radius: 1px; overflow: hidden; }
+.skill-bar { height: 100%; background: linear-gradient(90deg, var(--neon2), var(--neon3)); border-radius: 1px; width: 0; transition: width 1.5s ease; }
+
+/* TOOLS INTERACTIVE */
+.tools-interactive { background: var(--bg3); }
+.tools-interactive section { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+.tool-tabs { display: flex; gap: 0; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+.tool-tab {
+  padding: 12px 28px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s;
+  background: none; border-top: none; border-left: none; border-right: none;
+}
+.tool-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
+.tool-panel { display: none; }
+.tool-panel.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+.tool-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 40px;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+}
+.tool-box label {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.tool-box input[type=text], .tool-box input[type=password] {
+  width: 100%;
+  background: rgba(0,255,65,0.05);
+  border: 1px solid var(--border);
+  color: var(--neon);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1rem;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color 0.3s;
+  letter-spacing: 2px;
+}
+.tool-box input:focus { border-color: var(--neon); box-shadow: 0 0 0 2px rgba(0,255,65,0.1); }
+.strength-bar-wrap { height: 6px; background: rgba(255,255,255,0.05); margin: 16px 0 8px; border-radius: 3px; overflow: hidden; }
+.strength-bar { height: 100%; width: 0; transition: width 0.5s, background 0.5s; border-radius: 3px; }
+.strength-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  min-height: 1.4em;
+  transition: color 0.3s;
+}
+.strength-tips { margin-top: 16px; font-size: 0.85rem; color: var(--muted); }
+.strength-tips li { margin: 4px 0; list-style: none; padding-left: 16px; position: relative; }
+.strength-tips li::before { content: '▸'; position: absolute; left: 0; color: var(--neon); }
+
+/* PHONE ANALYZER */
+.quiz-question { margin-bottom: 24px; }
+.quiz-question p { font-size: 1rem; color: var(--text); margin-bottom: 12px; font-weight: 600; }
+.quiz-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  background: rgba(0,255,65,0.04);
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+.quiz-option:hover { border-color: var(--neon2); background: rgba(0,255,65,0.09); }
+.quiz-option input { accent-color: var(--neon); }
+.score-display {
+  text-align: center;
+  padding: 40px;
+  display: none;
+}
+.score-ring {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.score-num { font-family: 'Orbitron', monospace; font-size: 2.4rem; font-weight: 900; color: var(--neon); }
+.score-grade { font-family: 'Orbitron', monospace; font-size: 1.1rem; margin-bottom: 8px; }
+.score-advice { color: var(--muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto; }
+.btn-analyze {
+  margin-top: 28px;
+  padding: 12px 36px;
+  background: var(--neon);
+  color: #000;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  border: none; cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: all 0.3s;
+}
+.btn-analyze:hover { background: #fff; box-shadow: var(--glow); }
+.disclaimer {
+  background: rgba(0,255,65,0.04);
+  border: 1px solid rgba(0,255,65,0.2);
+  border-left: 3px solid var(--neon);
+  padding: 16px 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-top: 24px;
+  line-height: 1.7;
+}
+
+/* TOOLS SHOWCASE */
+.tools-showcase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+.showcase-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 32px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.showcase-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 30px 30px 0;
+  border-color: transparent var(--neon) transparent transparent;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+}
+.showcase-card:hover { border-color: var(--neon2); box-shadow: var(--glow); transform: translateY(-6px); }
+.showcase-card:hover::after { opacity: 1; }
+.tool-logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--neon);
+  letter-spacing: 3px;
+  background: rgba(0,255,65,0.08);
+  border: 1px solid var(--border);
+  display: inline-block;
+  padding: 5px 12px;
+  margin-bottom: 16px;
+}
+.showcase-card h3 { font-family: 'Orbitron', monospace; font-size: 1.1rem; color: #fff; margin-bottom: 10px; }
+.showcase-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+.tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  padding: 4px 10px;
+  border: 1px solid rgba(0,255,65,0.2);
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+/* BLOG */
+.blog-bg { background: var(--bg2); }
+.blog-bg section { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+.blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+.blog-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: all 0.3s;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+}
+.blog-card:hover { border-color: var(--neon2); box-shadow: var(--glow); transform: translateY(-6px); }
+.blog-meta {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: center;
+}
+.blog-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: rgba(0,255,65,0.1);
+  line-height: 1;
+}
+.blog-date {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.blog-cat {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--neon);
+  background: rgba(0,255,65,0.08);
+  padding: 2px 8px;
+  margin-top: 4px;
+  display: inline-block;
+}
+.blog-body { padding: 24px; }
+.blog-body h3 { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: #fff; margin-bottom: 10px; line-height: 1.4; letter-spacing: 0.5px; }
+.blog-body p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+.read-more {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--neon);
+  text-decoration: none;
+  letter-spacing: 2px;
+  margin-top: 16px;
+  transition: gap 0.3s;
+}
+.read-more:hover { gap: 14px; }
+
+/* CONTACT */
+.contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+.contact-info h3 { font-family: 'Orbitron', monospace; font-size: 1rem; color: var(--neon); margin-bottom: 12px; }
+.contact-info p { color: var(--muted); font-size: 0.9rem; margin-bottom: 30px; }
+.social-links { display: flex; flex-direction: column; gap: 12px; }
+.social-btn {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+.social-btn:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,65,0.07); box-shadow: var(--glow); }
+.social-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.contact-form input, .contact-form textarea {
+  width: 100%;
+  background: rgba(0,255,65,0.04);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.95rem;
+  padding: 14px 18px;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.3s;
+  resize: none;
+}
+.contact-form input:focus, .contact-form textarea:focus { border-color: var(--neon); }
+.contact-form input::placeholder, .contact-form textarea::placeholder { color: var(--muted); }
+
+/* FOOTER */
+footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 30px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  flex-wrap: wrap; gap: 12px;
+}
+footer span { color: var(--neon); }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(3,10,3,0.98); padding: 20px; border-bottom: 1px solid var(--border); }
+  .nav-links.open { display: flex; }
+  .hamburger { display: flex; }
+  .hero { padding: 90px 20px 60px; }
+  .hero-inner { flex-direction: column-reverse; gap: 40px; text-align: center; }
+  .hero-btns { justify-content: center; }
+  .img-frame { width: 220px; height: 270px; }
+  section { padding: 70px 20px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .about-images { flex-direction: row; }
+  .about-img-main { height: auto !important; aspect-ratio: unset; }
+  .about-img-sub { width: 45%; }
+  .contact-inner { grid-template-columns: 1fr; }
+  .skills-bg section, .tools-interactive section, .blog-bg section { padding: 70px 20px; }
+  footer { flex-direction: column; text-align: center; }
+}
+
+/* SECTION INTRO */
+.section-intro { color: var(--muted); font-size: 1rem; max-width: 700px; margin: -40px 0 48px; line-height: 1.7; }
+
+/* SERVICES PREVIEW */
+.services-preview-bg { background: var(--bg3); }
+.services-preview-bg section { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+.preview-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 30px 26px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  transition: all 0.3s;
+}
+.preview-card:hover { border-color: var(--neon2); box-shadow: var(--glow); transform: translateY(-4px); }
+.preview-icon { font-size: 1.8rem; margin-bottom: 14px; }
+.preview-card h3 { font-family: 'Orbitron', monospace; font-size: 0.95rem; color: #fff; margin-bottom: 10px; }
+.preview-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+/* PREMIUM CTA */
+#cta-section { padding: 80px 40px 120px; }
+.cta-box {
+  max-width: 900px; margin: 0 auto;
+  background: linear-gradient(135deg, rgba(0,255,65,0.06), rgba(0,255,65,0.02));
+  border: 1px solid var(--border);
+  padding: 60px 50px;
+  text-align: center;
+  clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0,255,65,0.12), transparent 60%);
+  pointer-events: none;
+}
+.cta-box h2 { margin: 12px auto 20px; }
+.cta-box h2::after { left: 50%; transform: translateX(-50%); }
+.cta-box p { color: var(--muted); max-width: 560px; margin: 0 auto 8px; font-size: 1rem; }
+
+/* SCROLL-REVEAL UTILITY */
+.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal-up.is-visible { opacity: 1; transform: translateY(0); }
+
+/* NAV SCROLLED STATE */
+nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 768px) {
+  .cta-box { padding: 40px 24px; }
+}
+
+/* BLOG PAGE SPECIFIC */
+.page-hero.blog-hero { min-height: 46vh; padding-top: 150px; padding-bottom: 40px; }
+.blog-toolbar { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+.search-box { position: relative; flex: 1; min-width: 240px; max-width: 380px; }
+.search-box input {
+  width: 100%; background: rgba(0,255,65,0.05); border: 1px solid var(--border); color: var(--text);
+  font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 12px 16px 12px 38px; outline: none;
+}
+.search-box input:focus { border-color: var(--neon); }
+.search-box::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; opacity: 0.6; }
+.category-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; letter-spacing: 1px; padding: 7px 14px;
+  border: 1px solid var(--border); color: var(--muted); background: transparent; cursor: pointer; transition: all 0.25s;
+}
+.pill.active, .pill:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,65,0.08); }
+
+.featured-post {
+  display: grid; grid-template-columns: 1fr 1.2fr; gap: 0; border: 1px solid var(--border); background: var(--card);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); margin-bottom: 60px; overflow: hidden;
+}
+.featured-visual { background: linear-gradient(135deg, rgba(0,255,65,0.14), rgba(0,255,65,0.02)); display: flex; align-items: center; justify-content: center; padding: 40px; }
+.featured-visual .big-icon { font-size: 5rem; filter: drop-shadow(var(--glow)); }
+.featured-content { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+.featured-content .blog-cat { align-self: flex-start; margin-bottom: 14px; }
+.featured-content h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 16px; }
+.featured-content h2::after { display: none; }
+.featured-content p { color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+.post-byline { display: flex; gap: 16px; align-items: center; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; margin-bottom: 20px; flex-wrap: wrap; }
+.post-byline span { display: inline-flex; align-items: center; gap: 6px; }
+
+.blog-card .post-byline { padding: 0 24px; margin-top: -8px; margin-bottom: 12px; }
+.blog-card .blog-body { display: flex; flex-direction: column; }
+.share-row { display: flex; gap: 10px; margin-top: 18px; }
+.share-row a { width: 30px; height: 30px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: 0.75rem; transition: all 0.25s; }
+.share-row a:hover { border-color: var(--neon); color: var(--neon); }
+
+.newsletter-box {
+  max-width: 700px; margin: 80px auto 0; text-align: center; padding: 50px 40px;
+  background: linear-gradient(135deg, rgba(0,255,65,0.06), rgba(0,255,65,0.02));
+  border: 1px solid var(--border);
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+}
+.newsletter-box h3 { font-family: 'Orbitron', monospace; color: #fff; font-size: 1.2rem; margin-bottom: 10px; }
+.newsletter-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+.newsletter-form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; flex-wrap: wrap; }
+.newsletter-form input { flex: 1; min-width: 200px; background: rgba(0,255,65,0.05); border: 1px solid var(--border); color: var(--text); padding: 13px 16px; font-family: 'Rajdhani', sans-serif; outline: none; }
+.newsletter-form input:focus { border-color: var(--neon); }
+
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 60px; }
+.page-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; cursor: pointer; background: transparent; transition: all 0.25s; text-decoration: none; }
+.page-btn.active, .page-btn:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,65,0.08); }
+
+.related-posts { margin-top: 40px; }
+.related-posts h4 { font-family: 'Orbitron', monospace; font-size: 0.8rem; color: var(--dim); letter-spacing: 2px; margin-bottom: 16px; }
+
+.section-intro { color: var(--muted); font-size: 1rem; max-width: 700px; margin: -40px 0 48px; line-height: 1.7; }
+.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal-up.is-visible { opacity: 1; transform: translateY(0); }
+nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 900px) {
+  .featured-post { grid-template-columns: 1fr; }
+  .featured-visual { padding: 30px; }
+}
+@media (max-width: 768px) {
+  .page-hero.blog-hero { padding-top: 120px; }
+  .blog-toolbar { flex-direction: column; align-items: stretch; }
+  .search-box { max-width: none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">OVESH</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="../index.html#about">About</a></li>
+    <li><a href="../index.html#skills">Skills</a></li>
+    <li><a href="../index.html#tools-interactive">Tools</a></li>
+    <li><a href="../services/index.html">Services</a></li>
+    <li><a href="../index.html#showcase">Arsenal</a></li>
+    <li><a href="index.html">Blog</a></li>
+    <li><a href="../index.html#contact">Contact</a></li>
+  </ul>
+  <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- BLOG HERO -->
+<div style="position:relative;overflow:hidden;">
+  <div class="hero-grid"></div>
+  <div class="hero page-hero blog-hero">
+    <div class="hero-inner" style="flex-direction:column;text-align:center;align-items:center;gap:0;">
+      <div class="hero-badge">OVESHMALPURA CYBER LABS · KNOWLEDGE BASE</div>
+      <h1>Ovesh Malpura <span>Blog</span></h1>
+      <p class="tagline" style="margin:20px auto 0;">Cybersecurity, ethical hacking, AI, web development and OSINT — explained clearly, without the jargon.</p>
+    </div>
+  </div>
+</div>
+
+<section id="blog-main">
+  <div class="blog-toolbar">
+    <div class="search-box"><input type="text" id="blogSearch" placeholder="Search articles..." oninput="filterSearch(this.value)"></div>
+    <div class="category-pills"><button class="pill active" onclick="filterCat(this,'All')">All</button><button class="pill" onclick="filterCat(this,'Cybersecurity')">Cybersecurity</button><button class="pill" onclick="filterCat(this,'Ethical Hacking')">Ethical Hacking</button><button class="pill" onclick="filterCat(this,'AI')">AI</button><button class="pill" onclick="filterCat(this,'Web Development')">Web Development</button><button class="pill" onclick="filterCat(this,'Linux')">Linux</button><button class="pill" onclick="filterCat(this,'Cloud Security')">Cloud Security</button><button class="pill" onclick="filterCat(this,'Tutorials')">Tutorials</button><button class="pill" onclick="filterCat(this,'Research')">Research</button><button class="pill" onclick="filterCat(this,'News')">News</button><button class="pill" onclick="filterCat(this,'OSINT')">OSINT</button></div>
+  </div>
+
+  <!-- FEATURED ARTICLE -->
+  <div class="featured-post reveal-up">
+    <div class="featured-visual"><div class="big-icon">🛡️</div></div>
+    <div class="featured-content">
+      <div class="blog-cat">AWARENESS</div>
+      <h2>How to Stay Safe Online: A Complete Guide</h2>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>📅 APR 2025</span><span>⏱ 9 min read</span></div>
+      <p>From password hygiene to recognizing phishing emails — your ultimate digital self-defense playbook for everyday internet users. This guide walks through the fundamentals every internet user should know, whether you're securing your first email account or auditing your entire digital life.</p>
+      <a href="#" class="btn-primary" style="align-self:flex-start;">Read Featured Article</a>
+      <div class="share-row">
+        <a href="#" title="Share on X">𝕏</a>
+        <a href="#" title="Share on LinkedIn">in</a>
+        <a href="#" title="Copy link">🔗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">LATEST_ARTICLES</div>
+  <h2>Latest Articles</h2>
+  <div class="blog-grid" id="blogGrid">
+    <div class="blog-card reveal-up" data-cat="TIPS">
+      <div class="blog-meta"><div class="blog-num">02</div><div><div class="blog-date">MAR 2025</div><div class="blog-cat">TIPS</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 5 min read</span></div>
+      <div class="blog-body">
+        <h3>Top 10 Cybersecurity Tips Everyone Should Know</h3>
+        <p>Simple but powerful habits that dramatically reduce your risk of being compromised online — no technical expertise needed.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="SOCIAL ENG.">
+      <div class="blog-meta"><div class="blog-num">03</div><div><div class="blog-date">MAR 2025</div><div class="blog-cat">SOCIAL ENG.</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 6 min read</span></div>
+      <div class="blog-body">
+        <h3>Understanding Phishing: Don't Take the Bait</h3>
+        <p>How cybercriminals craft convincing fake messages to steal your credentials — and how to spot the red flags before it's too late.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="PRIVACY">
+      <div class="blog-meta"><div class="blog-num">04</div><div><div class="blog-date">FEB 2025</div><div class="blog-cat">PRIVACY</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 7 min read</span></div>
+      <div class="blog-body">
+        <h3>Your Digital Footprint: What You're Leaving Behind</h3>
+        <p>Every click, search, and post creates data. Learn what OSINT can find about you — and how to minimize your exposure online.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="PASSWORDS">
+      <div class="blog-meta"><div class="blog-num">05</div><div><div class="blog-date">FEB 2025</div><div class="blog-cat">PASSWORDS</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 4 min read</span></div>
+      <div class="blog-body">
+        <h3>The Science of Strong Passwords (And Why Yours Isn't)</h3>
+        <p>Why "Password123" fails in seconds, how modern attacks work, and the right way to create and manage truly secure credentials.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="MOBILE">
+      <div class="blog-meta"><div class="blog-num">06</div><div><div class="blog-date">JAN 2025</div><div class="blog-cat">MOBILE</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 6 min read</span></div>
+      <div class="blog-body">
+        <h3>Mobile Security in 2025: Protecting Your Phone</h3>
+        <p>Smartphones are treasure troves of personal data. Here's how to lock down your device before attackers find what you haven't secured.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="AI">
+      <div class="blog-meta"><div class="blog-num">07</div><div><div class="blog-date">JAN 2025</div><div class="blog-cat">AI</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 8 min read</span></div>
+      <div class="blog-body">
+        <h3>AI in Cybersecurity: Friend, Foe, or Both?</h3>
+        <p>How AI is reshaping both attack and defense — from automated phishing generation to intelligent threat detection systems.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="LINUX">
+      <div class="blog-meta"><div class="blog-num">08</div><div><div class="blog-date">DEC 2024</div><div class="blog-cat">LINUX</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 5 min read</span></div>
+      <div class="blog-body">
+        <h3>Getting Started with Kali Linux: A Beginner's Roadmap</h3>
+        <p>A practical, no-fluff introduction to setting up and navigating the security researcher's favorite distribution.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="CLOUD SECURITY">
+      <div class="blog-meta"><div class="blog-num">09</div><div><div class="blog-date">DEC 2024</div><div class="blog-cat">CLOUD SECURITY</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 6 min read</span></div>
+      <div class="blog-body">
+        <h3>Common Cloud Misconfigurations That Lead to Breaches</h3>
+        <p>From open S3 buckets to overly permissive IAM roles — the everyday mistakes that give attackers an easy way in.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+    <div class="blog-card reveal-up" data-cat="OSINT">
+      <div class="blog-meta"><div class="blog-num">10</div><div><div class="blog-date">NOV 2024</div><div class="blog-cat">OSINT</div></div></div>
+      <div class="post-byline"><span>👤 Ovesh Malpura</span><span>⏱ 7 min read</span></div>
+      <div class="blog-body">
+        <h3>OSINT 101: Ethical Reconnaissance Techniques</h3>
+        <p>An introduction to open-source intelligence gathering methods used by researchers, investigators, and security teams.</p>
+        <a href="#" class="read-more">READ MORE →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <a href="#" class="page-btn active">1</a>
+    <a href="#" class="page-btn">2</a>
+    <a href="#" class="page-btn">3</a>
+    <a href="#" class="page-btn">→</a>
+  </div>
+
+  <div class="newsletter-box reveal-up">
+    <h3>Never Miss an Article</h3>
+    <p>Get new cybersecurity and web development articles delivered straight to your inbox. No spam, unsubscribe anytime.</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thanks for subscribing! (Demo form — no data is sent anywhere.)');">
+      <input type="email" placeholder="Your email address" required>
+      <button type="submit" class="btn-primary">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div>© 2025 <span>Ovesh Malpura</span> · OveshMalpura Cyber Labs</div>
+  <div>Built with ❤️ for <span>Digital Safety</span></div>
+  <div><span>@im.ovesh</span> · Educational Purposes Only</div>
+</footer>
+
+<script>
+function filterCat(btn, cat) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#blogGrid .blog-card').forEach(card => {
+    card.style.display = (cat === 'All' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+function filterSearch(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#blogGrid .blog-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); revealObserver.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal-up').forEach((el, i) => {
+  if (reduceMotion) { el.classList.add('is-visible'); return; }
+  el.style.transitionDelay = ((i % 6) * 0.06) + 's';
+  revealObserver.observe(el);
+});
+
+const navEl = document.querySelector('nav');
+window.addEventListener('scroll', () => { navEl.classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
+</script>
+</body>
+</html>
