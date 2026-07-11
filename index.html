@@ -33,6 +33,7 @@
   "url": "https://malpuraovesh.vercel.app",
   "image": "https://malpuraovesh.vercel.app/ovesh-malpura.jpg",
   "jobTitle": "Cybersecurity Enthusiast & Web Developer",
+  "email": "info.oveshmalpuracyberlab@zohomail.in",
   "worksFor": {"@type": "Organization", "name": "OveshMalpura Cyber Labs"},
   "address": {"@type": "PostalAddress", "addressLocality": "Mumbai", "addressRegion": "Maharashtra", "addressCountry": "IN"},
   "sameAs": [
@@ -698,6 +699,61 @@ footer span { color: var(--neon); }
   .skills-bg section, .tools-interactive section, .blog-bg section { padding: 70px 20px; }
   footer { flex-direction: column; text-align: center; }
 }
+
+/* SECTION INTRO */
+.section-intro { color: var(--muted); font-size: 1rem; max-width: 700px; margin: -40px 0 48px; line-height: 1.7; }
+
+/* SERVICES PREVIEW */
+.services-preview-bg { background: var(--bg3); }
+.services-preview-bg section { max-width: 1200px; margin: 0 auto; padding: 100px 40px; }
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+.preview-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 30px 26px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  transition: all 0.3s;
+}
+.preview-card:hover { border-color: var(--neon2); box-shadow: var(--glow); transform: translateY(-4px); }
+.preview-icon { font-size: 1.8rem; margin-bottom: 14px; }
+.preview-card h3 { font-family: 'Orbitron', monospace; font-size: 0.95rem; color: #fff; margin-bottom: 10px; }
+.preview-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+/* PREMIUM CTA */
+#cta-section { padding: 80px 40px 120px; }
+.cta-box {
+  max-width: 900px; margin: 0 auto;
+  background: linear-gradient(135deg, rgba(0,255,65,0.06), rgba(0,255,65,0.02));
+  border: 1px solid var(--border);
+  padding: 60px 50px;
+  text-align: center;
+  clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(0,255,65,0.12), transparent 60%);
+  pointer-events: none;
+}
+.cta-box h2 { margin: 12px auto 20px; }
+.cta-box h2::after { left: 50%; transform: translateX(-50%); }
+.cta-box p { color: var(--muted); max-width: 560px; margin: 0 auto 8px; font-size: 1rem; }
+
+/* SCROLL-REVEAL UTILITY */
+.reveal-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal-up.is-visible { opacity: 1; transform: translateY(0); }
+
+/* NAV SCROLLED STATE */
+nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 768px) {
+  .cta-box { padding: 40px 24px; }
+}
 </style>
 </head>
 <body>
@@ -709,8 +765,9 @@ footer span { color: var(--neon); }
     <li><a href="#about">About</a></li>
     <li><a href="#skills">Skills</a></li>
     <li><a href="#tools-interactive">Tools</a></li>
+    <li><a href="services/index.html">Services</a></li>
     <li><a href="#showcase">Arsenal</a></li>
-    <li><a href="#blog">Blog</a></li>
+    <li><a href="blog/index.html">Blog</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
@@ -929,6 +986,40 @@ footer span { color: var(--neon); }
   </div>
 </section>
 
+<!-- SERVICES PREVIEW -->
+<div class="services-preview-bg" id="services-preview">
+<section>
+  <div class="section-label">WHAT_I_OFFER</div>
+  <h2>Services</h2>
+  <p class="section-intro">Professional cybersecurity, AI &amp; web development solutions for businesses and individuals — from penetration testing to secure, high-performance websites.</p>
+  <div class="preview-grid">
+    <div class="preview-card">
+      <div class="preview-icon">🛡️</div>
+      <h3>Penetration Testing</h3>
+      <p>Authorized offensive security assessments that uncover exploitable weaknesses before attackers do.</p>
+    </div>
+    <div class="preview-card">
+      <div class="preview-icon">💻</div>
+      <h3>Secure Web Development</h3>
+      <p>Modern, high-performance websites and applications built with security baked in from day one.</p>
+    </div>
+    <div class="preview-card">
+      <div class="preview-icon">🤖</div>
+      <h3>AI Development &amp; Automation</h3>
+      <p>Practical AI-powered tools and automations that save time without compromising data safety.</p>
+    </div>
+    <div class="preview-card">
+      <div class="preview-icon">🔎</div>
+      <h3>OSINT &amp; Digital Investigation</h3>
+      <p>Open-source intelligence gathering and digital investigation for research and due diligence.</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:48px;">
+    <a href="services/index.html" class="btn-primary">View All Services</a>
+  </div>
+</section>
+</div>
+
 <!-- BLOG -->
 <div class="blog-bg" id="blog">
 <section>
@@ -984,8 +1075,24 @@ footer span { color: var(--neon); }
       </div>
     </div>
   </div>
+  <div style="text-align:center;margin-top:48px;">
+    <a href="blog/index.html" class="btn-outline">View All Articles</a>
+  </div>
 </section>
 </div>
+
+<!-- PREMIUM CTA -->
+<section id="cta-section">
+  <div class="cta-box">
+    <div class="section-label" style="text-align:center;">SECURE_YOUR_NEXT_MOVE</div>
+    <h2 style="text-align:center;">Ready to Build Something Secure?</h2>
+    <p>Whether it's a penetration test, a hardened website, or an AI-powered automation — let's build it right, from the ground up.</p>
+    <div class="hero-btns" style="justify-content:center;">
+      <a href="services/index.html" class="btn-primary">Explore Services</a>
+      <a href="#contact" class="btn-outline">Start a Conversation</a>
+    </div>
+  </div>
+</section>
 
 <!-- CONTACT -->
 <section id="contact">
@@ -996,15 +1103,15 @@ footer span { color: var(--neon); }
       <h3>Let's Connect</h3>
       <p>Whether you have a security question, want to collaborate, or just want to talk tech — I'm always open to connecting with like-minded individuals.</p>
       <div class="social-links">
-        <a href="https://wa.me/" target="_blank" class="social-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.557 4.118 1.527 5.847L.057 23.97l6.307-1.654A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.826 9.826 0 01-5.028-1.377l-.36-.214-3.742.981.998-3.65-.234-.374A9.791 9.791 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-          WhatsApp Me
+        <a href="https://x.com/OveshMalpura" target="_blank" class="social-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Follow on X
         </a>
         <a href="https://instagram.com/im.ovesh" target="_blank" class="social-btn">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
           @im.ovesh
         </a>
-        <a href="mailto:ovesh@email.com" class="social-btn">
+        <a href="mailto:info.oveshmalpuracyberlab@zohomail.in" class="social-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Send Email
         </a>
@@ -1131,17 +1238,25 @@ function resetQuiz() {
 }
 
 // FADE IN ON SCROLL
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fadeObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
-    if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+    if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; fadeObserver.unobserve(e.target); }
   });
 }, { threshold: 0.1 });
-document.querySelectorAll('.skill-card, .showcase-card, .blog-card, .stat-box').forEach(el => {
+document.querySelectorAll('.skill-card, .showcase-card, .blog-card, .stat-box, .preview-card, .cta-box').forEach((el, i) => {
+  if (reduceMotion) return;
   el.style.opacity = '0';
   el.style.transform = 'translateY(30px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  el.style.transition = `opacity 0.6s ease ${(i % 6) * 0.06}s, transform 0.6s ease ${(i % 6) * 0.06}s`;
   fadeObserver.observe(el);
 });
+
+// NAV GLASS BLUR ON SCROLL + ACTIVE INDICATOR
+const navEl = document.querySelector('nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
 </script>
 </body>
 </html>
