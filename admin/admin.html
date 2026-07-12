@@ -121,7 +121,7 @@ auth.onAuthStateChanged(async (user) => {
   if (!user) return;
   try {
     const adminDoc = await db.collection('admins').doc(user.uid).get();
-    if (adminDoc.exists) window.location.href = 'dashboard.html';
+    if (adminDoc.exists) window.location.href = 'admin-dashboard.html';
   } catch (e) { /* stay on login */ }
 });
 
@@ -133,7 +133,7 @@ async function verifyAdminThenRedirect(user) {
     return;
   }
   showMsg('success', 'Access granted. Loading console…');
-  window.location.href = 'dashboard.html';
+  window.location.href = 'admin-dashboard.html';
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
