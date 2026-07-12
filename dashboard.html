@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard | OveshMalpura Cyber Labs</title>
+<meta name="robots" content="noindex, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030a03; --bg2: #060f06; --bg3: #0a160a;
+  --neon: #00ff41; --neon2: #00cc33; --neon3: #39ff14; --dim: #00aa22;
+  --text: #c8ffd4; --muted: #4a7a52;
+  --card: rgba(0,255,65,0.04); --border: rgba(0,255,65,0.15);
+  --glow: 0 0 20px rgba(0,255,65,0.4), 0 0 60px rgba(0,255,65,0.1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
+
+nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 36px; border-bottom: 1px solid var(--border); background: rgba(6,15,6,0.9); position: sticky; top: 0; z-index: 10; }
+.nav-logo { font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--neon3); letter-spacing: 2px; text-decoration: none; font-size: 16px; }
+.nav-right { display: flex; align-items: center; gap: 20px; }
+.nav-right a { color: var(--muted); text-decoration: none; font-size: 15px; }
+.nav-right a:hover { color: var(--neon3); }
+#logoutBtn { background: rgba(255,68,85,0.08); border: 1px solid rgba(255,68,85,0.3); color: #ff6677; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 14px; }
+#logoutBtn:hover { background: rgba(255,68,85,0.15); }
+
+.layout { display: grid; grid-template-columns: 220px 1fr; max-width: 1200px; margin: 0 auto; }
+@media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+.sidebar { padding: 32px 16px; border-right: 1px solid var(--border); min-height: calc(100vh - 65px); }
+@media (max-width: 800px) { .sidebar { display: flex; border-right: none; border-bottom: 1px solid var(--border); min-height: auto; padding: 12px; gap: 6px; overflow-x: auto; } }
+.side-btn {
+  display: block; width: 100%; text-align: left; background: none; border: none; color: var(--muted);
+  font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 14px; border-radius: 8px;
+  cursor: pointer; margin-bottom: 4px; transition: all 0.15s; white-space: nowrap;
+}
+.side-btn:hover { background: rgba(0,255,65,0.05); color: var(--text); }
+.side-btn.active { background: rgba(0,255,65,0.1); color: var(--neon3); }
+
+.content { padding: 40px 32px 80px; }
+.section { display: none; }
+.section.active { display: block; }
+.eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+h1 { font-family: 'Orbitron', sans-serif; font-size: 26px; color: var(--neon3); margin-bottom: 28px; }
+h2 { font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--neon3); margin-bottom: 18px; }
+
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+
+/* Overview */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.stat-card .num { font-family: 'Orbitron', sans-serif; font-size: 30px; color: var(--neon3); }
+.stat-card .label { font-size: 13px; color: var(--muted); margin-top: 4px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; }
+
+/* Profile */
+.profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,255,65,0.08); font-size: 15px; }
+.profile-row:last-child { border-bottom: none; }
+.profile-row span:first-child { color: var(--muted); }
+.verify-badge { display: inline-block; margin-top: 14px; font-size: 13px; padding: 6px 10px; border-radius: 6px; }
+.verify-badge.yes { background: rgba(0,255,65,0.08); color: var(--neon3); }
+.verify-badge.no { background: rgba(255,170,0,0.1); color: #ffaa00; cursor: pointer; }
+
+/* Services + requests */
+.services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.service-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; }
+.service-card h3 { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon3); margin-bottom: 8px; }
+.service-card p { font-size: 14px; color: var(--muted); flex: 1; margin-bottom: 14px; line-height: 1.5; }
+.service-card ul { font-size: 13px; color: var(--text); margin: 0 0 14px 18px; }
+.btn-request { background: none; border: 1px solid var(--neon2); color: var(--neon3); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 14px; }
+.btn-request:hover { background: rgba(0,255,65,0.1); }
+
+.requests-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.requests-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--border); font-family: 'Share Tech Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.requests-table td { padding: 10px 8px; border-bottom: 1px solid rgba(0,255,65,0.06); }
+.status-pill { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.status-Pending, .status-New { background: rgba(0,204,255,0.1); color: #00ccff; }
+.status-Contacted { background: rgba(255,170,0,0.1); color: #ffaa00; }
+.status-Completed { background: rgba(0,255,65,0.1); color: var(--neon3); }
+.empty { color: var(--muted); font-size: 14px; padding: 16px 0; }
+
+/* Forms (shared: request modal + account settings) */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.field input, .field textarea, .field select {
+  width: 100%; background: rgba(0,255,65,0.03); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 12px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 15px; outline: none;
+}
+.field input:focus, .field textarea:focus { border-color: var(--neon2); }
+.field textarea { resize: vertical; min-height: 90px; }
+.field input:disabled { opacity: 0.6; }
+.btn-primary { background: var(--neon2); color: #021002; border: none; border-radius: 6px; padding: 11px 20px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+.btn-primary:hover { background: var(--neon3); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-danger { background: rgba(255,68,85,0.08); border: 1px solid rgba(255,68,85,0.3); color: #ff6677; border-radius: 6px; padding: 11px 20px; font-family: 'Rajdhani', sans-serif; font-weight: 600; cursor: pointer; }
+.btn-danger:hover { background: rgba(255,68,85,0.15); }
+.msg { padding: 10px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 14px; display: none; }
+.msg.success { background: rgba(0,255,65,0.08); border: 1px solid var(--border); color: var(--neon3); display: block; }
+.msg.error { background: rgba(255,68,85,0.1); border: 1px solid rgba(255,68,85,0.3); color: #ff6677; display: block; }
+.loading { color: var(--muted); font-size: 14px; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 480px; width: 100%; box-shadow: var(--glow); max-height: 90vh; overflow-y: auto; }
+.modal h3 { font-family: 'Orbitron', sans-serif; color: var(--neon3); margin-bottom: 18px; font-size: 18px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.btn-cancel { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 11px 20px; cursor: pointer; font-family: 'Rajdhani', sans-serif; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">OVESH MALPURA CYBER LABS</a>
+  <div class="nav-right">
+    <a href="index.html">Site Home</a>
+    <button id="logoutBtn">Log Out</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <button class="side-btn active" data-section="overview-section" onclick="switchSection('overview-section', this)">Overview</button>
+    <button class="side-btn" data-section="profile-section" onclick="switchSection('profile-section', this)">Profile</button>
+    <button class="side-btn" data-section="requests-section" onclick="switchSection('requests-section', this)">Service Requests</button>
+    <button class="side-btn" data-section="settings-section" onclick="switchSection('settings-section', this)">Account Settings</button>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="overview-section">
+      <div class="eyebrow">Client Portal</div>
+      <h1 id="welcomeHeading">Welcome back</h1>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="num" id="statTotalRequests">—</div><div class="label">Total Requests</div></div>
+        <div class="stat-card"><div class="num" id="statPending">—</div><div class="label">Pending</div></div>
+        <div class="stat-card"><div class="num" id="statCompleted">—</div><div class="label">Completed</div></div>
+        <div class="stat-card"><div class="num" id="statVerified">—</div><div class="label">Email Status</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Services</h2>
+        <div class="services-grid" id="servicesGrid"><div class="loading">Loading services…</div></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="section" id="profile-section">
+      <div class="eyebrow">Client Portal</div>
+      <h1>Profile</h1>
+      <div class="panel" style="max-width:480px;">
+        <div class="profile-row"><span>Full Name</span><span id="pName">—</span></div>
+        <div class="profile-row"><span>Email</span><span id="pEmail">—</span></div>
+        <div class="profile-row"><span>Member Since</span><span id="pJoined">—</span></div>
+        <div class="profile-row"><span>Last Login</span><span id="pLastLogin">—</span></div>
+        <div id="verifyBadge" class="verify-badge no" onclick="resendVerification()">⚠ Email not verified — click to resend</div>
+      </div>
+    </div>
+
+    <!-- SERVICE REQUESTS -->
+    <div class="section" id="requests-section">
+      <div class="eyebrow">Client Portal</div>
+      <h1>My Service Requests</h1>
+      <div class="panel">
+        <table class="requests-table" id="requestsTable">
+          <thead><tr><th>Service</th><th>Submitted</th><th>Status</th></tr></thead>
+          <tbody id="requestsBody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACCOUNT SETTINGS -->
+    <div class="section" id="settings-section">
+      <div class="eyebrow">Client Portal</div>
+      <h1>Account Settings</h1>
+
+      <div class="panel" style="max-width:480px;">
+        <h2>Update Name</h2>
+        <div class="msg" id="nameMsg"></div>
+        <form id="nameForm">
+          <div class="field"><label>Full Name</label><input type="text" id="settingsName" required></div>
+          <button class="btn-primary" type="submit">Save Name</button>
+        </form>
+      </div>
+
+      <div class="panel" style="max-width:480px;">
+        <h2>Change Password</h2>
+        <div class="msg" id="pwMsg"></div>
+        <form id="pwForm">
+          <div class="field"><label>Current Password</label><input type="password" id="currentPassword" required autocomplete="current-password"></div>
+          <div class="field"><label>New Password (min 6 characters)</label><input type="password" id="newPassword" required minlength="6" autocomplete="new-password"></div>
+          <button class="btn-primary" type="submit">Update Password</button>
+        </form>
+      </div>
+
+      <div class="panel" style="max-width:480px;">
+        <h2>Session</h2>
+        <button class="btn-danger" onclick="document.getElementById('logoutBtn').click()">Log Out of This Account</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Service Request Modal -->
+<div class="modal-overlay" id="requestModal">
+  <div class="modal">
+    <h3>Request a Service</h3>
+    <div class="msg" id="requestMsg"></div>
+    <form id="requestForm">
+      <div class="field"><label>Full Name</label><input type="text" id="reqName" required></div>
+      <div class="field"><label>Email</label><input type="email" id="reqEmail" required></div>
+      <div class="field"><label>Service Required</label><input type="text" id="reqService" readonly></div>
+      <div class="field"><label>Project Description</label><textarea id="reqDetails" required placeholder="Tell us about your project, timeline, and scope..."></textarea></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Submit Request</button>
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+let currentUser = null;
+let myRequests = [];
+
+const DEFAULT_SERVICES = [
+  { title: 'Cybersecurity Consulting', description: 'Strategic guidance to strengthen your organization\'s overall security posture.', features: ['Risk assessment', 'Security roadmap', 'Policy review'] },
+  { title: 'Security Auditing', description: 'In-depth audits of your systems, infrastructure, and processes.', features: ['Infrastructure review', 'Compliance checks', 'Detailed report'] },
+  { title: 'Vulnerability Assessment', description: 'Identify and prioritize weaknesses before attackers find them.', features: ['Automated scanning', 'Manual verification', 'Remediation plan'] },
+  { title: 'Ethical Hacking', description: 'Authorized penetration testing to expose real-world attack paths.', features: ['Web & network testing', 'OWASP Top 10 coverage', 'Proof-of-concept exploits'] },
+  { title: 'Website Development', description: 'Secure, modern websites built with performance and safety in mind.', features: ['Custom design', 'Secure architecture', 'Ongoing support'] },
+  { title: 'AI Solutions', description: 'Practical AI integrations tailored to your business workflows.', features: ['Automation tools', 'Custom AI features', 'Integration support'] }
+];
+
+function switchSection(sectionId, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+requireAuth(async (user) => {
+  currentUser = user;
+  document.getElementById('welcomeHeading').textContent = 'Welcome back, ' + (user.displayName || user.email.split('@')[0]);
+  document.getElementById('pName').textContent = user.displayName || '—';
+  document.getElementById('pEmail').textContent = user.email;
+  document.getElementById('reqName').value = user.displayName || '';
+  document.getElementById('reqEmail').value = user.email;
+  document.getElementById('settingsName').value = user.displayName || '';
+
+  const badge = document.getElementById('verifyBadge');
+  if (user.emailVerified) {
+    badge.className = 'verify-badge yes';
+    badge.textContent = '✓ Email verified';
+    badge.onclick = null;
+    document.getElementById('statVerified').textContent = 'Verified';
+  } else {
+    document.getElementById('statVerified').textContent = 'Unverified';
+  }
+
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const data = userDoc.exists ? userDoc.data() : {};
+    document.getElementById('pJoined').textContent = data.createdAt ? fmtDate(data.createdAt) : fmtDate(user.metadata.creationTime);
+    document.getElementById('pLastLogin').textContent = data.lastLogin ? fmtDate(data.lastLogin) : '—';
+  } catch (e) { console.error('Could not load user profile:', e); }
+
+  loadServices();
+  loadMyRequests(user.uid);
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  auth.signOut().then(() => window.location.href = 'index.html');
+});
+
+function resendVerification() {
+  if (!currentUser) return;
+  currentUser.sendEmailVerification()
+    .then(() => alert('Verification email sent to ' + currentUser.email))
+    .catch(err => alert(friendlyError(err)));
+}
+
+async function loadServices() {
+  const grid = document.getElementById('servicesGrid');
+  let services = [];
+  try {
+    const snap = await db.collection('services').orderBy('order', 'asc').get();
+    services = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { console.warn('Falling back to default services list:', e.message); }
+
+  if (services.length === 0) services = DEFAULT_SERVICES;
+
+  grid.innerHTML = services.map(s => `
+    <div class="service-card">
+      <h3>${escapeHtml(s.title)}</h3>
+      <p>${escapeHtml(s.description || '')}</p>
+      ${Array.isArray(s.features) && s.features.length ? `<ul>${s.features.map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>` : ''}
+      <button class="btn-request" onclick="openModal('${escapeAttr(s.title)}')">Request Service</button>
+    </div>
+  `).join('');
+}
+
+function openModal(serviceTitle) {
+  document.getElementById('reqService').value = serviceTitle;
+  document.getElementById('requestMsg').className = 'msg';
+  document.getElementById('reqDetails').value = '';
+  document.getElementById('requestModal').classList.add('open');
+}
+function closeModal() { document.getElementById('requestModal').classList.remove('open'); }
+
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('requestMsg');
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+  try {
+    await db.collection('service_requests').add({
+      uid: currentUser.uid,
+      fullName: document.getElementById('reqName').value.trim(),
+      email: document.getElementById('reqEmail').value.trim(),
+      selectedService: document.getElementById('reqService').value,
+      projectDescription: document.getElementById('reqDetails').value.trim(),
+      status: 'Pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    msgEl.className = 'msg success';
+    msgEl.textContent = 'Request submitted! We\'ll be in touch soon.';
+    loadMyRequests(currentUser.uid);
+    setTimeout(closeModal, 1400);
+  } catch (err) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = friendlyError(err);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+async function loadMyRequests(uid) {
+  const body = document.getElementById('requestsBody');
+  try {
+    const snap = await db.collection('service_requests').where('uid', '==', uid).orderBy('createdAt', 'desc').get();
+    myRequests = snap.docs.map(d => d.data());
+
+    document.getElementById('statTotalRequests').textContent = myRequests.length;
+    document.getElementById('statPending').textContent = myRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
+    document.getElementById('statCompleted').textContent = myRequests.filter(r => r.status === 'Completed').length;
+
+    if (myRequests.length === 0) {
+      body.innerHTML = '<tr><td colspan="3" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
+      return;
+    }
+    body.innerHTML = snap.docs.map(d => {
+      const r = d.data();
+      const status = r.status || 'Pending';
+      return `<tr>
+        <td>${escapeHtml(r.selectedService)}</td>
+        <td>${fmtDate(r.createdAt)}</td>
+        <td><span class="status-pill status-${status}">${escapeHtml(status)}</span></td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="3" class="empty">Could not load requests: ' + escapeHtml(friendlyError(e)) + '</td></tr>';
+  }
+}
+
+// ---- Account Settings: update display name ----
+document.getElementById('nameForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('nameMsg');
+  const newName = document.getElementById('settingsName').value.trim();
+  try {
+    await currentUser.updateProfile({ displayName: newName });
+    await db.collection('users').doc(currentUser.uid).set({ fullName: newName }, { merge: true });
+    msgEl.className = 'msg success';
+    msgEl.textContent = 'Name updated.';
+    document.getElementById('pName').textContent = newName;
+    document.getElementById('welcomeHeading').textContent = 'Welcome back, ' + newName;
+  } catch (err) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = friendlyError(err);
+  }
+});
+
+// ---- Account Settings: change password (re-authenticates first) ----
+document.getElementById('pwForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('pwMsg');
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+  try {
+    const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPassword);
+    await currentUser.reauthenticateWithCredential(credential);
+    await currentUser.updatePassword(newPassword);
+    msgEl.className = 'msg success';
+    msgEl.textContent = 'Password updated successfully.';
+    e.target.reset();
+  } catch (err) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = friendlyError(err);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+function escapeAttr(str) { return (str || '').replace(/'/g, "\\'"); }
+</script>
+</body>
+</html>
