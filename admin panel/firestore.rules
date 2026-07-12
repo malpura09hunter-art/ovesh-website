@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Helpers ----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // ---- users/{uid} ----
+    // A user can read/update their own profile. Admins can read/update any
+    // profile (needed for the admin Users module and role promotion).
+    // Nobody can delete a user profile from the client.
+    match /users/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if false;
+    }
+
+    // ---- admins/{uid} ----
+    // Only admins can read the admin list (don't leak who's an admin to
+    // regular users) and only admins can grant/revoke admin access.
+    // This still requires bootstrapping the FIRST admin manually from the
+    // Firebase console (see setup notes) since no one can grant admin
+    // access from a state where no admins exist.
+    match /admins/{uid} {
+      allow read:   if isAdmin();
+      allow write:  if isAdmin();
+    }
+
+    // ---- service_requests/{requestId} ----
+    // A client can create a request for themselves and read only their own
+    // requests. Only admins can update status or delete requests — clients
+    // can never edit a request after submitting it.
+    match /service_requests/{requestId} {
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow read:   if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---- services/{serviceId} ----
+    // Public read (the services page/dashboard is shown to everyone),
+    // only admins can create/edit/delete entries. Safe today even though
+    // the Services CMS module isn't wired up in the admin UI yet.
+    match /services/{serviceId} {
+      allow read:   if true;
+      allow write:  if isAdmin();
+    }
+
+    // ---- Default deny ----
+    // Anything not explicitly matched above is blocked. Add new collection
+    // rules here as new CMS modules (blog, portfolio, messages, media) are
+    // built instead of relaxing this catch-all.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

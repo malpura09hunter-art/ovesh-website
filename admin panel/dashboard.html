@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Console | OveshMalpura Cyber Labs</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030a03; --bg2: #060f06; --bg3: #0a160a;
+  --neon: #00ff41; --neon2: #00cc33; --neon3: #39ff14; --dim: #00aa22;
+  --text: #c8ffd4; --muted: #4a7a52;
+  --card: rgba(0,255,65,0.04); --border: rgba(0,255,65,0.15);
+  --glow: 0 0 20px rgba(0,255,65,0.4), 0 0 60px rgba(0,255,65,0.1);
+  --error: #ff4455; --amber: #ffb300;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(0,255,65,0.06) 1px, transparent 1px);
+  background-size: 24px 24px; pointer-events: none; z-index: 0;
+}
+
+nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 36px; border-bottom: 1px solid var(--border); background: rgba(6,15,6,0.9); position: sticky; top: 0; z-index: 10; }
+.nav-logo { font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--neon3); letter-spacing: 2px; text-decoration: none; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+.nav-logo .tag { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--dim); background: rgba(0,255,65,0.08); border: 1px solid var(--border); padding: 3px 8px; border-radius: 4px; letter-spacing: 1px; }
+.nav-right { display: flex; align-items: center; gap: 20px; }
+.nav-right span { color: var(--muted); font-size: 14px; font-family: 'Share Tech Mono', monospace; }
+#logoutBtn { background: rgba(255,68,85,0.08); border: 1px solid rgba(255,68,85,0.3); color: #ff6677; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 14px; }
+#logoutBtn:hover { background: rgba(255,68,85,0.15); }
+
+.layout { display: grid; grid-template-columns: 220px 1fr; max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+@media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+.sidebar { padding: 32px 16px; border-right: 1px solid var(--border); min-height: calc(100vh - 65px); }
+@media (max-width: 800px) { .sidebar { display: flex; border-right: none; border-bottom: 1px solid var(--border); min-height: auto; padding: 12px; gap: 6px; overflow-x: auto; } }
+.side-btn {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; color: var(--muted);
+  font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 14px; border-radius: 8px;
+  cursor: pointer; margin-bottom: 4px; transition: all 0.15s; white-space: nowrap;
+}
+.side-btn:hover { background: rgba(0,255,65,0.05); color: var(--text); }
+.side-btn.active { background: rgba(0,255,65,0.1); color: var(--neon3); }
+.side-btn .soon { margin-left: auto; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; }
+
+.content { padding: 32px 36px; }
+.pane { display: none; }
+.pane.active { display: block; }
+
+h2 { font-family: 'Orbitron', sans-serif; font-size: 22px; color: var(--neon3); margin-bottom: 6px; }
+.pane-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; font-family: 'Share Tech Mono', monospace; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.stat-card .num { font-family: 'Orbitron', sans-serif; font-size: 28px; color: var(--neon3); }
+.stat-card .label { font-size: 13px; color: var(--muted); margin-top: 4px; font-family: 'Share Tech Mono', monospace; letter-spacing: 0.5px; }
+
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+.panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.panel-head h3 { font-family: 'Orbitron', sans-serif; font-size: 15px; color: var(--text); }
+
+.search-input, .filter-select {
+  background: rgba(0,255,65,0.03); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  padding: 8px 12px; font-family: 'Rajdhani', sans-serif; font-size: 14px; outline: none;
+}
+.search-input:focus, .filter-select:focus { border-color: var(--neon2); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 12px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+tr:last-child td { border-bottom: none; }
+td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
+
+.status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+.status-Pending { background: rgba(255,179,0,0.12); color: var(--amber); }
+.status-Reviewing { background: rgba(0,180,255,0.12); color: #33bbff; }
+.status-Accepted { background: rgba(0,255,65,0.1); color: var(--neon3); }
+.status-In.Progress, .status-In-Progress { background: rgba(0,255,65,0.1); color: var(--neon3); }
+.status-Completed { background: rgba(0,255,65,0.18); color: var(--neon3); }
+.status-Rejected { background: rgba(255,68,85,0.12); color: var(--error); }
+
+.status-select {
+  background: rgba(0,255,65,0.03); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  padding: 6px 8px; font-family: 'Rajdhani', sans-serif; font-size: 13px; outline: none; cursor: pointer;
+}
+
+.role-pill { padding: 3px 9px; border-radius: 20px; font-size: 11px; font-family: 'Share Tech Mono', monospace; letter-spacing: 0.5px; }
+.role-admin { background: rgba(0,255,65,0.15); color: var(--neon3); border: 1px solid var(--border); }
+.role-client { background: rgba(255,255,255,0.04); color: var(--muted); border: 1px solid var(--border); }
+
+.btn-sm {
+  background: rgba(0,255,65,0.06); border: 1px solid var(--border); color: var(--neon3);
+  padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+}
+.btn-sm:hover { background: rgba(0,255,65,0.12); }
+.btn-sm.danger { border-color: rgba(255,68,85,0.3); color: #ff6677; background: rgba(255,68,85,0.06); }
+.btn-sm.danger:hover { background: rgba(255,68,85,0.12); }
+
+.gate-msg { text-align: center; padding: 100px 20px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 28px; max-width: 480px; width: 100%; box-shadow: var(--glow); max-height: 85vh; overflow-y: auto; }
+.modal-box h3 { font-family: 'Orbitron', sans-serif; color: var(--neon3); font-size: 17px; margin-bottom: 18px; }
+.modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.modal-row span:first-child { color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-close { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate-msg">Verifying admin access…</div>
+
+<div id="app" style="display:none;">
+<nav>
+  <a href="dashboard.html" class="nav-logo">OVESH MALPURA CYBER LABS <span class="tag">ADMIN</span></a>
+  <div class="nav-right">
+    <span id="adminEmail"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar">
+    <button class="side-btn active" data-pane="pane-overview" onclick="switchPane('pane-overview', this)">📊 Dashboard</button>
+    <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">👤 Users</button>
+    <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">🛠 Service Requests</button>
+    <button class="side-btn" disabled><span>📁 Projects</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>📝 Blog CMS</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>⚙ Services CMS</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>✉ Messages</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>🖼 Media Library</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>🌐 Site Settings</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>📈 Analytics</span><span class="soon">soon</span></button>
+    <button class="side-btn" disabled><span>🧾 Activity Logs</span><span class="soon">soon</span></button>
+    <a href="../index.html" class="side-btn" style="margin-top:16px;">← Back to Site</a>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD OVERVIEW -->
+    <div class="pane active" id="pane-overview">
+      <h2>Command Center</h2>
+      <div class="pane-sub">Live snapshot of clients and service pipeline</div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="num" id="statUsers">—</div><div class="label">Total Users</div></div>
+        <div class="stat-card"><div class="num" id="statRequests">—</div><div class="label">Total Requests</div></div>
+        <div class="stat-card"><div class="num" id="statPending">—</div><div class="label">Pending Requests</div></div>
+        <div class="stat-card"><div class="num" id="statCompleted">—</div><div class="label">Completed</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Service Requests</h3></div>
+        <table>
+          <thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="recentRequestsBody"><tr><td class="loading" colspan="4">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="pane" id="pane-users">
+      <h2>Users</h2>
+      <div class="pane-sub">All registered client &amp; admin accounts</div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>All Users</h3>
+          <input type="text" class="search-input" id="userSearch" placeholder="Search name or email…" oninput="renderUsers()">
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Provider</th><th>Joined</th><th>Last Login</th><th></th></tr></thead>
+          <tbody id="usersBody"><tr><td class="loading" colspan="7">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SERVICE REQUESTS -->
+    <div class="pane" id="pane-requests">
+      <h2>Service Requests</h2>
+      <div class="pane-sub">Every request submitted across all clients</div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>All Requests</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input type="text" class="search-input" id="reqSearch" placeholder="Search client, email, service…" oninput="renderRequests()">
+            <select class="filter-select" id="reqStatusFilter" onchange="renderRequests()">
+              <option value="">All statuses</option>
+              <option>Pending</option>
+              <option>Reviewing</option>
+              <option>Accepted</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+              <option>Rejected</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Client</th><th>Email</th><th>Service</th><th>Message</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="requestsBody"><tr><td class="loading" colspan="6">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- User detail modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box">
+    <h3 id="umName">—</h3>
+    <div class="modal-row"><span>EMAIL</span><span id="umEmail">—</span></div>
+    <div class="modal-row"><span>ROLE</span><span id="umRole">—</span></div>
+    <div class="modal-row"><span>PROVIDER</span><span id="umProvider">—</span></div>
+    <div class="modal-row"><span>JOINED</span><span id="umJoined">—</span></div>
+    <div class="modal-row"><span>LAST LOGIN</span><span id="umLastLogin">—</span></div>
+    <div class="modal-row"><span>UID</span><span id="umUid" style="font-family:'Share Tech Mono',monospace; font-size:11px;">—</span></div>
+    <div class="modal-actions">
+      <button class="btn-sm" id="umToggleAdminBtn">Make Admin</button>
+      <button class="modal-close" onclick="closeUserModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+let allUsers = [];
+let allRequests = [];
+let currentAdminUid = null;
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ---- Access gate ----
+requireAdmin(
+  (user, adminData) => {
+    currentAdminUid = user.uid;
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('adminEmail').textContent = user.email;
+    loadUsers();
+    loadRequests();
+  },
+  (user) => {
+    document.getElementById('gate').innerHTML = 'Access denied — this account is not an authorized admin.<br><br><a href="login.html" style="color:var(--neon3);">Return to admin login</a>';
+  }
+);
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  auth.signOut().then(() => window.location.href = 'login.html');
+});
+
+function switchPane(paneId, btn) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(paneId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ---- Users ----
+async function loadUsers() {
+  try {
+    const snap = await db.collection('users').orderBy('createdAt', 'desc').get();
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.error('Failed to load users:', e);
+    allUsers = [];
+  }
+  document.getElementById('statUsers').textContent = allUsers.length;
+  renderUsers();
+}
+
+function renderUsers() {
+  const q = (document.getElementById('userSearch').value || '').toLowerCase();
+  const filtered = allUsers.filter(u =>
+    (u.fullName || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
+  );
+  const body = document.getElementById('usersBody');
+  if (filtered.length === 0) {
+    body.innerHTML = '<tr><td class="empty" colspan="7">No users found.</td></tr>';
+    return;
+  }
+  body.innerHTML = filtered.map(u => `
+    <tr>
+      <td>${escapeHtml(u.fullName || '—')}</td>
+      <td>${escapeHtml(u.email || '—')}</td>
+      <td><span class="role-pill role-${u.role === 'admin' ? 'admin' : 'client'}">${escapeHtml(u.role || 'client')}</span></td>
+      <td>${escapeHtml(u.provider || 'email')}</td>
+      <td>${fmtDate(u.createdAt)}</td>
+      <td>${fmtDate(u.lastLogin)}</td>
+      <td><button class="btn-sm" onclick="openUserModal('${u.id}')">View</button></td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal(uid) {
+  const u = allUsers.find(x => x.id === uid);
+  if (!u) return;
+  document.getElementById('umName').textContent = u.fullName || 'Unnamed User';
+  document.getElementById('umEmail').textContent = u.email || '—';
+  document.getElementById('umRole').textContent = u.role || 'client';
+  document.getElementById('umProvider').textContent = u.provider || 'email';
+  document.getElementById('umJoined').textContent = fmtDate(u.createdAt);
+  document.getElementById('umLastLogin').textContent = fmtDate(u.lastLogin);
+  document.getElementById('umUid').textContent = u.id;
+
+  const toggleBtn = document.getElementById('umToggleAdminBtn');
+  const isAdmin = u.role === 'admin';
+  toggleBtn.textContent = isAdmin ? 'Revoke Admin' : 'Make Admin';
+  toggleBtn.className = isAdmin ? 'btn-sm danger' : 'btn-sm';
+  toggleBtn.onclick = () => toggleAdmin(u.id, isAdmin);
+
+  document.getElementById('userModal').classList.add('open');
+}
+function closeUserModal() { document.getElementById('userModal').classList.remove('open'); }
+
+async function toggleAdmin(uid, currentlyAdmin) {
+  if (uid === currentAdminUid && currentlyAdmin) {
+    alert("You can't revoke your own admin access from here.");
+    return;
+  }
+  const confirmMsg = currentlyAdmin
+    ? 'Revoke admin access for this user?'
+    : 'Grant this user full admin access to the command center?';
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    if (currentlyAdmin) {
+      await db.collection('admins').doc(uid).delete();
+      await db.collection('users').doc(uid).set({ role: 'client' }, { merge: true });
+    } else {
+      await db.collection('admins').doc(uid).set({
+        email: allUsers.find(u => u.id === uid)?.email || '',
+        role: 'admin',
+        permissions: ['full'],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await db.collection('users').doc(uid).set({ role: 'admin' }, { merge: true });
+    }
+    closeUserModal();
+    loadUsers();
+  } catch (e) {
+    alert(friendlyError(e));
+  }
+}
+
+// ---- Service Requests ----
+async function loadRequests() {
+  try {
+    const snap = await db.collection('service_requests').orderBy('createdAt', 'desc').get();
+    allRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.error('Failed to load requests:', e);
+    allRequests = [];
+  }
+  document.getElementById('statRequests').textContent = allRequests.length;
+  document.getElementById('statPending').textContent = allRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
+  document.getElementById('statCompleted').textContent = allRequests.filter(r => r.status === 'Completed').length;
+  renderRecentRequests();
+  renderRequests();
+}
+
+function renderRecentRequests() {
+  const body = document.getElementById('recentRequestsBody');
+  const recent = allRequests.slice(0, 6);
+  if (recent.length === 0) {
+    body.innerHTML = '<tr><td class="empty" colspan="4">No service requests yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = recent.map(r => `
+    <tr>
+      <td>${escapeHtml(r.fullName || '—')}</td>
+      <td>${escapeHtml(r.selectedService || '—')}</td>
+      <td>${fmtDate(r.createdAt)}</td>
+      <td><span class="status-pill status-${(r.status || 'Pending').replace(/\s/g,'-')}">${escapeHtml(r.status || 'Pending')}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderRequests() {
+  const q = (document.getElementById('reqSearch').value || '').toLowerCase();
+  const statusFilter = document.getElementById('reqStatusFilter').value;
+  const filtered = allRequests.filter(r => {
+    const matchesQ = !q || (r.fullName || '').toLowerCase().includes(q) || (r.email || '').toLowerCase().includes(q) || (r.selectedService || '').toLowerCase().includes(q);
+    const matchesStatus = !statusFilter || (r.status || 'Pending') === statusFilter;
+    return matchesQ && matchesStatus;
+  });
+  const body = document.getElementById('requestsBody');
+  if (filtered.length === 0) {
+    body.innerHTML = '<tr><td class="empty" colspan="6">No matching requests.</td></tr>';
+    return;
+  }
+  body.innerHTML = filtered.map(r => `
+    <tr>
+      <td>${escapeHtml(r.fullName || '—')}</td>
+      <td>${escapeHtml(r.email || '—')}</td>
+      <td>${escapeHtml(r.selectedService || '—')}</td>
+      <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.projectDescription || '')}">${escapeHtml(r.projectDescription || '—')}</td>
+      <td>${fmtDate(r.createdAt)}</td>
+      <td>
+        <select class="status-select" onchange="updateStatus('${r.id}', this.value)">
+          ${['Pending','Reviewing','Accepted','In Progress','Completed','Rejected'].map(s =>
+            `<option value="${s}" ${(r.status || 'Pending') === s ? 'selected' : ''}>${s}</option>`
+          ).join('')}
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function updateStatus(reqId, newStatus) {
+  try {
+    await db.collection('service_requests').doc(reqId).update({ status: newStatus });
+    const r = allRequests.find(x => x.id === reqId);
+    if (r) r.status = newStatus;
+    document.getElementById('statPending').textContent = allRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
+    document.getElementById('statCompleted').textContent = allRequests.filter(r => r.status === 'Completed').length;
+    renderRecentRequests();
+  } catch (e) {
+    alert(friendlyError(e));
+    renderRequests();
+  }
+}
+</script>
+</body>
+</html>
