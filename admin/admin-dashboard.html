@@ -111,6 +111,7 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .modal-close { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
 </style>
+<link rel="stylesheet" href="cms-admin.css">
 </head>
 <body>
 
@@ -127,17 +128,25 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
 
 <div class="layout">
   <div class="sidebar">
-    <button class="side-btn active" data-pane="pane-overview" onclick="switchPane('pane-overview', this)">📊 Dashboard</button>
-    <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">👤 Users</button>
-    <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">🛠 Service Requests</button>
-    <button class="side-btn" disabled><span>📁 Projects</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>📝 Blog CMS</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>⚙ Services CMS</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>✉ Messages</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>🖼 Media Library</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>🌐 Site Settings</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>📈 Analytics</span><span class="soon">soon</span></button>
-    <button class="side-btn" disabled><span>🧾 Activity Logs</span><span class="soon">soon</span></button>
+    <button class="side-btn active" data-pane="pane-overview" onclick="switchPane('pane-overview', this)">Dashboard</button>
+    <button class="side-btn" data-pane="pane-cms" onclick="switchPane('pane-cms', this)">CMS</button>
+    <button class="side-btn" data-pane="pane-company" onclick="switchPane('pane-company', this)">Company</button>
+    <button class="side-btn" data-pane="pane-homepage" onclick="switchPane('pane-homepage', this)">Homepage</button>
+    <button class="side-btn" data-pane="pane-contact" onclick="switchPane('pane-contact', this)">Contact</button>
+    <button class="side-btn" data-pane="pane-social" onclick="switchPane('pane-social', this)">Social</button>
+    <button class="side-btn" data-pane="pane-footer" onclick="switchPane('pane-footer', this)">Footer</button>
+    <button class="side-btn" data-pane="pane-seo" onclick="switchPane('pane-seo', this)">SEO</button>
+    <button class="side-btn" data-pane="pane-content" onclick="switchPane('pane-content', this)">Content</button>
+    <button class="side-btn" data-pane="pane-services" onclick="switchPane('pane-services', this)">Services</button>
+    <button class="side-btn" data-pane="pane-projects" onclick="switchPane('pane-projects', this)">Projects</button>
+    <button class="side-btn" data-pane="pane-blogs" onclick="switchPane('pane-blogs', this)">Blogs</button>
+    <button class="side-btn" data-pane="pane-faq" onclick="switchPane('pane-faq', this)">FAQ</button>
+    <button class="side-btn" data-pane="pane-testimonials" onclick="switchPane('pane-testimonials', this)">Testimonials</button>
+    <button class="side-btn" data-pane="pane-media" onclick="switchPane('pane-media', this)">Media Library</button>
+    <button class="side-btn" data-pane="pane-settings" onclick="switchPane('pane-settings', this)">Settings</button>
+    <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">Admin Users</button>
+    <button class="side-btn" data-pane="pane-profile" onclick="switchPane('pane-profile', this)">Profile</button>
+    <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">Service Requests</button>
     <a href="../index.html" class="side-btn" style="margin-top:16px;">← Back to Site</a>
   </div>
 
@@ -208,6 +217,32 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
         </table>
       </div>
     </div>
+
+    <div class="pane" id="pane-cms"><div id="cmsOverviewRoot"></div></div>
+    <div class="pane" id="pane-company"><div id="cmsSingletonRoot-company"></div></div>
+    <div class="pane" id="pane-homepage"><div id="cmsSingletonRoot-homepage"></div></div>
+    <div class="pane" id="pane-contact"><div id="cmsSingletonRoot-contact"></div></div>
+    <div class="pane" id="pane-social"><div id="cmsSingletonRoot-social"></div></div>
+    <div class="pane" id="pane-footer"><div id="cmsSingletonRoot-footer"></div></div>
+    <div class="pane" id="pane-seo"><div id="cmsSeoRoot"></div></div>
+    <div class="pane" id="pane-content">
+      <h2>Content</h2>
+      <div class="pane-sub">Manage public content collections from their dedicated modules.</div>
+      <div class="cms-grid">
+        <div class="cms-card"><h3>Services</h3><p>Reusable service cards for the homepage, services page, and client portal.</p></div>
+        <div class="cms-card"><h3>Projects</h3><p>Portfolio items with technologies, galleries, GitHub, and live demo links.</p></div>
+        <div class="cms-card"><h3>Blogs</h3><p>Rich articles with SEO fields, categories, tags, drafts, and publishing status.</p></div>
+        <div class="cms-card"><h3>FAQ, Testimonials, Media</h3><p>Supporting content used across public pages and campaigns.</p></div>
+      </div>
+    </div>
+    <div class="pane" id="pane-services"><div id="cmsListRoot-services"></div></div>
+    <div class="pane" id="pane-projects"><div id="cmsListRoot-projects"></div></div>
+    <div class="pane" id="pane-blogs"><div id="cmsListRoot-blogs"></div></div>
+    <div class="pane" id="pane-faq"><div id="cmsListRoot-faq"></div></div>
+    <div class="pane" id="pane-testimonials"><div id="cmsListRoot-testimonials"></div></div>
+    <div class="pane" id="pane-media"><div id="cmsListRoot-media"></div></div>
+    <div class="pane" id="pane-settings"><div id="cmsSingletonRoot-settings"></div></div>
+    <div class="pane" id="pane-profile"><div id="cmsProfileRoot"></div></div>
 
   </div>
 </div>
@@ -434,5 +469,6 @@ async function updateStatus(reqId, newStatus) {
   }
 }
 </script>
+<script src="cms-admin.js"></script>
 </body>
 </html>
