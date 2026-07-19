@@ -721,7 +721,6 @@ footer span { color: var(--neon); }
 
 /* PREMIUM CTA */
 #cta-section { padding: 80px 40px 120px; }
-#client-portal { padding: 60px 40px; }
 .cta-box {
   max-width: 900px; margin: 0 auto;
   background: linear-gradient(135deg, rgba(0,255,65,0.06), rgba(0,255,65,0.02));
@@ -766,11 +765,11 @@ nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
     <li><a href="#about">About</a></li>
     <li><a href="#skills">Skills</a></li>
     <li><a href="#tools-interactive">Tools</a></li>
-    <li><a href="login.html">Client Portal</a></li>
     <li><a href="services/index.html">Services</a></li>
     <li><a href="#showcase">Arsenal</a></li>
     <li><a href="blog/index.html">Blog</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="login.html">Client Portal</a></li>
   </ul>
   <div class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
     <span></span><span></span><span></span>
@@ -788,7 +787,7 @@ nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
         <div class="tagline">Cybersecurity Enthusiast | Protecting Digital Lives</div>
         <div class="type-text" id="typeText"><span class="type-cursor">_</span></div>
         <div class="hero-btns">
-          <a href="#tools-interactive" class="btn-primary">Run Tools</a>
+          <a href="login.html" class="btn-primary">Client Portal</a>
           <a href="#contact" class="btn-outline">Contact Me</a>
         </div>
       </div>
@@ -1084,18 +1083,6 @@ nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
 </div>
 
 <!-- PREMIUM CTA -->
-<!-- CLIENT PORTAL -->
-<section id="client-portal">
-  <div class="cta-box">
-    <div class="section-label" style="text-align:center;">CLIENT_ACCESS</div>
-    <h2 style="text-align:center;">Client Portal</h2>
-    <p>Existing clients can log in to track service requests, view project updates, and manage account details securely.</p>
-    <div class="hero-btns" style="justify-content:center;">
-      <a href="login.html" class="btn-primary">Client Portal Login</a>
-    </div>
-  </div>
-</section>
-
 <section id="cta-section">
   <div class="cta-box">
     <div class="section-label" style="text-align:center;">SECURE_YOUR_NEXT_MOVE</div>
@@ -1104,6 +1091,18 @@ nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
     <div class="hero-btns" style="justify-content:center;">
       <a href="services/index.html" class="btn-primary">Explore Services</a>
       <a href="#contact" class="btn-outline">Start a Conversation</a>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENT PORTAL -->
+<section id="client-portal">
+  <div class="cta-box">
+    <div class="section-label" style="text-align:center;">CLIENT_ACCESS</div>
+    <h2 style="text-align:center;">Your Secure Digital Workspace</h2>
+    <p>Access your dedicated client portal to stay connected, track project progress, and securely manage your services with Ovesh Malpura Cyber Labs.</p>
+    <div class="hero-btns" style="justify-content:center;">
+      <a href="login.html" class="btn-primary">Access Client Portal →</a>
     </div>
   </div>
 </section>
@@ -1272,5 +1271,10 @@ window.addEventListener('scroll', () => {
   navEl.classList.toggle('scrolled', window.scrollY > 40);
 }, { passive: true });
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="cms-public.js"></script>
 </body>
 </html>
