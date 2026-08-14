@@ -267,11 +267,28 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
 document.getElementById('resetForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('resetEmail').value;
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
   try {
-    await auth.sendPasswordResetEmail(email);
-    showMsg('Password reset email sent to ' + email + '. Check your inbox.', 'success');
+    // Point the emailed link at our own branded reset-password.html instead
+    // of Firebase's generic default-hosted action page.
+    const actionCodeSettings = { url: window.location.origin + '/reset-password.html' };
+    await auth.sendPasswordResetEmail(email, actionCodeSettings);
+    // Always show the same success state regardless of whether the email
+    // exists, to avoid leaking which addresses have accounts.
+    showMsg('If an account exists for ' + email + ', a password reset link has been sent. Check your inbox.', 'success');
+    e.target.reset();
   } catch (err) {
-    showMsg(friendlyError(err), 'error');
+    // auth/user-not-found would otherwise reveal account existence — treat
+    // it the same as success from the UI's point of view.
+    if (err.code === 'auth/user-not-found') {
+      showMsg('If an account exists for ' + email + ', a password reset link has been sent. Check your inbox.', 'success');
+      e.target.reset();
+    } else {
+      showMsg(friendlyError(err), 'error');
+    }
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 </script>
