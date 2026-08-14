@@ -125,6 +125,11 @@ function friendlyError(err) {
     'auth/network-request-failed': 'Network error — check your connection and try again.',
     'auth/requires-recent-login': 'Please log out and log back in, then try this action again.',
     'auth/user-disabled': 'This account has been disabled. Contact support.',
+    'auth/expired-action-code': 'This reset link has expired. Please request a new one.',
+    'auth/invalid-action-code': 'This reset link is invalid or has already been used. Please request a new one.',
+    'auth/missing-android-pkg-name': 'This reset link is invalid. Please request a new one.',
+    'auth/missing-continue-uri': 'This reset link is invalid. Please request a new one.',
+    'auth/operation-not-allowed': 'This sign-in method is not currently enabled. Contact support.',
     // Google Sign-In
     'auth/account-exists-with-different-credential': 'An account already exists with this email using a different sign-in method.',
     'auth/popup-blocked': 'Your browser blocked the sign-in popup — trying an alternate method.',
