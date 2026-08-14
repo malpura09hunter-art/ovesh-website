@@ -47,11 +47,16 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
 // profile fields (fullName, role, etc.) are never overwritten.
 // Wrapped in a transaction to prevent duplicate writes / race conditions
 // if the auth state fires more than once in quick succession.
+// Returns true if this was the user's first Google sign-in (doc just
+// created), false if they already had a profile — callers use this to
+// decide whether to send a welcome email.
 async function syncGoogleUserDoc(user) {
   const ref = db.collection('users').doc(user.uid);
+  let isNewUser = false;
   await db.runTransaction(async (tx) => {
     const doc = await tx.get(ref);
     if (!doc.exists) {
+      isNewUser = true;
       tx.set(ref, {
         uid: user.uid,
         fullName: user.displayName || '',
@@ -67,6 +72,7 @@ async function syncGoogleUserDoc(user) {
       tx.update(ref, { lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
     }
   });
+  return isNewUser;
 }
 
 /* ---------------- Shared helpers used across pages ---------------- */
