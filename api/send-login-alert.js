@@ -10,10 +10,29 @@ function getTransporter() {
       auth: {
         user: process.env.ZOHO_USER,
         pass: process.env.ZOHO_APP_PASSWORD
-      }
+      },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000
     });
   }
   return transporter;
+}
+
+const RETRYABLE_ERROR_CODES = new Set([
+  'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET', 'EDNS'
+]);
+
+async function sendWithOneRetry(transport, mailOptions) {
+  try {
+    return await transport.sendMail(mailOptions);
+  } catch (err) {
+    if (RETRYABLE_ERROR_CODES.has(err.code)) {
+      console.warn('ZOHO SMTP transient failure on login alert, retrying once:', err.code);
+      return await transport.sendMail(mailOptions);
+    }
+    throw err;
+  }
 }
 
 function escapeHtml(str) {
@@ -94,17 +113,20 @@ module.exports = async (req, res) => {
   const time = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST';
   const device = parseDevice(userAgent);
 
+  console.log('LOGIN ALERT EMAIL SEND STARTED');
+
   try {
-    await getTransporter().sendMail({
+    const result = await sendWithOneRetry(getTransporter(), {
       from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
       to: email,
       subject: 'New sign-in to your OveshMalpura Cyber Labs account',
       html: loginAlertHtml({ name, device, time, ip, resetUrl: `${siteUrl}/login.html` })
     });
+    console.log('LOGIN ALERT EMAIL ACCEPTED:', result.messageId);
     res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('send-login-alert failed:', err.message);
+    console.error('LOGIN ALERT EMAIL SEND FAILED:', err.code || err.message);
     // Never block login on this failing — the alert is a nice-to-have.
-    res.status(500).json({ error: 'Could not send login alert', detail: err.message });
+    res.status(500).json({ error: 'Could not send login alert' });
   }
 };
