@@ -35,6 +35,13 @@ const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
+// Microsoft Sign-In provider (used by login.html's "Continue with Microsoft")
+// Requires "microsoft.com" to be enabled under Firebase Console ->
+// Authentication -> Sign-in method, with an Azure AD app registration's
+// Application (client) ID + secret configured there.
+const microsoftProvider = new firebase.auth.OAuthProvider('microsoft.com');
+microsoftProvider.setCustomParameters({ prompt: 'select_account' });
+
 // Explicit persistent (survives browser restart) auth session.
 // This is Firebase's default, but we set it explicitly so
 // "Persistent Login Session" is guaranteed rather than assumed.
@@ -50,7 +57,11 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
 // Returns true if this was the user's first Google sign-in (doc just
 // created), false if they already had a profile — callers use this to
 // decide whether to send a welcome email.
-async function syncGoogleUserDoc(user) {
+// Returns true if this was the user's first sign-in with this provider
+// (doc just created), false if they already had a profile — callers use
+// this to decide whether to send a welcome email. providerLabel is a
+// short string like 'google' or 'microsoft', stored on the profile.
+async function syncOAuthUserDoc(user, providerLabel) {
   const ref = db.collection('users').doc(user.uid);
   let isNewUser = false;
   await db.runTransaction(async (tx) => {
@@ -62,7 +73,7 @@ async function syncGoogleUserDoc(user) {
         fullName: user.displayName || '',
         email: user.email,
         photoURL: user.photoURL || '',
-        provider: 'google',
+        provider: providerLabel,
         emailVerified: user.emailVerified,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
@@ -73,6 +84,12 @@ async function syncGoogleUserDoc(user) {
     }
   });
   return isNewUser;
+}
+
+// Kept as an alias so any other page still calling syncGoogleUserDoc
+// directly keeps working unchanged.
+function syncGoogleUserDoc(user) {
+  return syncOAuthUserDoc(user, 'google');
 }
 
 /* ---------------- Shared helpers used across pages ---------------- */
