@@ -12,10 +12,29 @@ function getTransporter() {
       auth: {
         user: process.env.ZOHO_USER,
         pass: process.env.ZOHO_APP_PASSWORD
-      }
+      },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000
     });
   }
   return transporter;
+}
+
+const RETRYABLE_ERROR_CODES = new Set([
+  'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET', 'EDNS'
+]);
+
+async function sendWithOneRetry(transport, mailOptions) {
+  try {
+    return await transport.sendMail(mailOptions);
+  } catch (err) {
+    if (RETRYABLE_ERROR_CODES.has(err.code)) {
+      console.warn('ZOHO SMTP transient failure on welcome email, retrying once:', err.code);
+      return await transport.sendMail(mailOptions);
+    }
+    throw err;
+  }
 }
 
 function escapeHtml(str) {
@@ -57,16 +76,19 @@ module.exports = async (req, res) => {
 
   const siteUrl = process.env.SITE_URL || 'https://malpuraovesh.vercel.app';
 
+  console.log('WELCOME EMAIL SEND STARTED');
+
   try {
-    await getTransporter().sendMail({
+    const result = await sendWithOneRetry(getTransporter(), {
       from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
       to: email,
       subject: 'Welcome to OveshMalpura Cyber Labs',
       html: welcomeHtml(name, siteUrl)
     });
+    console.log('WELCOME EMAIL ACCEPTED:', result.messageId);
     res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('send-welcome failed:', err.message);
+    console.error('WELCOME EMAIL SEND FAILED:', err.code || err.message);
     // Never block the signup flow on the client side — the account
     // already exists regardless of whether this email sends.
     res.status(500).json({ error: 'Could not send welcome email' });
