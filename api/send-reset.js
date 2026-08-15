@@ -266,15 +266,18 @@ module.exports = async (req, res) => {
 
     try {
       user = await firebase.auth().getUserByEmail(email);
+      console.log('PASSWORD RESET: account found, uid=' + user.uid + ', providers=' + JSON.stringify((user.providerData || []).map(p => p.providerId)));
     } catch (error) {
 
       // Don't reveal whether the account exists.
       if (error.code === 'auth/user-not-found') {
+        console.log('PASSWORD RESET: no account found for this email — skipping silently');
         return res.status(200).json({
           ok: true
         });
       }
 
+      console.error('PASSWORD RESET: unexpected error during account lookup:', error.code || error.message);
       throw error;
     }
 
@@ -289,6 +292,7 @@ module.exports = async (req, res) => {
       );
 
     if (!isEmailPasswordAccount) {
+      console.log('PASSWORD RESET: account has no password provider — skipping silently');
       return res.status(200).json({
         ok: true
       });
