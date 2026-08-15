@@ -72,6 +72,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 }
 .btn-google:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.35); background: #f8f8f8; }
 .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-google + .btn-google { margin-top: 10px; }
 .btn-google .g-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .btn-google .spinner {
   width: 16px; height: 16px; border: 2px solid #dadce0; border-top-color: #3c4043;
@@ -110,10 +111,15 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
       </div>
     </form>
     <div class="divider-row"><span>OR</span></div>
-    <button type="button" class="btn-google" id="googleBtnLogin" onclick="handleGoogleSignIn(this)">
+    <button type="button" class="btn-google" id="googleBtnLogin" onclick="handleOAuthSignIn('google', this)">
       <svg class="g-icon" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.3C29.3 35.4 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.2 5.3C40.9 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
       <span class="spinner"></span>
       <span class="btn-google-label">Continue with Google</span>
+    </button>
+    <button type="button" class="btn-google btn-microsoft" id="msBtnLogin" onclick="handleOAuthSignIn('microsoft', this)">
+      <svg class="g-icon" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
+      <span class="spinner"></span>
+      <span class="btn-google-label">Continue with Microsoft</span>
     </button>
   </div>
 
@@ -126,10 +132,15 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
       <button class="btn-primary" type="submit">Create Account</button>
     </form>
     <div class="divider-row"><span>OR</span></div>
-    <button type="button" class="btn-google" id="googleBtnSignup" onclick="handleGoogleSignIn(this)">
+    <button type="button" class="btn-google" id="googleBtnSignup" onclick="handleOAuthSignIn('google', this)">
       <svg class="g-icon" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.3C29.3 35.4 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.2 5.3C40.9 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
       <span class="spinner"></span>
       <span class="btn-google-label">Continue with Google</span>
+    </button>
+    <button type="button" class="btn-google btn-microsoft" id="msBtnSignup" onclick="handleOAuthSignIn('microsoft', this)">
+      <svg class="g-icon" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
+      <span class="spinner"></span>
+      <span class="btn-google-label">Continue with Microsoft</span>
     </button>
   </div>
 
@@ -189,7 +200,9 @@ auth.onAuthStateChanged(user => {
 // Runs harmlessly on every page load; resolves to null if no redirect occurred.
 auth.getRedirectResult().then(async (result) => {
   if (result && result.user) {
-    const isNewUser = await syncGoogleUserDoc(result.user);
+    const providerId = result.additionalUserInfo && result.additionalUserInfo.providerId;
+    const label = providerId === 'microsoft.com' ? 'microsoft' : 'google';
+    const isNewUser = await syncOAuthUserDoc(result.user, label);
     if (isNewUser) {
       fetch('/api/send-welcome', {
         method: 'POST',
@@ -204,7 +217,14 @@ auth.getRedirectResult().then(async (result) => {
   if (err.code !== 'auth/no-auth-event') showMsg(friendlyError(err), 'error');
 });
 
-async function handleGoogleSignIn(btn) {
+const OAUTH_PROVIDERS = {
+  google: { provider: () => googleProvider, label: 'google' },
+  microsoft: { provider: () => microsoftProvider, label: 'microsoft' }
+};
+
+async function handleOAuthSignIn(providerKey, btn) {
+  const { provider: getProvider, label } = OAUTH_PROVIDERS[providerKey];
+  const provider = getProvider();
   showMsg('', ''); // clear
   document.getElementById('formMsg').className = 'msg';
   btn.classList.add('loading');
@@ -212,11 +232,11 @@ async function handleGoogleSignIn(btn) {
   try {
     let result;
     try {
-      result = await auth.signInWithPopup(googleProvider);
+      result = await auth.signInWithPopup(provider);
     } catch (popupErr) {
       // Popup blocked by the browser — gracefully fall back to redirect flow
       if (popupErr.code === 'auth/popup-blocked') {
-        await auth.signInWithRedirect(googleProvider);
+        await auth.signInWithRedirect(provider);
         return; // page will navigate away; getRedirectResult() picks it up on return
       }
       // User closed the popup or a duplicate request was cancelled — not a real error
@@ -225,7 +245,7 @@ async function handleGoogleSignIn(btn) {
       }
       throw popupErr;
     }
-    const isNewUser = await syncGoogleUserDoc(result.user);
+    const isNewUser = await syncOAuthUserDoc(result.user, label);
     if (isNewUser) {
       fetch('/api/send-welcome', {
         method: 'POST',
@@ -241,6 +261,12 @@ async function handleGoogleSignIn(btn) {
     btn.classList.remove('loading');
     setFormsDisabled(false);
   }
+}
+
+// Kept as an alias so any existing onclick="handleGoogleSignIn(this)" calls
+// left elsewhere keep working unchanged.
+function handleGoogleSignIn(btn) {
+  return handleOAuthSignIn('google', btn);
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
