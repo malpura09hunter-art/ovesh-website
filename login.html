@@ -26,39 +26,54 @@ body::before {
   content: ''; position: fixed; inset: 0;
   background-image: radial-gradient(rgba(0,255,65,0.06) 1px, transparent 1px);
   background-size: 24px 24px; pointer-events: none;
+  animation: gridDrift 18s linear infinite;
 }
-.logo-link { position: absolute; top: 28px; left: 28px; font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--neon3); text-decoration: none; letter-spacing: 2px; font-size: 15px; text-shadow: 0 0 10px rgba(0,255,65,0.4); }
+.logo-link { position: absolute; top: 28px; left: 28px; font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--neon3); text-decoration: none; letter-spacing: 2px; font-size: 15px; text-shadow: 0 0 10px rgba(0,255,65,0.4); transition: transform 0.25s ease, text-shadow 0.25s ease; }
+.logo-link:hover { transform: translateX(2px); text-shadow: 0 0 14px rgba(0,255,65,0.65); }
 .card {
   width: 100%; max-width: 420px; background: var(--bg2); border: 1px solid var(--border);
   border-radius: 12px; padding: 40px 32px; box-shadow: var(--glow); position: relative; z-index: 1;
+  animation: panelEntry 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
 h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; color: var(--neon3); margin-bottom: 24px; }
 .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: rgba(0,255,65,0.03); border-radius: 8px; padding: 4px; }
-.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+.tab-btn:hover { color: var(--neon3); transform: translateY(-1px); }
+.tab-btn:active { transform: translateY(0); }
 .tab-btn.active { background: rgba(0,255,65,0.1); color: var(--neon3); }
 .field { margin-bottom: 18px; }
-.field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; }
+.field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-family: 'Share Tech Mono', monospace; letter-spacing: 1px; transition: color 0.2s ease; }
+.field:focus-within label { color: var(--neon2); }
 .field input {
   width: 100%; background: rgba(0,255,65,0.03); border: 1px solid var(--border); border-radius: 6px;
-  padding: 12px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 16px; outline: none; transition: border-color 0.2s;
+  padding: 12px 14px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 16px; outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease, background 0.2s ease;
 }
-.field input:focus { border-color: var(--neon2); box-shadow: 0 0 0 3px rgba(0,255,65,0.08); }
+.field input:focus { border-color: var(--neon2); box-shadow: 0 0 0 3px rgba(0,255,65,0.08), 0 0 18px rgba(0,255,65,0.06); transform: translateY(-1px); background: rgba(0,255,65,0.045); }
+.field input[aria-invalid="true"] { border-color: rgba(255,68,85,0.75); box-shadow: 0 0 0 3px rgba(255,68,85,0.07); }
 .btn-primary {
   width: 100%; background: var(--neon2); color: #021002; border: none; border-radius: 6px;
   padding: 13px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px;
-  cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+  cursor: pointer; transition: background 0.2s ease, box-shadow 0.25s ease, transform 0.15s ease, opacity 0.2s ease;
+  text-transform: uppercase; position: relative; overflow: hidden;
 }
-.btn-primary:hover { background: var(--neon3); box-shadow: var(--glow); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.16) 50%, transparent 65%); transform: translateX(-130%); transition: transform 0.4s ease; pointer-events: none; }
+.btn-primary:hover::after { transform: translateX(130%); }
+.btn-primary:hover { background: var(--neon3); box-shadow: var(--glow); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(1px) scale(0.995); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary.loading { color: transparent; cursor: wait; }
+.btn-primary.loading::before { content: ''; position: absolute; left: 50%; top: 50%; width: 17px; height: 17px; margin: -9px 0 0 -9px; border: 2px solid rgba(2,16,2,0.25); border-top-color: #021002; border-radius: 50%; animation: spin 0.7s linear infinite; }
 .link-row { display: flex; justify-content: space-between; margin-top: 14px; font-size: 14px; }
-.link-row a, .link-row button { color: var(--dim); text-decoration: none; background: none; border: none; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 14px; }
-.link-row a:hover, .link-row button:hover { color: var(--neon3); }
-.msg { padding: 10px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 16px; display: none; }
-.msg.error { background: rgba(255,68,85,0.1); border: 1px solid rgba(255,68,85,0.3); color: var(--error); display: block; }
-.msg.success { background: rgba(0,255,65,0.08); border: 1px solid var(--border); color: var(--neon3); display: block; }
+.link-row a, .link-row button { color: var(--dim); text-decoration: none; background: none; border: none; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 14px; transition: color 0.2s ease, transform 0.2s ease; }
+.link-row a:hover, .link-row button:hover { color: var(--neon3); transform: translateX(1px); }
+.msg { padding: 10px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 16px; display: none; opacity: 0; transform: translateY(-4px); transition: opacity 0.2s ease, transform 0.2s ease; }
+.msg.error, .msg.success { display: block; opacity: 1; transform: translateY(0); }
+.msg.error { background: rgba(255,68,85,0.1); border: 1px solid rgba(255,68,85,0.3); color: var(--error); }
+.msg.success { background: rgba(0,255,65,0.08); border: 1px solid var(--border); color: var(--neon3); }
 .pane { display: none; }
-.pane.active { display: block; }
+.pane.active { display: block; animation: paneIn 0.25s ease both; }
 
 .divider-row { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
 .divider-row::before, .divider-row::after { content: ''; flex: 1; height: 1px; background: var(--border); }
@@ -68,10 +83,11 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
   background: #ffffff; color: #3c4043; border: 1px solid #dadce0; border-radius: 6px;
   padding: 12px; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px;
-  cursor: pointer; transition: box-shadow 0.2s, background 0.2s; position: relative;
+  cursor: pointer; transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.15s ease; position: relative;
 }
-.btn-google:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.35); background: #f8f8f8; }
-.btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-google:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.35); background: #f8f8f8; transform: translateY(-1px); }
+.btn-google:active { transform: translateY(1px); }
+.btn-google:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .btn-google + .btn-google { margin-top: 10px; }
 .btn-google .g-icon { width: 18px; height: 18px; flex-shrink: 0; }
 .btn-google .spinner {
@@ -82,6 +98,9 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 .btn-google.loading .btn-google-label { display: none; }
 .btn-google.loading .spinner { display: block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes gridDrift { from { background-position: 0 0; } to { background-position: 24px 24px; } }
+@keyframes panelEntry { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes paneIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ==================== Auth Status Overlay ==================== */
 .auth-overlay {
@@ -89,17 +108,17 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   background: #030a03;
   display: flex; align-items: center; justify-content: center;
   opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.45s;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.4s;
 }
 .auth-overlay.active {
   opacity: 1; visibility: visible; pointer-events: auto;
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .overlay-ring {
   position: absolute; width: 420px; height: 420px; border-radius: 50%;
   border: 1px solid rgba(0,255,65,0.12);
   opacity: 0; transform: scale(0.85);
-  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .auth-overlay.active .overlay-ring { opacity: 1; transform: scale(1); }
 .auth-overlay.failure-mode .overlay-ring { border-color: rgba(192,41,63,0.18); }
@@ -112,16 +131,17 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 @keyframes ringSpin { to { transform: rotate(360deg); } }
 .overlay-content { position: relative; text-align: center; max-width: 440px; padding: 0 24px; }
 .overlay-phase {
-  display: none; opacity: 0; transform: translateY(8px);
-  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  display: none; opacity: 0; transform: translateY(8px) scale(0.985);
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.overlay-phase.showing { display: block; opacity: 1; transform: translateY(0); }
+.overlay-phase.showing { display: block; opacity: 1; transform: translateY(0) scale(1); }
 .overlay-badge {
   width: 64px; height: 64px; margin: 0 auto 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   background: radial-gradient(circle, rgba(0,255,65,0.14), rgba(0,255,65,0.02));
   border: 1px solid rgba(0,255,65,0.3);
   box-shadow: 0 0 30px rgba(0,255,65,0.2);
+  animation: badgeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .overlay-badge.failure { background: radial-gradient(circle, rgba(192,41,63,0.14), rgba(192,41,63,0.02)); border-color: rgba(192,41,63,0.3); box-shadow: 0 0 30px rgba(192,41,63,0.15); }
 .overlay-badge svg { width: 28px; height: 28px; stroke: #39ff14; }
@@ -147,13 +167,25 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 .overlay-btn {
   font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
   padding: 11px 22px; border-radius: 7px; cursor: pointer; border: 1px solid rgba(0,255,65,0.3);
-  background: transparent; color: #c8ffd4; transition: all 0.2s ease;
+  background: transparent; color: #c8ffd4; transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
-.overlay-btn:hover { background: rgba(0,255,65,0.08); border-color: rgba(0,255,65,0.5); }
+.overlay-btn:hover { background: rgba(0,255,65,0.08); border-color: rgba(0,255,65,0.5); transform: translateY(-1px); }
+.overlay-btn:active { transform: translateY(1px); }
 .overlay-btn.primary { background: #176b35; border-color: #176b35; color: #fff; }
 .overlay-btn.primary:hover { background: #1d8a44; }
+@keyframes badgeIn { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: scale(1); } }
+@media (max-width: 520px) {
+  body { padding: 18px; }
+  .logo-link { top: 18px; left: 18px; font-size: 12px; letter-spacing: 1.5px; }
+  .card { padding: 32px 22px; margin-top: 24px; }
+  .overlay-ring { width: min(82vw, 360px); height: min(82vw, 360px); }
+  .overlay-title { font-size: clamp(18px, 6vw, 26px); letter-spacing: 2px; }
+  .overlay-welcome { font-size: 17px; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .auth-overlay, .overlay-ring, .overlay-phase { transition-duration: 0.15s !important; animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; }
+  body::before, .card, .pane.active, .overlay-badge, .overlay-ring::before { animation: none !important; }
+  .auth-overlay, .overlay-ring, .overlay-phase, .field input, .btn-primary, .btn-google, .tab-btn, .logo-link, .overlay-btn, .msg { transition-duration: 0.15s !important; }
 }
 </style>
 </head>
@@ -165,7 +197,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 
     <div class="overlay-phase" id="phaseGranted">
       <div class="overlay-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="overlay-title">ACCESS GRANTED</div>
+      <div class="overlay-title" id="overlayGrantedText">ACCESS GRANTED</div>
     </div>
 
     <div class="overlay-phase" id="phaseWelcome">
@@ -176,7 +208,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 
     <div class="overlay-phase" id="phaseDenied">
       <div class="overlay-badge failure"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
-      <div class="overlay-title failure">ACCESS DENIED</div>
+      <div class="overlay-title failure">ACCESS DENIED — Incorrect Password</div>
     </div>
 
     <div class="overlay-phase" id="phaseServer">
@@ -210,7 +242,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
     <form id="loginForm">
       <div class="field"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
       <div class="field"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
-      <button class="btn-primary" type="submit">Log In</button>
+      <button class="btn-primary" type="submit" aria-live="polite">Log In</button>
       <div class="link-row">
         <button type="button" onclick="switchTab('reset-pane', document.querySelector('.tab-btn'))">Forgot password?</button>
         <span></span>
@@ -313,10 +345,13 @@ function showAccessGranted(name) {
   return new Promise((resolve) => {
     authOverlay.classList.remove('failure-mode');
     authOverlay.classList.add('active');
-    document.getElementById('overlayWelcomeText').textContent = 'WELCOME, ' + (name ? name.split(' ')[0].toUpperCase() : 'BACK');
+    const safeName = name ? name.trim() : '';
+    const displayName = safeName || 'BACK';
+    document.getElementById('overlayGrantedText').textContent = 'ACCESS GRANTED — Welcome, ' + displayName;
+    document.getElementById('overlayWelcomeText').textContent = 'WELCOME, ' + displayName.toUpperCase();
 
     if (reducedMotion) {
-      showPhase('phaseWelcome');
+      showPhase('phaseGranted');
       setTimeout(resolve, 700);
       return;
     }
@@ -325,7 +360,7 @@ function showAccessGranted(name) {
     setTimeout(() => {
       showPhase('phaseWelcome');
       setTimeout(resolve, 1700);
-    }, 800);
+    }, 700);
   });
 }
 
@@ -338,7 +373,7 @@ function showAccessDenied() {
   }
 
   showPhase('phaseDenied');
-  setTimeout(() => showPhase('phaseServer'), 900);
+  setTimeout(() => showPhase('phaseServer'), 800);
 }
 
 function hideAuthOverlay() {
@@ -435,10 +470,16 @@ function handleGoogleSignIn(btn) {
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
+  const emailInput = document.getElementById('loginEmail');
+  const passwordInput = document.getElementById('loginPassword');
+  const email = emailInput.value;
+  const password = passwordInput.value;
   const submitBtn = e.target.querySelector('button[type=submit]');
   submitBtn.disabled = true;
+  submitBtn.classList.add('loading');
+  submitBtn.setAttribute('aria-busy', 'true');
+  emailInput.removeAttribute('aria-invalid');
+  passwordInput.removeAttribute('aria-invalid');
   try {
     const cred = await auth.signInWithEmailAndPassword(email, password);
     // Sync lastLogin + emailVerified — don't block redirect if this fails
@@ -456,6 +497,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     // or provider type is ever revealed.
     showAccessDenied();
     submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+    submitBtn.setAttribute('aria-busy', 'false');
   }
 });
 
@@ -518,4 +561,3 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
 </script>
 </body>
 </html>
-
