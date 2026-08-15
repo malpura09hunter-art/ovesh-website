@@ -1,0 +1,10 @@
+{
+  "name": "ovesh-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serverless API functions for OveshMalpura Cyber Labs (site itself is static HTML/CSS/JS)",
+  "dependencies": {
+    "nodemailer": "^6.9.14",
+    "firebase-admin": "^12.3.1"
+  }
+}

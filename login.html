@@ -181,7 +181,14 @@ auth.onAuthStateChanged(user => {
 // Runs harmlessly on every page load; resolves to null if no redirect occurred.
 auth.getRedirectResult().then(async (result) => {
   if (result && result.user) {
-    await syncGoogleUserDoc(result.user);
+    const isNewUser = await syncGoogleUserDoc(result.user);
+    if (isNewUser) {
+      fetch('/api/send-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: result.user.email, name: result.user.displayName })
+      }).catch(err => console.warn('Could not send welcome email:', err.message));
+    }
     window.location.href = 'dashboard.html';
   }
 }).catch(err => {
@@ -209,7 +216,14 @@ async function handleGoogleSignIn(btn) {
       }
       throw popupErr;
     }
-    await syncGoogleUserDoc(result.user);
+    const isNewUser = await syncGoogleUserDoc(result.user);
+    if (isNewUser) {
+      fetch('/api/send-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: result.user.email, name: result.user.displayName })
+      }).catch(err => console.warn('Could not send welcome email:', err.message));
+    }
     window.location.href = 'dashboard.html';
   } catch (err) {
     showMsg(friendlyError(err), 'error');
@@ -257,6 +271,12 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       role: 'client'
     });
     await cred.user.sendEmailVerification();
+    // Fire-and-forget — don't block the signup redirect on this.
+    fetch('/api/send-welcome', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name })
+    }).catch(err => console.warn('Could not send welcome email:', err.message));
     showMsg('Account created! A verification email has been sent to ' + email + '.', 'success');
     setTimeout(() => window.location.href = 'dashboard.html', 1800);
   } catch (err) {
@@ -267,11 +287,26 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
 document.getElementById('resetForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('resetEmail').value;
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
   try {
-    await auth.sendPasswordResetEmail(email);
-    showMsg('Password reset email sent to ' + email + '. Check your inbox.', 'success');
+    // Sent through our own backend (Zoho SMTP) instead of Firebase's
+    // default mailer — better deliverability, and the link still points
+    // at our own branded reset-password.html.
+    const resp = await fetch('/api/send-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!resp.ok) throw new Error('request-failed');
+    // Always show the same success state regardless of whether the email
+    // exists, to avoid leaking which addresses have accounts.
+    showMsg('If an account exists for ' + email + ', a password reset link has been sent. Check your inbox.', 'success');
+    e.target.reset();
   } catch (err) {
-    showMsg(friendlyError(err), 'error');
+    showMsg('We couldn\'t send that right now. Please try again.', 'error');
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 </script>
