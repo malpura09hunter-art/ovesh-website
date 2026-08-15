@@ -1,11 +1,23 @@
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(
-    Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf8')
-  );
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+function getAdmin() {
+  if (!admin.apps.length) {
+    let raw;
+    try {
+      raw = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64 || '', 'base64').toString('utf8');
+    } catch (e) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_B64 is not valid base64: ' + e.message);
+    }
+    let serviceAccount;
+    try {
+      serviceAccount = JSON.parse(raw);
+    } catch (e) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_B64 did not decode to valid JSON (likely truncated/corrupted during copy-paste): ' + e.message);
+    }
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  }
+  return admin;
 }
 
 let transporter;
@@ -64,7 +76,8 @@ module.exports = async (req, res) => {
   const actionCodeSettings = { url: `${siteUrl}/reset-password.html` };
 
   try {
-    const link = await admin.auth().generatePasswordResetLink(email, actionCodeSettings);
+    const adminSdk = getAdmin();
+    const link = await adminSdk.auth().generatePasswordResetLink(email, actionCodeSettings);
     await getTransporter().sendMail({
       from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
       to: email,
@@ -79,6 +92,6 @@ module.exports = async (req, res) => {
       return;
     }
     console.error('send-reset failed:', err.message);
-    res.status(500).json({ error: 'Could not send reset email' });
+    res.status(500).json({ error: 'Could not send reset email', detail: err.message });
   }
 };
