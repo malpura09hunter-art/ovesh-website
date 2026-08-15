@@ -225,6 +225,90 @@ This is an automated security message from OveshMalpura Cyber Labs Client Portal
 `;
 }
 
+const PROVIDER_DISPLAY_NAMES = {
+  'google.com': 'Google',
+  'microsoft.com': 'Microsoft',
+  'apple.com': 'Apple'
+};
+
+function displayNameForProviders(providerData) {
+  const names = (providerData || [])
+    .map(p => PROVIDER_DISPLAY_NAMES[p?.providerId])
+    .filter(Boolean);
+  if (names.length === 0) return 'a linked account';
+  if (names.length === 1) return names[0];
+  return names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
+}
+
+function oauthAccountHtml(providerName, siteUrl) {
+  return `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:30px 15px;background:#f4f7f5;font-family:Arial,sans-serif;color:#172019;">
+
+<div style="max-width:560px;margin:auto;background:#ffffff;border:1px solid #dfe7e1;border-radius:12px;overflow:hidden;">
+
+<div style="padding:22px 28px;background:#fbfdfb;border-bottom:1px solid #e7ece8;">
+<div style="font-size:13px;font-weight:bold;letter-spacing:1.2px;color:#173c23;">OVESHMALPURA CYBER LABS</div>
+<div style="margin-top:5px;font-size:12px;color:#6b776f;">Client Portal Security</div>
+</div>
+
+<div style="padding:32px 28px;">
+<h1 style="margin:0 0 16px;font-size:24px;color:#172019;">Password reset request</h1>
+
+<p style="font-size:15px;line-height:1.65;color:#465249;">
+We received a request to reset the password for your OveshMalpura Cyber Labs Client Portal account.
+</p>
+
+<p style="font-size:15px;line-height:1.65;color:#465249;">
+This account signs in with <strong>${escapeHtml(providerName)}</strong> and doesn't have a separate password —
+so there's nothing to reset. Please continue signing in using ${escapeHtml(providerName)} instead.
+</p>
+
+<a href="${escapeHtml(siteUrl)}/login.html" style="display:inline-block;background:#176b35;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:13px 22px;border-radius:7px;">
+Go to Client Portal
+</a>
+
+<div style="margin-top:26px;padding-top:20px;border-top:1px solid #e7ece8;">
+<p style="font-size:13px;line-height:1.6;color:#6b776f;">
+If you didn't request this, no action is required — your account is unaffected.
+</p>
+</div>
+
+</div>
+
+<div style="padding:18px 28px;background:#fbfdfb;border-top:1px solid #e7ece8;">
+<p style="font-size:12px;line-height:1.5;color:#7b857e;">
+This is an automated security message from OveshMalpura Cyber Labs Client Portal.
+Please do not reply to this email.
+</p>
+</div>
+
+</div>
+
+</body>
+</html>
+`;
+}
+
+function oauthAccountText(providerName, siteUrl) {
+  return `
+OveshMalpura Cyber Labs
+Client Portal Security
+
+Password reset request
+
+We received a request to reset the password for your OveshMalpura Cyber Labs Client Portal account.
+
+This account signs in with ${providerName} and doesn't have a separate password — so there's nothing to reset.
+Please continue signing in using ${providerName} instead: ${siteUrl}/login.html
+
+If you didn't request this, no action is required — your account is unaffected.
+
+This is an automated security message from OveshMalpura Cyber Labs Client Portal.
+`;
+}
+
 module.exports = async (req, res) => {
 
   res.setHeader('Cache-Control', 'no-store');
@@ -292,7 +376,25 @@ module.exports = async (req, res) => {
       );
 
     if (!isEmailPasswordAccount) {
-      console.log('PASSWORD RESET: account has no password provider — skipping silently');
+      const providerName = displayNameForProviders(user.providerData);
+      console.log('PASSWORD RESET: account has no password provider (' + providerName + ') — sending sign-in method notice instead of a reset link');
+      try {
+        const noticeResult = await sendWithOneRetry(getTransporter(), {
+          from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
+          to: email,
+          replyTo: process.env.ZOHO_USER,
+          subject: 'Password reset request | OveshMalpura Cyber Labs',
+          text: oauthAccountText(providerName, siteUrl),
+          html: oauthAccountHtml(providerName, siteUrl),
+          headers: { 'X-Auto-Response-Suppress': 'All' }
+        });
+        console.log('OAUTH ACCOUNT NOTICE EMAIL ACCEPTED:', noticeResult.messageId);
+      } catch (noticeErr) {
+        // Even if this notice email fails to send, we still return the
+        // same generic success response — never let this leak account
+        // state to the caller, and never treat it as a hard API failure.
+        console.error('OAUTH ACCOUNT NOTICE EMAIL SEND FAILED:', noticeErr.code || noticeErr.message);
+      }
       return res.status(200).json({
         ok: true
       });
