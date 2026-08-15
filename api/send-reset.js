@@ -77,7 +77,18 @@ module.exports = async (req, res) => {
 
   try {
     const adminSdk = getAdmin();
-    const link = await adminSdk.auth().generatePasswordResetLink(email, actionCodeSettings);
+    const rawLink = await adminSdk.auth().generatePasswordResetLink(email, actionCodeSettings);
+
+    // generatePasswordResetLink() returns a link pointing at Firebase's own
+    // hosted action handler (PROJECT.firebaseapp.com/__/auth/action) with
+    // mode/oobCode as query params. Since our reset-password.html already
+    // handles mode+oobCode itself via the client SDK, we don't need
+    // Firebase's hosted handler at all — just pull the oobCode out and
+    // point straight at our own page. This avoids needing to verify a
+    // custom Action URL domain in the Firebase Console.
+    const oobCode = new URL(rawLink).searchParams.get('oobCode');
+    const link = `${siteUrl}/reset-password.html?mode=resetPassword&oobCode=${encodeURIComponent(oobCode)}`;
+
     await getTransporter().sendMail({
       from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
       to: email,
