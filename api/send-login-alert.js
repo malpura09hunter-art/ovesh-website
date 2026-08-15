@@ -64,36 +64,92 @@ function parseDevice(ua) {
 function loginAlertHtml({ name, device, time, ip, resetUrl }) {
   const safeName = escapeHtml(name) || 'there';
   return `
-  <div style="background:#030a03;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
-    <div style="max-width:480px;margin:0 auto;background:#060f06;border:1px solid rgba(0,255,65,0.25);border-radius:10px;padding:32px;">
-      <p style="font-family:monospace;color:#00aa22;letter-spacing:2px;font-size:11px;text-transform:uppercase;margin:0 0 8px;">Security Alert</p>
-      <h1 style="color:#39ff14;font-size:22px;margin:0 0 20px;">New sign-in to your account</h1>
-      <p style="color:#c8ffd4;font-size:15px;line-height:1.6;margin:0 0 20px;">
-        Hi ${safeName}, your OveshMalpura Cyber Labs account was just signed into.
-      </p>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-        <tr>
-          <td style="color:#4a7a52;font-size:13px;padding:6px 0;font-family:monospace;">DEVICE</td>
-          <td style="color:#c8ffd4;font-size:14px;padding:6px 0;text-align:right;">${escapeHtml(device)}</td>
-        </tr>
-        <tr>
-          <td style="color:#4a7a52;font-size:13px;padding:6px 0;font-family:monospace;">TIME</td>
-          <td style="color:#c8ffd4;font-size:14px;padding:6px 0;text-align:right;">${escapeHtml(time)}</td>
-        </tr>
-        <tr>
-          <td style="color:#4a7a52;font-size:13px;padding:6px 0;font-family:monospace;">IP ADDRESS</td>
-          <td style="color:#c8ffd4;font-size:14px;padding:6px 0;text-align:right;">${escapeHtml(ip)}</td>
-        </tr>
-      </table>
-      <p style="color:#c8ffd4;font-size:14px;line-height:1.6;margin:0 0 8px;">
-        Was this you? No action needed.
-      </p>
-      <p style="color:#c8ffd4;font-size:14px;line-height:1.6;margin:0 0 20px;">
-        Wasn't you? Secure your account now:
-      </p>
-      <a href="${escapeHtml(resetUrl)}" style="display:inline-block;background:#ff4455;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:6px;">Reset Your Password</a>
-    </div>
-  </div>`;
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:30px 15px;background:#f4f7f5;font-family:Arial,sans-serif;color:#172019;">
+
+<div style="max-width:560px;margin:auto;background:#ffffff;border:1px solid #dfe7e1;border-radius:12px;overflow:hidden;">
+
+<div style="padding:22px 28px;background:#fbfdfb;border-bottom:1px solid #e7ece8;">
+<div style="font-size:13px;font-weight:bold;letter-spacing:1.2px;color:#173c23;">OVESHMALPURA CYBER LABS</div>
+<div style="margin-top:5px;font-size:12px;color:#6b776f;">Client Portal Security</div>
+</div>
+
+<div style="padding:32px 28px;">
+
+<h1 style="margin:0 0 16px;font-size:24px;color:#172019;">New sign-in to your account</h1>
+
+<p style="font-size:15px;line-height:1.65;color:#465249;">
+Hi ${safeName}, your OveshMalpura Cyber Labs Client Portal account was just signed into. Here are the details:
+</p>
+
+<table style="width:100%;border-collapse:collapse;margin:20px 0;background:#fbfdfb;border:1px solid #e7ece8;border-radius:8px;">
+<tr>
+<td style="padding:12px 16px;font-size:12px;color:#6b776f;letter-spacing:0.5px;border-bottom:1px solid #e7ece8;">DEVICE</td>
+<td style="padding:12px 16px;font-size:14px;color:#172019;text-align:right;border-bottom:1px solid #e7ece8;">${escapeHtml(device)}</td>
+</tr>
+<tr>
+<td style="padding:12px 16px;font-size:12px;color:#6b776f;letter-spacing:0.5px;border-bottom:1px solid #e7ece8;">TIME</td>
+<td style="padding:12px 16px;font-size:14px;color:#172019;text-align:right;border-bottom:1px solid #e7ece8;">${escapeHtml(time)}</td>
+</tr>
+<tr>
+<td style="padding:12px 16px;font-size:12px;color:#6b776f;letter-spacing:0.5px;">IP ADDRESS</td>
+<td style="padding:12px 16px;font-size:14px;color:#172019;text-align:right;">${escapeHtml(ip)}</td>
+</tr>
+</table>
+
+<p style="font-size:15px;line-height:1.65;color:#465249;margin:0 0 4px;">
+<strong>Was this you?</strong> No action needed — you can ignore this email.
+</p>
+
+<p style="font-size:15px;line-height:1.65;color:#465249;margin:16px 0 20px;">
+<strong>Wasn't you?</strong> Secure your account immediately:
+</p>
+
+<a href="${escapeHtml(resetUrl)}" style="display:inline-block;background:#c0293f;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:13px 22px;border-radius:7px;">Secure My Account</a>
+
+<div style="margin-top:26px;padding-top:20px;border-top:1px solid #e7ece8;">
+<p style="font-size:13px;line-height:1.6;color:#6b776f;">
+This alert is sent every time your account is signed into, as a security precaution.
+</p>
+</div>
+
+</div>
+
+<div style="padding:18px 28px;background:#fbfdfb;border-top:1px solid #e7ece8;">
+<p style="font-size:12px;line-height:1.5;color:#7b857e;">
+This is an automated security message from OveshMalpura Cyber Labs Client Portal.
+Please do not reply to this email.
+</p>
+</div>
+
+</div>
+
+</body>
+</html>
+`;
+}
+
+function loginAlertText({ name, device, time, ip, resetUrl }) {
+  return `
+OveshMalpura Cyber Labs
+Client Portal Security
+
+New sign-in to your account
+
+Hi ${name || 'there'}, your OveshMalpura Cyber Labs Client Portal account was just signed into.
+
+Device: ${device}
+Time: ${time}
+IP address: ${ip}
+
+Was this you? No action needed.
+Wasn't you? Secure your account now: ${resetUrl}
+
+This alert is sent every time your account is signed into, as a security precaution.
+
+This is an automated security message from OveshMalpura Cyber Labs Client Portal.
+`;
 }
 
 module.exports = async (req, res) => {
@@ -119,8 +175,11 @@ module.exports = async (req, res) => {
     const result = await sendWithOneRetry(getTransporter(), {
       from: `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
       to: email,
+      replyTo: process.env.ZOHO_USER,
       subject: 'New sign-in to your OveshMalpura Cyber Labs account',
-      html: loginAlertHtml({ name, device, time, ip, resetUrl: `${siteUrl}/login.html` })
+      text: loginAlertText({ name, device, time, ip, resetUrl: `${siteUrl}/login.html` }),
+      html: loginAlertHtml({ name, device, time, ip, resetUrl: `${siteUrl}/login.html` }),
+      headers: { 'X-Auto-Response-Suppress': 'All' }
     });
     console.log('LOGIN ALERT EMAIL ACCEPTED:', result.messageId);
     res.status(200).json({ ok: true });
