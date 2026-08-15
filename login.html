@@ -82,9 +82,115 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 .btn-google.loading .btn-google-label { display: none; }
 .btn-google.loading .spinner { display: block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==================== Auth Status Overlay ==================== */
+.auth-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: #030a03;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.45s;
+}
+.auth-overlay.active {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.overlay-ring {
+  position: absolute; width: 420px; height: 420px; border-radius: 50%;
+  border: 1px solid rgba(0,255,65,0.12);
+  opacity: 0; transform: scale(0.85);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.auth-overlay.active .overlay-ring { opacity: 1; transform: scale(1); }
+.auth-overlay.failure-mode .overlay-ring { border-color: rgba(192,41,63,0.18); }
+.overlay-ring::before {
+  content: ''; position: absolute; inset: -1px; border-radius: 50%;
+  border: 1px solid transparent; border-top-color: rgba(0,255,65,0.35);
+  animation: ringSpin 3.5s linear infinite;
+}
+.auth-overlay.failure-mode .overlay-ring::before { border-top-color: rgba(192,41,63,0.4); }
+@keyframes ringSpin { to { transform: rotate(360deg); } }
+.overlay-content { position: relative; text-align: center; max-width: 440px; padding: 0 24px; }
+.overlay-phase {
+  display: none; opacity: 0; transform: translateY(8px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.overlay-phase.showing { display: block; opacity: 1; transform: translateY(0); }
+.overlay-badge {
+  width: 64px; height: 64px; margin: 0 auto 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle, rgba(0,255,65,0.14), rgba(0,255,65,0.02));
+  border: 1px solid rgba(0,255,65,0.3);
+  box-shadow: 0 0 30px rgba(0,255,65,0.2);
+}
+.overlay-badge.failure { background: radial-gradient(circle, rgba(192,41,63,0.14), rgba(192,41,63,0.02)); border-color: rgba(192,41,63,0.3); box-shadow: 0 0 30px rgba(192,41,63,0.15); }
+.overlay-badge svg { width: 28px; height: 28px; stroke: #39ff14; }
+.overlay-badge.failure svg { stroke: #e8556b; }
+.overlay-title {
+  font-family: 'Orbitron', 'Segoe UI', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: 3px;
+  color: #39ff14; margin-bottom: 10px; text-shadow: 0 0 18px rgba(0,255,65,0.35);
+}
+.overlay-title.failure { color: #e8556b; text-shadow: 0 0 18px rgba(192,41,63,0.3); }
+.overlay-server {
+  font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 2px;
+  color: #6b8a70; margin-bottom: 6px; text-transform: uppercase;
+}
+.overlay-welcome {
+  font-family: 'Orbitron', 'Segoe UI', sans-serif; font-weight: 600; font-size: 19px; letter-spacing: 1.5px;
+  color: #c8ffd4; margin-bottom: 14px;
+}
+.overlay-sub {
+  font-family: 'Rajdhani', sans-serif; font-size: 15px; color: #7fa389; line-height: 1.6; margin-bottom: 4px;
+}
+.overlay-sub.dim { color: #55705c; font-size: 14px; }
+.overlay-actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.overlay-btn {
+  font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
+  padding: 11px 22px; border-radius: 7px; cursor: pointer; border: 1px solid rgba(0,255,65,0.3);
+  background: transparent; color: #c8ffd4; transition: all 0.2s ease;
+}
+.overlay-btn:hover { background: rgba(0,255,65,0.08); border-color: rgba(0,255,65,0.5); }
+.overlay-btn.primary { background: #176b35; border-color: #176b35; color: #fff; }
+.overlay-btn.primary:hover { background: #1d8a44; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-overlay, .overlay-ring, .overlay-phase { transition-duration: 0.15s !important; animation: none !important; }
+}
 </style>
 </head>
 <body>
+
+<div class="auth-overlay" id="authOverlay" role="status" aria-live="polite">
+  <div class="overlay-ring"></div>
+  <div class="overlay-content">
+
+    <div class="overlay-phase" id="phaseGranted">
+      <div class="overlay-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="overlay-title">ACCESS GRANTED</div>
+    </div>
+
+    <div class="overlay-phase" id="phaseWelcome">
+      <div class="overlay-welcome" id="overlayWelcomeText">WELCOME</div>
+      <div class="overlay-sub">Welcome to your secure client workspace.</div>
+      <div class="overlay-sub dim">Your work. Your account. Your secure space.</div>
+    </div>
+
+    <div class="overlay-phase" id="phaseDenied">
+      <div class="overlay-badge failure"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>
+      <div class="overlay-title failure">ACCESS DENIED</div>
+    </div>
+
+    <div class="overlay-phase" id="phaseServer">
+      <div class="overlay-server">Ovesh Security Server</div>
+      <div class="overlay-sub">Authentication could not be verified.</div>
+      <div class="overlay-sub dim">Please verify your credentials and try again.</div>
+      <div class="overlay-actions">
+        <button type="button" class="overlay-btn primary" id="overlayTryAgain">Try Again</button>
+        <button type="button" class="overlay-btn" id="overlayForgotPw">Forgot Password?</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <a href="index.html" class="logo-link">← OVESH MALPURA CYBER LABS</a>
 
@@ -191,6 +297,62 @@ function sendLoginAlert(user) {
   }).catch(err => console.warn('Could not send login alert:', err.message));
 }
 
+/* ==================== Auth Status Overlay control ==================== */
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const authOverlay = document.getElementById('authOverlay');
+
+function showPhase(id) {
+  document.querySelectorAll('.overlay-phase').forEach(p => p.classList.remove('showing'));
+  document.getElementById(id).classList.add('showing');
+}
+
+// Purely a post-authentication visual transition — Firebase has already
+// confirmed success by the time this runs; it never gates or delays the
+// actual auth call itself.
+function showAccessGranted(name) {
+  return new Promise((resolve) => {
+    authOverlay.classList.remove('failure-mode');
+    authOverlay.classList.add('active');
+    document.getElementById('overlayWelcomeText').textContent = 'WELCOME, ' + (name ? name.split(' ')[0].toUpperCase() : 'BACK');
+
+    if (reducedMotion) {
+      showPhase('phaseWelcome');
+      setTimeout(resolve, 700);
+      return;
+    }
+
+    showPhase('phaseGranted');
+    setTimeout(() => {
+      showPhase('phaseWelcome');
+      setTimeout(resolve, 1700);
+    }, 800);
+  });
+}
+
+function showAccessDenied() {
+  authOverlay.classList.add('active', 'failure-mode');
+
+  if (reducedMotion) {
+    showPhase('phaseServer');
+    return;
+  }
+
+  showPhase('phaseDenied');
+  setTimeout(() => showPhase('phaseServer'), 900);
+}
+
+function hideAuthOverlay() {
+  authOverlay.classList.remove('active');
+}
+
+document.getElementById('overlayTryAgain').addEventListener('click', () => {
+  hideAuthOverlay();
+});
+document.getElementById('overlayForgotPw').addEventListener('click', () => {
+  hideAuthOverlay();
+  switchTab('reset-pane', document.querySelector('.tab-btn'));
+});
+
 // Redirect if already logged in
 auth.onAuthStateChanged(user => {
   if (user) window.location.href = 'dashboard.html';
@@ -211,6 +373,7 @@ auth.getRedirectResult().then(async (result) => {
       }).catch(err => console.warn('Could not send welcome email:', err.message));
     }
     sendLoginAlert(result.user);
+    await showAccessGranted(result.user.displayName);
     window.location.href = 'dashboard.html';
   }
 }).catch(err => {
@@ -254,6 +417,7 @@ async function handleOAuthSignIn(providerKey, btn) {
       }).catch(err => console.warn('Could not send welcome email:', err.message));
     }
     sendLoginAlert(result.user);
+    await showAccessGranted(result.user.displayName);
     window.location.href = 'dashboard.html';
   } catch (err) {
     showMsg(friendlyError(err), 'error');
@@ -283,9 +447,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       emailVerified: cred.user.emailVerified
     }, { merge: true }).catch(err => console.warn('Could not sync lastLogin:', err.message));
     sendLoginAlert(cred.user);
+    await showAccessGranted(cred.user.displayName);
     window.location.href = 'dashboard.html';
   } catch (err) {
-    showMsg(friendlyError(err), 'error');
+    // A real, failed authentication attempt — show the security-gateway
+    // rejection experience. The message stays fully generic regardless of
+    // the underlying Firebase error, so nothing about account existence
+    // or provider type is ever revealed.
+    showAccessDenied();
     submitBtn.disabled = false;
   }
 });
