@@ -29,11 +29,37 @@ function getTransporter() {
       auth: {
         user: process.env.ZOHO_USER,
         pass: process.env.ZOHO_APP_PASSWORD
-      }
+      },
+      // Fail fast instead of hanging until Vercel's function timeout kills
+      // the request with no email sent and no clean error surfaced.
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000
     });
   }
 
   return transporter;
+}
+
+// Transient connection-level errors are worth one retry (a fresh SMTP
+// connection can succeed where a flaky one failed). Auth failures,
+// rejected recipients, and config errors are NOT retried — retrying those
+// just delays a real failure and risks duplicate sends once the underlying
+// problem is eventually fixed.
+const RETRYABLE_ERROR_CODES = new Set([
+  'ETIMEDOUT', 'ECONNECTION', 'ESOCKET', 'ECONNRESET', 'EDNS'
+]);
+
+async function sendWithOneRetry(transport, mailOptions) {
+  try {
+    return await transport.sendMail(mailOptions);
+  } catch (err) {
+    if (RETRYABLE_ERROR_CODES.has(err.code)) {
+      console.warn('ZOHO SMTP transient failure, retrying once:', err.code);
+      return await transport.sendMail(mailOptions);
+    }
+    throw err;
+  }
 }
 
 function escapeHtml(value) {
@@ -222,6 +248,8 @@ module.exports = async (req, res) => {
     });
   }
 
+  console.log('PASSWORD RESET REQUEST RECEIVED');
+
   const siteUrl = (
     process.env.SITE_URL ||
     'https://malpuraovesh.vercel.app'
@@ -287,6 +315,8 @@ module.exports = async (req, res) => {
       throw new Error('Firebase did not return reset code');
     }
 
+    console.log('FIREBASE RESET CREDENTIAL GENERATED');
+
     /*
      * Your branded reset page.
      */
@@ -298,8 +328,10 @@ module.exports = async (req, res) => {
     /*
      * ZOHO IS THE ONLY EMAIL SENDER.
      */
+    console.log('ZOHO SMTP SEND STARTED');
+
     const result =
-      await getTransporter().sendMail({
+      await sendWithOneRetry(getTransporter(), {
 
         from:
           `"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,
@@ -325,7 +357,7 @@ module.exports = async (req, res) => {
       });
 
     console.log(
-      'PASSWORD RESET SENT VIA ZOHO:',
+      'ZOHO SMTP MESSAGE ACCEPTED:',
       result.messageId
     );
 
@@ -337,8 +369,8 @@ module.exports = async (req, res) => {
   } catch (error) {
 
     console.error(
-      'PASSWORD RESET ERROR:',
-      error
+      'PASSWORD RESET SEND FAILED:',
+      error.code || error.message
     );
 
     return res.status(500).json({
