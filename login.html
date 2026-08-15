@@ -172,6 +172,14 @@ function setFormsDisabled(disabled) {
   document.querySelectorAll('button, input').forEach(el => el.disabled = disabled);
 }
 
+function sendLoginAlert(user) {
+  fetch('/api/send-login-alert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: user.email, name: user.displayName, userAgent: navigator.userAgent })
+  }).catch(err => console.warn('Could not send login alert:', err.message));
+}
+
 // Redirect if already logged in
 auth.onAuthStateChanged(user => {
   if (user) window.location.href = 'dashboard.html';
@@ -189,6 +197,7 @@ auth.getRedirectResult().then(async (result) => {
         body: JSON.stringify({ email: result.user.email, name: result.user.displayName })
       }).catch(err => console.warn('Could not send welcome email:', err.message));
     }
+    sendLoginAlert(result.user);
     window.location.href = 'dashboard.html';
   }
 }).catch(err => {
@@ -224,6 +233,7 @@ async function handleGoogleSignIn(btn) {
         body: JSON.stringify({ email: result.user.email, name: result.user.displayName })
       }).catch(err => console.warn('Could not send welcome email:', err.message));
     }
+    sendLoginAlert(result.user);
     window.location.href = 'dashboard.html';
   } catch (err) {
     showMsg(friendlyError(err), 'error');
@@ -246,6 +256,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
       emailVerified: cred.user.emailVerified
     }, { merge: true }).catch(err => console.warn('Could not sync lastLogin:', err.message));
+    sendLoginAlert(cred.user);
     window.location.href = 'dashboard.html';
   } catch (err) {
     showMsg(friendlyError(err), 'error');
