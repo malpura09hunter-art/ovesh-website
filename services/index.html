@@ -93,18 +93,28 @@ nav {
   text-shadow: var(--glow);
   letter-spacing: 3px;
 }
-.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links { display: flex; gap: 10px; list-style: none; align-items: center; }
 .nav-links a {
   color: var(--muted);
   text-decoration: none;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   letter-spacing: 2px;
-  transition: color 0.3s, text-shadow 0.3s;
+  padding: 8px 14px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+  display: inline-block;
 }
-.nav-links a:hover { color: var(--neon); text-shadow: var(--glow); }
+.nav-links a:hover { color: var(--neon); background: rgba(0,255,65,0.06); border-color: var(--border); box-shadow: 0 0 12px rgba(0,255,65,0.15); }
+.nav-links a:active { transform: scale(0.96); }
+.nav-links a:focus-visible { outline: 2px solid var(--neon3); outline-offset: 2px; }
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
 .hamburger span { width: 25px; height: 2px; background: var(--neon); transition: 0.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a { transition-duration: 0.01ms !important; }
+  .nav-links a:hover, .nav-links a:active { transform: none !important; }
+}
 
 /* HERO */
 .hero {
