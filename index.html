@@ -184,7 +184,7 @@ h1 span { color: var(--neon); text-shadow: var(--glow); }
 .hero-btns { display: flex; gap: 16px; margin-top: 40px; flex-wrap: wrap; }
 .btn-primary {
   padding: 13px 32px;
-  background: linear-gradient(135deg, var(--neon3), var(--neon2));
+  background: linear-gradient(135deg, #baffc4 0%, var(--neon3) 22%, var(--neon2) 100%);
   color: #021002;
   font-family: 'Orbitron', monospace;
   font-weight: 700;
@@ -195,16 +195,16 @@ h1 span { color: var(--neon); text-shadow: var(--glow); }
   border: none; cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease, background 0.25s ease;
-  box-shadow: var(--glow);
+  box-shadow: var(--glow-strong), inset 0 1px 0 rgba(255,255,255,0.35);
 }
-.btn-primary:hover { background: #fff; box-shadow: var(--glow-strong); transform: translateY(-2px); }
+.btn-primary:hover { background: linear-gradient(135deg, #ffffff 0%, #d6ffdb 30%, var(--neon3) 100%); box-shadow: var(--glow-strong), inset 0 1px 0 rgba(255,255,255,0.5); transform: translateY(-2px); }
 .btn-primary:active { transform: translateY(0) scale(0.97); box-shadow: var(--glow); }
 .btn-primary:focus-visible, .btn-outline:focus-visible, .btn-analyze:focus-visible, .social-btn:focus-visible {
   outline: 2px solid var(--neon3); outline-offset: 3px;
 }
 .btn-outline {
   padding: 13px 32px;
-  background: rgba(0,255,65,0.04);
+  background: rgba(0,255,65,0.09);
   color: var(--neon);
   font-family: 'Orbitron', monospace;
   font-weight: 700;
@@ -216,8 +216,9 @@ h1 span { color: var(--neon); text-shadow: var(--glow); }
   cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease, background 0.25s ease;
+  box-shadow: 0 0 14px rgba(0,255,65,0.12);
 }
-.btn-outline:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); transform: translateY(-2px); }
+.btn-outline:hover { background: rgba(0,255,65,0.18); box-shadow: var(--glow); transform: translateY(-2px); }
 .btn-outline:active { transform: translateY(0) scale(0.97); }
 @media (prefers-reduced-motion: reduce) {
   .btn-primary, .btn-outline, .btn-analyze, .social-btn { transition-duration: 0.01ms !important; }
@@ -513,7 +514,7 @@ h2::after {
 .btn-analyze {
   margin-top: 28px;
   padding: 12px 36px;
-  background: linear-gradient(135deg, var(--neon3), var(--neon2));
+  background: linear-gradient(135deg, #baffc4 0%, var(--neon3) 22%, var(--neon2) 100%);
   color: #021002;
   font-family: 'Orbitron', monospace;
   font-size: 0.75rem;
@@ -521,6 +522,7 @@ h2::after {
   letter-spacing: 3px;
   border: none; cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,0.35);
   transition: all 0.3s;
 }
 .btn-analyze:hover { background: #fff; box-shadow: var(--glow); }
