@@ -3,8 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Client Login | OveshMalpura Cyber Labs</title>
-<meta name="robots" content="noindex, follow">
+<title>Client Login | Ovesh Malpura Cyber Labs — Client Portal</title>
+<meta name="description" content="Sign in to the official Ovesh Malpura Cyber Labs Client Portal. Secure client login for accessing your account, service requests, and project updates.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://malpuraovesh.vercel.app/login.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Client Login | Ovesh Malpura Cyber Labs — Client Portal">
+<meta property="og:description" content="Official secure Client Portal for Ovesh Malpura Cyber Labs. Log in to access your account and service requests.">
+<meta property="og:url" content="https://malpuraovesh.vercel.app/login.html">
+<meta property="og:image" content="https://malpuraovesh.vercel.app/ovesh-malpura.jpg">
+<meta property="og:site_name" content="Ovesh Malpura Cyber Labs">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Client Login | Ovesh Malpura Cyber Labs — Client Portal">
+<meta name="twitter:description" content="Official secure Client Portal for Ovesh Malpura Cyber Labs. Log in to access your account and service requests.">
+<meta name="twitter:image" content="https://malpuraovesh.vercel.app/ovesh-malpura.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Client Login | Ovesh Malpura Cyber Labs",
+  "description": "Official secure Client Portal for Ovesh Malpura Cyber Labs. Log in to access your account and service requests.",
+  "url": "https://malpuraovesh.vercel.app/login.html",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Ovesh Malpura",
+    "url": "https://malpuraovesh.vercel.app"
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -240,8 +266,8 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   <!-- LOGIN -->
   <div class="pane active" id="login-pane">
     <form id="loginForm">
-      <div class="field"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
-      <div class="field"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
+      <div class="field"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
+      <div class="field"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
       <button class="btn-primary" type="submit" aria-live="polite">Log In</button>
       <div class="link-row">
         <button type="button" onclick="switchTab('reset-pane', document.querySelector('.tab-btn'))">Forgot password?</button>
@@ -264,9 +290,9 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   <!-- SIGNUP -->
   <div class="pane" id="signup-pane">
     <form id="signupForm">
-      <div class="field"><label>Full Name</label><input type="text" id="signupName" required autocomplete="name"></div>
-      <div class="field"><label>Email</label><input type="email" id="signupEmail" required autocomplete="email"></div>
-      <div class="field"><label>Password (min 6 characters)</label><input type="password" id="signupPassword" required minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label for="signupName">Full Name</label><input type="text" id="signupName" required autocomplete="name"></div>
+      <div class="field"><label for="signupEmail">Email</label><input type="email" id="signupEmail" required autocomplete="email"></div>
+      <div class="field"><label for="signupPassword">Password (min 6 characters)</label><input type="password" id="signupPassword" required minlength="6" autocomplete="new-password"></div>
       <button class="btn-primary" type="submit">Create Account</button>
     </form>
     <div class="divider-row"><span>OR</span></div>
@@ -286,7 +312,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   <div class="pane" id="reset-pane">
     <div class="eyebrow" style="margin-bottom:16px;">We'll email you a reset link</div>
     <form id="resetForm">
-      <div class="field"><label>Email</label><input type="email" id="resetEmail" required autocomplete="email"></div>
+      <div class="field"><label for="resetEmail">Email</label><input type="email" id="resetEmail" required autocomplete="email"></div>
       <button class="btn-primary" type="submit">Send Reset Link</button>
       <div class="link-row"><button type="button" onclick="switchTab('login-pane', document.querySelector('.tab-btn'))">← Back to login</button><span></span></div>
     </form>
