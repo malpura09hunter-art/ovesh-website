@@ -194,10 +194,14 @@ h1 span { color: var(--neon); text-shadow: var(--glow); }
   text-transform: uppercase;
   border: none; cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  transition: all 0.3s;
+  transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease, background 0.25s ease;
   box-shadow: var(--glow);
 }
 .btn-primary:hover { background: #fff; box-shadow: var(--glow-strong); transform: translateY(-2px); }
+.btn-primary:active { transform: translateY(0) scale(0.97); box-shadow: var(--glow); }
+.btn-primary:focus-visible, .btn-outline:focus-visible, .btn-analyze:focus-visible, .social-btn:focus-visible {
+  outline: 2px solid var(--neon3); outline-offset: 3px;
+}
 .btn-outline {
   padding: 13px 32px;
   background: transparent;
@@ -211,9 +215,14 @@ h1 span { color: var(--neon); text-shadow: var(--glow); }
   border: 1px solid var(--neon);
   cursor: pointer;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  transition: all 0.3s;
+  transition: transform 0.25s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease, background 0.25s ease;
 }
 .btn-outline:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); transform: translateY(-2px); }
+.btn-outline:active { transform: translateY(0) scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary, .btn-outline, .btn-analyze, .social-btn { transition-duration: 0.01ms !important; }
+  .btn-primary:hover, .btn-outline:hover, .btn-primary:active, .btn-outline:active { transform: none !important; }
+}
 
 /* PROFILE IMAGE */
 .hero-image { flex-shrink: 0; position: relative; }
@@ -515,6 +524,7 @@ h2::after {
   transition: all 0.3s;
 }
 .btn-analyze:hover { background: #fff; box-shadow: var(--glow); }
+.btn-analyze:active { transform: scale(0.97); }
 .disclaimer {
   background: rgba(0,255,65,0.04);
   border: 1px solid rgba(0,255,65,0.2);
@@ -648,7 +658,8 @@ h2::after {
   transition: all 0.3s;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
 }
-.social-btn:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,65,0.07); box-shadow: var(--glow); }
+.social-btn:hover { border-color: var(--neon); color: var(--neon); background: rgba(0,255,65,0.07); box-shadow: var(--glow); transform: translateY(-1px); }
+.social-btn:active { transform: translateY(0) scale(0.98); }
 .social-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 .contact-form input, .contact-form textarea {
   width: 100%;
