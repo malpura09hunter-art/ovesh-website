@@ -89,6 +89,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 .btn-primary:hover { background: var(--neon3); box-shadow: var(--glow); transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(1px) scale(0.995); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary:focus-visible, .btn-google:focus-visible, .tab-btn:focus-visible, .overlay-btn:focus-visible { outline: 2px solid var(--neon3); outline-offset: 2px; }
 .btn-primary.loading { color: transparent; cursor: wait; }
 .btn-primary.loading::before { content: ''; position: absolute; left: 50%; top: 50%; width: 17px; height: 17px; margin: -9px 0 0 -9px; border: 2px solid rgba(2,16,2,0.25); border-top-color: #021002; border-radius: 50%; animation: spin 0.7s linear infinite; }
 .link-row { display: flex; justify-content: space-between; margin-top: 14px; font-size: 14px; }
