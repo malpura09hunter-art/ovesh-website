@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn(){ return request.auth != null; }
+    function admin(){ return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function owner(){ return signedIn() && resource.data.ownerUid == request.auth.uid; }
+    function newOwner(){ return signedIn() && request.resource.data.ownerUid == request.auth.uid; }
+    match /cloud_projects/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_web/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_files/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_clients/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_catalogs/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_activity/{id} { allow read: if owner()||admin(); allow create: if newOwner()&&admin(); allow update,delete: if admin(); }
+    match /cloud_trash/{id} { allow read,delete: if owner()||admin(); allow create: if newOwner()&&admin(); allow update: if owner()||admin(); }
+    match /cloud_shares/{id} { allow read,write: if false; }
+    match /{document=**} { allow read,write: if false; }
+  }
+}
