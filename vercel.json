@@ -1,4 +1,9 @@
 {
+  "rewrites": [
+    { "source": "/ovesh", "destination": "/oveshcloud/index.html" },
+    { "source": "/ovesh/", "destination": "/oveshcloud/index.html" },
+    { "source": "/ovesh/:path*", "destination": "/oveshcloud/:path*" }
+  ],
   "headers": [
     {
       "source": "/login.html",
