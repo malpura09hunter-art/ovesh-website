@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /oveshcloud/{uid}/{fileName=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data != null;
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}
