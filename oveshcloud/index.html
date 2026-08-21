@@ -1,32 +1,62 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="theme-color" content="#0b1020">
-<title>Ovesh Cloud — Your private cloud</title>
-<link rel="stylesheet" href="./cloud.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description" content="Ovesh Cloud — a simple, elegant private cloud workspace.">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Ovesh Cloud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./cloud.css">
 </head>
 <body>
-<div id="app" class="app">
-  <aside class="side">
-    <div class="brand"><div class="logo">OC</div><div><b>Ovesh Cloud</b><span>Personal cloud</span></div></div>
-    <nav id="nav">
-      <button class="active" data-view="home">⌂ <span>Overview</span></button>
-      <button data-view="files">◫ <span>My Files</span></button>
-      <button data-view="recent">◷ <span>Recent</span></button>
-      <button data-view="trash">⌫ <span>Trash</span></button>
-    </nav>
-    <div class="side-storage"><div class="eyebrow">STORAGE</div><div id="sideUsage">0 B of 5 GB</div><div class="storage-bar"><i id="sideBar"></i></div><small>Cloudflare R2 storage</small></div>
-  </aside>
-  <main>
-    <header class="top"><div>OVESH CLOUD / <strong id="crumb">Overview</strong></div><input id="globalSearch" class="search" placeholder="Search files…"><div id="avatar" class="avatar">OC</div></header>
-    <div id="content" class="content"></div>
-  </main>
-</div>
-<div id="modal" class="modal hidden"></div>
-<div id="toast" class="toast hidden"></div>
-<script src="./cloud.js"></script>
+  <div id="app" class="app">
+    <aside class="sidebar" aria-label="Ovesh Cloud navigation">
+      <a class="brand" href="./" aria-label="Ovesh Cloud home">
+        <span class="brand-mark">O</span>
+        <span class="brand-copy"><strong>Ovesh Cloud</strong><small>Your cloud, simplified.</small></span>
+      </a>
+      <button class="new-button" id="newButton"><span>＋</span> New</button>
+      <nav id="nav" class="nav">
+        <button class="nav-item active" data-view="home"><span>⌂</span><b>Home</b></button>
+        <button class="nav-item" data-view="files"><span>▱</span><b>My Files</b></button>
+        <button class="nav-item" data-view="recent"><span>◷</span><b>Recent</b></button>
+        <button class="nav-item" data-view="favorites"><span>☆</span><b>Favorites</b></button>
+        <button class="nav-item" data-view="trash"><span>⌫</span><b>Trash</b></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="storage-card">
+          <div class="storage-head"><span>Storage</span><strong id="sidePercent">0%</strong></div>
+          <div class="storage-bar"><i id="sideBar"></i></div>
+          <div id="sideUsage" class="storage-usage">0 B of 5 GB</div>
+          <small>Powered by Cloudflare R2</small>
+        </div>
+        <div class="workspace-pill"><span class="status-dot"></span><span>Private workspace</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">O</span><strong>Ovesh Cloud</strong></div>
+        <div class="breadcrumb"><span>Ovesh Cloud</span><i>/</i><strong id="crumb">Home</strong></div>
+        <label class="search-wrap" aria-label="Search files">
+          <span>⌕</span><input id="globalSearch" autocomplete="off" placeholder="Search files…">
+        </label>
+        <button class="icon-button" id="refreshButton" title="Refresh" aria-label="Refresh">↻</button>
+        <div class="profile-dot" aria-label="Ovesh Cloud workspace">O</div>
+      </header>
+
+      <div class="content" id="content"></div>
+    </main>
+  </div>
+
+  <div id="dropzone" class="dropzone hidden"><div class="drop-card"><span class="drop-icon">↑</span><h2>Drop files to upload</h2><p>Release anywhere to add them to Ovesh Cloud.</p></div></div>
+  <div id="modal" class="modal hidden"></div>
+  <div id="toast" class="toast hidden"></div>
+  <input id="fileInput" type="file" multiple hidden>
+  <script src="./cloud.js"></script>
 </body>
 </html>
