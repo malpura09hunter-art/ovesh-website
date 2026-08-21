@@ -2,9 +2,11 @@
   "name": "ovesh-website",
   "version": "1.0.0",
   "private": true,
-  "description": "Serverless API functions for OveshMalpura Cyber Labs (site itself is static HTML/CSS/JS)",
+  "description": "Ovesh Malpura Cyber Labs static site with Ovesh Cloud storage APIs",
   "dependencies": {
     "nodemailer": "^6.9.14",
-    "firebase-admin": "^12.3.1"
+    "firebase-admin": "^12.3.1",
+    "@aws-sdk/client-s3": "^3.848.0",
+    "@aws-sdk/s3-request-presigner": "^3.848.0"
   }
 }
