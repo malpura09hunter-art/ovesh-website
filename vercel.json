@@ -2,10 +2,23 @@
   "rewrites": [
     { "source": "/ovesh", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh/", "destination": "/oveshcloud/index.html" },
-    { "source": "/ovesh/:path*", "destination": "/oveshcloud/:path*" },
     { "source": "/oveshcloud", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud/", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/:path*", "destination": "/oveshcloud/index.html" }
+    { "source": "/oveshcloud/dashboard", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/college", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/college/projects", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/college/presentations", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/college/websites", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/college/files", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/projects", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/web-projects", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/files", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/clients", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/catalogs", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/presentations", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/security", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/activity", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/trash", "destination": "/oveshcloud/index.html" }
   ],
   "headers": [
     {
