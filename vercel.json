@@ -2,7 +2,10 @@
   "rewrites": [
     { "source": "/ovesh", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh/", "destination": "/oveshcloud/index.html" },
-    { "source": "/ovesh/:path*", "destination": "/oveshcloud/:path*" }
+    { "source": "/ovesh/:path*", "destination": "/oveshcloud/:path*" },
+    { "source": "/oveshcloud", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/:path*", "destination": "/oveshcloud/index.html" }
   ],
   "headers": [
     {
