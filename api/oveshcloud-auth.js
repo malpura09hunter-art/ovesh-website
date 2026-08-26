@@ -1,4 +1,14 @@
 import crypto from 'crypto';
+import admin from 'firebase-admin';
+
+function firebaseAdmin() {
+  if (!admin.apps.length) {
+    const raw = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64 || '', 'base64').toString('utf8');
+    if (!raw) throw new Error('Firebase service account is not configured');
+    admin.initializeApp({ credential: admin.credential.cert(JSON.parse(raw)) });
+  }
+  return admin;
+}
 
 function detectOS(ua = '') {
   if (/Windows NT 10\.0/i.test(ua)) return 'Windows 10/11';
@@ -42,9 +52,31 @@ export default async function handler(req, res) {
   const signature = crypto.createHmac('sha256', sessionSecret).update(payload).digest('base64url');
   const token = `${payload}.${signature}`;
 
+  // Mint a Firebase custom token so the browser can establish a real
+  // Firebase Auth session for the fixed Cloud admin UID. This is what
+  // Firestore/Storage security rules and cloud.js's onAuthStateChanged
+  // gate actually check — without it, login "succeeds" visually but the
+  // real command-center data/storage never unlocks. Failure here must
+  // NEVER block login itself; it degrades to a clear front-end notice.
+  let customToken = null;
+  let customTokenError = null;
+  const adminUid = process.env.OVESH_CLOUD_ADMIN_UID;
+  if (!adminUid) {
+    customTokenError = 'OVESH_CLOUD_ADMIN_UID is not configured in Vercel';
+  } else {
+    try {
+      const app = firebaseAdmin();
+      customToken = await app.auth().createCustomToken(adminUid);
+    } catch (e) {
+      customTokenError = e.message || 'Failed to mint Firebase session token';
+    }
+  }
+
   return res.status(200).json({
     ok: true,
     token,
+    customToken,
+    customTokenError,
     security: {
       timestamp,
       ip,
