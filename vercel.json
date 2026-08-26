@@ -4,7 +4,8 @@
     { "source": "/ovesh/", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud/", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/dashboard", "destination": "/oveshcloud/index.html" },
+    { "source": "/oveshcloud/dashboard", "destination": "/oveshcloud/workspace.html" },
+    { "source": "/oveshcloud/workspace", "destination": "/oveshcloud/workspace.html" },
     { "source": "/oveshcloud/college", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud/college/projects", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud/college/presentations", "destination": "/oveshcloud/index.html" },
@@ -21,6 +22,12 @@
     { "source": "/oveshcloud/trash", "destination": "/oveshcloud/index.html" }
   ],
   "headers": [
+    {
+      "source": "/oveshcloud/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    },
     {
       "source": "/login.html",
       "headers": [
