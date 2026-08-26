@@ -20,23 +20,7 @@ function detectBrowser(ua = '') {
 }
 
 function detectDevice(ua = '') {
-  if (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) return 'Mobile / Tablet';
-  return 'Desktop / Laptop';
-}
-
-async function lookupISP(ip) {
-  if (!ip || ip === '::1' || /^127\./.test(ip)) return null;
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
-    const r = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data?.success === false ? null : (data?.connection?.isp || data?.connection?.org || null);
-  } catch (_) {
-    return null;
-  }
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? 'Mobile / Tablet' : 'Desktop / Laptop';
 }
 
 export default async function handler(req, res) {
@@ -48,9 +32,10 @@ export default async function handler(req, res) {
   if (!p) return res.status(500).json({ ok: false, error: 'OVESH_CLOUD_PASSWORD is not configured in Vercel' });
   if (username !== u || password !== p) return res.status(401).json({ ok: false, error: 'ACCESS DENIED' });
 
+  // Do not wait for third-party IP/ISP services during authentication.
+  // The client security panel loads network information independently after login.
   const ip = (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || '').toString().split(',')[0].trim() || null;
   const ua = req.headers['user-agent'] || '';
-  const isp = await lookupISP(ip);
   const timestamp = new Date().toISOString();
   const sessionSecret = process.env.OVESH_CLOUD_SESSION_SECRET || p;
   const payload = Buffer.from(JSON.stringify({ u, iat: Date.now(), nonce: crypto.randomBytes(16).toString('hex') })).toString('base64url');
@@ -63,7 +48,7 @@ export default async function handler(req, res) {
     security: {
       timestamp,
       ip,
-      isp: isp || 'Not available',
+      isp: 'Loading…',
       os: detectOS(ua),
       browser: detectBrowser(ua),
       device: detectDevice(ua),
