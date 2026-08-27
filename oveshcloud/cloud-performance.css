@@ -1,0 +1,29 @@
+/* OVESH CLOUD™ performance layer
+   Keeps the premium visual language while reducing GPU-heavy effects. */
+
+/* Large backdrop blurs are expensive during scrolling and navigation. */
+.login-panel,.security-modal,.welcome-card,.hero-card,.metric,.project-card,.activity-card,.storage-card,.pipeline,.health-card{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.sidebar,.topbar{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.scene-glow{filter:blur(70px)}
+.security-backdrop{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+/* Keep hover feedback, but avoid expensive movement/repaint effects. */
+.project-card:hover{transform:none}
+.primary-btn:hover{transform:none}
+
+/* Don't animate hidden/offscreen decorative layers. */
+.hidden .orbit,.hidden .welcome-aura,.hidden .hero-core:after{animation:none!important}
+
+/* Reduce unnecessary paint work while scrolling. */
+.sidebar,.topbar,.page{contain:layout style}
+
+/* Respect system reduced-motion and make the app calm on low-power devices. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}
+}
+
+/* Mobile devices benefit most from removing large blur surfaces. */
+@media (max-width:900px){
+  .login-panel,.security-modal,.welcome-card,.hero-card,.metric,.project-card,.activity-card,.storage-card,.pipeline,.health-card,.sidebar,.topbar{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .scene-glow{filter:blur(45px)}
+}
