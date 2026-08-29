@@ -1,17 +1,16 @@
-/* OVESH CLOUD — College session bridge
- * College is a child workspace of the authenticated Cloud app.
- * It must re-render as soon as the shared Firebase auth session becomes available.
- */
+/* OVESH CLOUD — College session bridge */
 (function(){
   'use strict';
   function boot(){
     if(!window.firebase || !firebase.auth) return setTimeout(boot,250);
     firebase.auth().onAuthStateChanged(function(user){
-      window.OVESH_COLLEGE_USER = user || null;
-      if(user && typeof window.renderCollegeLive === 'function') {
-        try { window.renderCollegeLive(); } catch(e) { console.error('College session refresh failed',e); }
+      window.OVESH_COLLEGE_USER=user||null;
+      if(user){
+        // college-live.js owns the renderer inside a closure; re-trigger its existing nav handler.
+        var btn=document.querySelector('#nav [data-page="college"]');
+        if(btn){ btn.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window})); }
       }
     });
   }
-  boot();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
