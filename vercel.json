@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/ovesh/college", "destination": "/oveshcloud/index.html" },
+    { "source": "/ovesh/college/(.*)", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh/", "destination": "/oveshcloud/index.html" },
     { "source": "/oveshcloud", "destination": "/oveshcloud/index.html" },
