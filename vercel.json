@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/ovesh/compiler", "destination": "/compiler.html" },
+    { "source": "/ovesh/compiler/", "destination": "/compiler.html" },
+    { "source": "/compiler", "destination": "/compiler.html" },
     { "source": "/ovesh/college", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh/college/(.*)", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh", "destination": "/oveshcloud/index.html" },
@@ -24,29 +27,8 @@
     { "source": "/oveshcloud/trash", "destination": "/oveshcloud/index.html" }
   ],
   "headers": [
-    {
-      "source": "/oveshcloud/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
-      ]
-    },
-    {
-      "source": "/login.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
-      ]
-    },
-    {
-      "source": "/reset-password.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
-    }
+    { "source": "/oveshcloud/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
+    { "source": "/compiler.html", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
   ]
 }
