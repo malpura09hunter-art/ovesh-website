@@ -1,20 +1,8 @@
 import crypto from 'crypto';
 
-function parseSession(req){
-  const cookie=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('ovesh_cloud_session='));
-  if(!cookie)return false;
-  const token=cookie.slice('ovesh_cloud_session='.length); const [payload,sig]=token.split('.');
-  if(!payload||!sig)return false;
-  const secret=process.env.OVESH_CLOUD_SESSION_SECRET||process.env.OVESH_CLOUD_PASSWORD;
-  if(!secret)return false;
-  const expected=crypto.createHmac('sha256',secret).update(payload).digest('base64url');
-  if(!crypto.timingSafeEqual(Buffer.from(sig),Buffer.from(expected)))return false;
-  try{const data=JSON.parse(Buffer.from(payload,'base64url').toString());return data.exp>Date.now()}catch{return false}
-}
-
+// Public compiler endpoint. Execution remains resource-limited; no compiler password/session is required.
 export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
-  if(!parseSession(req))return res.status(401).json({ok:false,error:'Compiler session expired. Sign in again.'});
   const {source_code='',stdin='',filename='main.c'}=req.body||{};
   if(typeof source_code!=='string'||source_code.length>100000)return res.status(413).json({ok:false,error:'Source code is too large.'});
   if(typeof stdin!=='string'||stdin.length>20000)return res.status(413).json({ok:false,error:'Input is too large.'});
