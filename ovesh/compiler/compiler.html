@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OVESH COMPILER™</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#06090d;color:#e8edf5;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:18px}.app{max-width:1250px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:1px solid #202a38;background:#0c1118;border-radius:14px}.brand{font-weight:850;letter-spacing:1px}.brand span{color:#57f287}.badge{font:12px monospace;color:#8b98aa}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px}.panel{border:1px solid #202a38;background:#0b1017;border-radius:14px;overflow:hidden}.head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-bottom:1px solid #202a38;color:#aeb9c8;font-size:13px}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,select{border:1px solid #2a3748;background:#111923;color:#e8edf5;border-radius:8px;padding:9px 12px;font:inherit}button.run{background:#57f287;color:#041108;border-color:#57f287;font-weight:800;cursor:pointer}button:disabled{opacity:.55;cursor:wait}textarea{display:block;width:100%;min-height:520px;resize:vertical;border:0;outline:0;background:#070c12;color:#e8edf5;padding:18px;font:14px/1.65 "SFMono-Regular",Consolas,monospace;tab-size:4}.stdin{min-height:130px}.output{min-height:650px;margin:0;padding:18px;white-space:pre-wrap;overflow:auto;background:#070c12;color:#dce5ef;font:13px/1.65 "SFMono-Regular",Consolas,monospace}.status{padding:10px 13px;border-top:1px solid #202a38;color:#7f8b9d;font:12px monospace}.status.ok{color:#57f287}.status.err{color:#ff7b8b}.notice{margin-top:14px;padding:13px 15px;border:1px solid #3a3020;background:#15120c;border-radius:12px;color:#c8bda8;font-size:12px;line-height:1.55}.notice strong{color:#f0dfbd}.footer{text-align:center;color:#657286;font-size:11px;line-height:1.7;padding:18px 8px 8px}@media(max-width:850px){.grid{grid-template-columns:1fr}.output{min-height:300px}textarea{min-height:380px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand">OVESH <span>COMPILER™</span></div><div class="badge">REAL C EXECUTION • NO PASSWORD</div></header>
+<div class="grid">
+<section class="panel">
+<div class="head"><span>C SOURCE</span><div class="controls"><select id="compiler" aria-label="Compiler"></select><button id="run" class="run">▶ RUN</button></div></div>
+<textarea id="code" spellcheck="false">#include &lt;stdio.h&gt;
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int a = 10;
+    int b = 20;
+    int sum = add(a, b);
+
+    printf("=================================\n");
+    printf("        OVESH COMPILER TEST      \n");
+    printf("=================================\n");
+    printf("Value of A : %d\n", a);
+    printf("Value of B : %d\n", b);
+    printf("A + B      : %d\n", sum);
+
+    if (sum == 30) printf("Condition  : PASS\n");
+    else printf("Condition  : FAIL\n");
+
+    printf("Loop Test  : ");
+    for (int i = 1; i &lt;= 5; i++) printf("%d ", i);
+    printf("\nCompiler Status: WORKING\n");
+    return 0;
+}</textarea>
+<div class="head"><span>STANDARD INPUT (stdin)</span></div>
+<textarea id="stdin" class="stdin" spellcheck="false" placeholder="Optional input for scanf/getchar/etc."></textarea>
+<div id="status" class="status">● Ready — real execution backend connected when you run code.</div>
+</section>
+<section class="panel">
+<div class="head"><span>OUTPUT / ERRORS</span><button id="clear">CLEAR</button></div>
+<pre id="output" class="output">Click RUN to compile and execute the C program.</pre>
+</section>
+</div>
+<div class="notice"><strong>⚠ PRIVATE PROJECT</strong><br>This compiler is a private project developed and maintained under <strong>Ovesh Malpura Cyber Labs</strong>.<br><strong>© 2026 Ovesh Malpura Cyber Labs. All Rights Reserved.</strong><br>For more information about Ovesh Malpura Cyber Labs, search for the company online. Contact the owner for more information.</div>
+<div class="footer">OVESH COMPILER™ • Ovesh Malpura Cyber Labs • Private Project</div>
+</div>
+<script>
+const API='https://wandbox.org/api';
+const code=document.getElementById('code'), stdin=document.getElementById('stdin'), output=document.getElementById('output'), status=document.getElementById('status'), run=document.getElementById('run'), compiler=document.getElementById('compiler');
+function setStatus(text,type=''){status.textContent='● '+text;status.className='status '+type}
+async function loadCompilers(){
+  try{
+    const r=await fetch(API+'/list.json'); if(!r.ok) throw new Error('Compiler list unavailable');
+    const list=await r.json();
+    const cs=list.filter(x=>String(x.language).toLowerCase()==='c');
+    compiler.innerHTML='';
+    for(const c of cs.slice(0,20)){const o=document.createElement('option');o.value=c.name;o.textContent=`${c['display-name']||c.name} (${c.version||'current'})`;compiler.appendChild(o)}
+    if(!compiler.options.length) throw new Error('No C compiler available');
+    const preferred=cs.find(x=>x.name==='gcc-head-c')||cs.find(x=>x.name.includes('gcc'));
+    if(preferred) compiler.value=preferred.name;
+    setStatus('Ready — C compiler detected.','ok');
+  }catch(e){compiler.innerHTML='<option value="gcc-head-c">GCC C</option>';setStatus('Compiler list could not be loaded; RUN will report the connection error.','err')}
+}
+async function execute(){
+  const source=code.value;
+  if(!source.trim()){output.textContent='No C source code provided.';setStatus('Nothing to compile.','err');return}
+  run.disabled=true;run.textContent='⏳ RUNNING';setStatus('Compiling and executing…');output.textContent='';
+  try{
+    const payload={compiler:compiler.value||'gcc-head-c',code:source,stdin:stdin.value||'',save:false};
+    const r=await fetch(API+'/compile.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.message||`HTTP ${r.status}`);
+    const parts=[];
+    if(data.compiler_error) parts.push('COMPILER ERROR\n'+data.compiler_error);
+    if(data.program_output) parts.push(data.program_output);
+    if(data.program_error) parts.push('PROGRAM ERROR\n'+data.program_error);
+    if(data.signal) parts.push('SIGNAL: '+data.signal);
+    if(data.status) parts.push('STATUS: '+data.status);
+    output.textContent=parts.join('\n\n')||'Program finished with no output.';
+    const failed=Boolean(data.compiler_error||data.program_error||data.signal);
+    setStatus(failed?'Execution finished with errors.':'Execution successful.',failed?'err':'ok');
+  }catch(e){output.textContent='Unable to execute the program.\n\n'+e.message+'\n\nThe compiler requires access to the remote sandbox execution service.';setStatus('Execution service unavailable.','err')}
+  finally{run.disabled=false;run.textContent='▶ RUN'}
+}
+run.addEventListener('click',execute);document.getElementById('clear').addEventListener('click',()=>{output.textContent='Click RUN to compile and execute the C program.';setStatus('Ready — waiting for code.','ok')});
+loadCompilers();
+</script>
+</body>
+</html>
