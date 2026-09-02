@@ -1,0 +1,89 @@
+name: Birthday animation upgrade
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch birthday experience
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('birthday-edition/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          css = r'''
+<style id="birthday-performance-animation">
+/* Cinematic, GPU-friendly welcome interaction */
+#welcome{will-change:opacity,transform;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+#welcome::after{content:"";position:absolute;inset:-20%;z-index:8;pointer-events:none;background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.82) 50%,transparent 62%);transform:translateX(-130%) skewX(-10deg);opacity:0}
+#welcome.welcome-exit::after{animation:welcomeSweep .72s cubic-bezier(.2,.75,.2,1) forwards}
+#welcome.welcome-exit{animation:welcomeExit .78s cubic-bezier(.76,0,.24,1) forwards;pointer-events:none}
+#welcome.welcome-exit .welcome-photo{animation:photoExit .72s cubic-bezier(.2,.75,.2,1) forwards!important}
+#welcome.welcome-exit .welcome-center{animation:centerExit .62s cubic-bezier(.76,0,.24,1) forwards!important}
+#welcome.welcome-exit .big19{animation:numberExit .78s cubic-bezier(.76,0,.24,1) forwards!important}
+#welcome.welcome-exit .orbit{animation:orbitExit .78s cubic-bezier(.76,0,.24,1) forwards!important}
+@keyframes welcomeSweep{0%{transform:translateX(-130%) skewX(-10deg);opacity:0}18%{opacity:.9}100%{transform:translateX(130%) skewX(-10deg);opacity:0}}
+@keyframes welcomeExit{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.035)}}
+@keyframes photoExit{0%{transform:scale(1) translate3d(0,0,0);filter:saturate(.78) contrast(1.06)}100%{transform:scale(1.075) translate3d(0,-1.5vh,0);filter:saturate(.72) contrast(1.02)}}
+@keyframes centerExit{0%{opacity:1;transform:translate3d(-50%,-50%,0) scale(1)}100%{opacity:0;transform:translate3d(-50%,-50%,0) scale(1.045) translateY(-1.5vh)}}
+@keyframes numberExit{0%{opacity:1;transform:translate3d(0,0,0) scale(1)}100%{opacity:0;transform:translate3d(0,-2vh,0) scale(1.08)}}
+@keyframes orbitExit{0%{opacity:1;transform:translate(-50%,-50%) scale(.7) rotate(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.16) rotate(20deg)}}
+body.birthday-entering .hero,body.birthday-entering main>section{animation:pageRise .8s cubic-bezier(.2,.75,.2,1) both}
+body.birthday-entering .hero{animation-delay:.05s}
+body.birthday-entering main>section:nth-of-type(2){animation-delay:.12s}
+body.birthday-entering main>section:nth-of-type(3){animation-delay:.18s}
+@keyframes pageRise{from{opacity:0;transform:translate3d(0,18px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@media (prefers-reduced-motion:reduce){#welcome,#welcome *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}body.birthday-entering .hero,body.birthday-entering main>section{animation:none!important}}
+@media (max-width:600px){#welcome.welcome-exit{animation-duration:.64s}.welcome-photo{will-change:transform,opacity}.welcome-center{will-change:transform,opacity}.big19{will-change:transform,opacity}.orbit{will-change:transform,opacity}}
+</style>
+'''
+
+          js = r'''
+<script id="birthday-performance-animation-js">
+(function(){
+  const w=document.getElementById('welcome');
+  if(!w) return;
+  let entered=false;
+  const enter=()=>{
+    if(entered) return;
+    entered=true;
+    w.classList.add('welcome-exit');
+    document.body.classList.add('birthday-entering');
+    window.setTimeout(()=>{
+      w.classList.add('hide');
+      document.body.classList.remove('birthday-entering');
+    },760);
+  };
+  w.addEventListener('pointerup',enter,{passive:true});
+  w.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enter();}});
+})();
+</script>
+'''
+
+          if 'id="birthday-performance-animation"' not in s:
+              s=s.replace('</head>', css+'\n</head>', 1)
+          if 'id="birthday-performance-animation-js"' not in s:
+              s=s.replace('</body>', js+'\n</body>', 1)
+          p.write_text(s,encoding='utf-8')
+
+      - name: Commit and remove patch workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add birthday-edition/index.html
+          git commit -m "Polish birthday welcome transition" || true
+          git rm .github/workflows/birthday-animation-upgrade.yml
+          git commit -m "Remove one-time birthday animation patcher"
+          git push
