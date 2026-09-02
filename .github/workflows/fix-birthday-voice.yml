@@ -3,7 +3,6 @@ on:
   push:
     paths:
       - '.github/workflows/fix-birthday-voice.yml'
-      - 'birthday-edition/index.html'
   workflow_dispatch:
 jobs:
   fix:
@@ -12,31 +11,24 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Correct voice wording
+      - name: Force correct spoken wording
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('birthday-edition/index.html')
           s=p.read_text(encoding='utf-8')
-          original=s
-          for a,b in [
-              ('Happy birthday from Ovesh.','Happy birthday to Ovesh.'),
-              ('Happy birthday from Ovesh!','Happy birthday to Ovesh!'),
-              ('Happy birthday from Ovesh','Happy birthday to Ovesh'),
-              ('happy birthday from Ovesh.','happy birthday to Ovesh.'),
-              ('happy birthday from Ovesh!','happy birthday to Ovesh!'),
-              ('happy birthday from Ovesh','happy birthday to Ovesh'),
-              ('birthday from Ovesh','birthday to Ovesh'),
-              ('Birthday from Ovesh','Birthday to Ovesh'),
-          ]:
-              s=s.replace(a,b)
-          if s==original:
-              raise SystemExit('Target wording not found; no commit made.')
-          p.write_text(s,encoding='utf-8')
+          marker='/* OVESH_BIRTHDAY_VOICE_FIX */'
+          if marker not in s:
+              patch="""<script>/* OVESH_BIRTHDAY_VOICE_FIX */\n(function(){\n  if(!('speechSynthesis' in window)) return;\n  const originalSpeak=window.speechSynthesis.speak.bind(window.speechSynthesis);\n  window.speechSynthesis.speak=function(u){\n    if(u && typeof u.text==='string'){\n      u.text=u.text.replace(/\\bfrom\\s+Ovesh\\b/gi,'to Ovesh');\n    }\n    return originalSpeak(u);\n  };\n})();\n</script>"""
+              s=s.replace('</head>',patch+'</head>',1)
+              p.write_text(s,encoding='utf-8')
+              print('Voice safeguard inserted.')
+          else:
+              print('Voice safeguard already present.')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add birthday-edition/index.html
-          git diff --cached --quiet && exit 0
-          git commit -m 'fix: say happy birthday to Ovesh'
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix: ensure birthday voice says to Ovesh'
           git push
