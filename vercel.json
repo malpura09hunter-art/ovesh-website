@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/birthday-edition", "destination": "/birthday-edition/index.html" },
+    { "source": "/birthday-edition/", "destination": "/birthday-edition/index.html" },
     { "source": "/ovesh/compiler", "destination": "/compiler.html" },
     { "source": "/ovesh/compiler/", "destination": "/compiler.html" },
     { "source": "/compiler", "destination": "/compiler.html" },
