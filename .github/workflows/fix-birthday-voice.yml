@@ -1,0 +1,44 @@
+name: Fix Birthday Voice
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-birthday-voice.yml'
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Correct voice wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('birthday-edition/index.html')
+          s=p.read_text(encoding='utf-8')
+          replacements = [
+              ('Happy birthday from Ovesh.', 'Happy birthday to Ovesh.'),
+              ('Happy birthday from Ovesh!', 'Happy birthday to Ovesh!'),
+              ('Happy birthday from Ovesh', 'Happy birthday to Ovesh'),
+              ('happy birthday from Ovesh.', 'happy birthday to Ovesh.'),
+              ('happy birthday from Ovesh!', 'happy birthday to Ovesh!'),
+              ('happy birthday from Ovesh', 'happy birthday to Ovesh'),
+          ]
+          original=s
+          for a,b in replacements:
+              s=s.replace(a,b)
+          if s==original:
+              print('No exact phrase found; checking common script variants.')
+              s=s.replace('birthday from Ovesh','birthday to Ovesh')
+              s=s.replace('Birthday from Ovesh','Birthday to Ovesh')
+          if s==original:
+              raise SystemExit('Target wording not found; no commit made.')
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add birthday-edition/index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: say happy birthday to Ovesh'
+          git push
