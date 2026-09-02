@@ -1,34 +1,95 @@
 name: Fix birthday gift click
+
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: write
+
 jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix gift reveal click flow
+
+      - name: Patch welcome click handler
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('birthday-edition/index.html')
-          s=p.read_text(encoding='utf-8')
-          old="function enter(){if(welcomed||entering)return;entering=true;welcomed=true;speak();document.body.classList.add('birthday-entering');w.classList.add('welcome-exit');setTimeout(()=>{w.classList.add('hide');w.classList.remove('welcome-exit');document.body.classList.remove('birthday-entering')},1250)}"
-          new="function enter(){if(welcomed||entering)return;entering=true;welcomed=true;window.speechSynthesis&&window.speechSynthesis.cancel();if('speechSynthesis'in window){const u=new SpeechSynthesisUtterance(\"What’s the gift? Eighty percent off at Ovesh Malpura Cyber Labs. Happy birthday from Ovesh.\");u.lang='en-IN';u.rate=.88;u.pitch=1.08;u.volume=1;const voices=window.speechSynthesis.getVoices();const female=voices.find(v=>/en-IN|en-GB|en-US/i.test(v.lang)&&/female|samantha|ava|serena|karen|moira|victoria|zira/i.test(v.name));if(female)u.voice=female;window.speechSynthesis.speak(u)}w.classList.add('gift-revealing');setTimeout(()=>{document.body.classList.add('birthday-entering');w.classList.add('welcome-exit');setTimeout(()=>{w.classList.add('hide');w.classList.remove('welcome-exit','gift-revealing');document.body.classList.remove('birthday-entering')},1150)},2700)}"
-          if old not in s:
-              raise SystemExit('target enter function not found')
-          p.write_text(s.replace(old,new),encoding='utf-8')
+          import re
+
+          p = Path('birthday-edition/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          start = s.find("const w=document.getElementById('welcome');")
+          if start < 0:
+              raise SystemExit('welcome script anchor not found')
+
+          end = s.find("const b=document.getElementById('box');", start)
+          if end < 0:
+              raise SystemExit('box script anchor not found')
+
+          new_block = r'''const w=document.getElementById('welcome');
+          const giftReveal=document.getElementById('gift-reveal');
+          let welcomed=false;
+          let entering=false;
+          function speakGift(){
+            if(!('speechSynthesis' in window))return;
+            window.speechSynthesis.cancel();
+            const u=new SpeechSynthesisUtterance("What’s the gift? Eighty percent off at Ovesh Malpura Cyber Labs. Happy birthday from Ovesh.");
+            u.lang='en-IN';u.rate=.88;u.pitch=1.08;u.volume=1;
+            const voices=window.speechSynthesis.getVoices();
+            const female=voices.find(v=>/en-IN|en-GB|en-US/i.test(v.lang)&&/female|samantha|ava|serena|karen|moira|victoria|zira/i.test(v.name));
+            if(female)u.voice=female;
+            window.speechSynthesis.speak(u)
+          }
+          function enter(){
+            if(welcomed||entering)return;
+            entering=true;welcomed=true;
+            speakGift();
+            w.classList.add('gift-revealing');
+            if(giftReveal)giftReveal.setAttribute('aria-hidden','false');
+            setTimeout(()=>{
+              document.body.classList.add('birthday-entering');
+              w.classList.add('welcome-exit');
+              setTimeout(()=>{
+                w.classList.add('hide');
+                w.classList.remove('welcome-exit','gift-revealing');
+                if(giftReveal)giftReveal.setAttribute('aria-hidden','true');
+                document.body.classList.remove('birthday-entering');
+              },1150)
+            },2700)
+          }
+          w.addEventListener('click',enter,{passive:true});
+          w.addEventListener('touchend',enter,{passive:true});
+          window.speechSynthesis&&window.speechSynthesis.addEventListener&&window.speechSynthesis.addEventListener('voiceschanged',()=>{});
+          '''
+
+          s = s[:start] + new_block + s[end:]
+          p.write_text(s, encoding='utf-8')
+          print('Birthday welcome click handler patched.')
           PY
-      - name: Commit fix
+
+      - name: Verify patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('birthday-edition/index.html').read_text(encoding='utf-8')
+          required=["const giftReveal=document.getElementById('gift-reveal');","w.classList.add('gift-revealing')","Eighty percent off at Ovesh Malpura Cyber Labs"]
+          missing=[x for x in required if x not in s]
+          if missing:
+              raise SystemExit('Missing: '+repr(missing))
+          print('Verification passed.')
+          PY
+
+      - name: Commit patched birthday page and remove temporary workflow
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add birthday-edition/index.html
-          git commit -m "Fix birthday gift reveal click flow"
+          git commit -m "Fix birthday gift reveal interaction"
           git push
-      - name: Remove temporary workflow
-        if: always()
-        run: |
           rm -f .github/workflows/fix-birthday-gift-click.yml
           git add .github/workflows/fix-birthday-gift-click.yml
           git commit -m "Remove temporary birthday fix workflow" || true
