@@ -43,6 +43,21 @@ async function requireAdmin(onReady,onDenied){
     if(!user){window.location.href='login.html';return;}
     try{const adminDoc=await db.collection('admins').doc(user.uid).get();if(!adminDoc.exists){if(onDenied)onDenied(user);else{alert('This account does not have admin access.');auth.signOut();window.location.href='login.html';}return;}onReady(user,adminDoc.data())}catch(err){console.error('Admin check failed:',err);if(onDenied)onDenied(user)}});
 }
+async function attachProtectedApiToken(input, init) {
+  const rawUrl = typeof input === 'string' ? input : input?.url || '';
+  if (!/\/api\/(send-login-alert|send-welcome)(?:\?|$)/.test(rawUrl)) return { input, init };
+  const user = auth.currentUser;
+  if (!user) return { input, init };
+  const token = await user.getIdToken();
+  const next = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+  next.set('Authorization', `Bearer ${token}`);
+  return { input, init: { ...(init || {}), headers: next } };
+}
+const originalFetch = window.fetch.bind(window);
+window.fetch = async function(input, init) {
+  const prepared = await attachProtectedApiToken(input, init);
+  return originalFetch(prepared.input, prepared.init);
+};
 function fmtDate(ts){if(!ts)return '—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'});}
 function friendlyError(err){const map={'auth/user-not-found':'No account found with that email.','auth/wrong-password':'Incorrect password. Try again.','auth/invalid-credential':'Incorrect email or password.','auth/email-already-in-use':'An account with that email already exists.','auth/weak-password':'Password should be at least 6 characters.','auth/invalid-email':'Please enter a valid email address.','auth/too-many-requests':'Too many attempts. Please wait a moment and try again.','auth/network-request-failed':'Network error — check your connection and try again.','auth/requires-recent-login':'Please log out and log back in, then try this action again.','auth/user-disabled':'This account has been disabled. Contact support.','auth/account-exists-with-different-credential':'An account already exists with this email using a different sign-in method.','auth/popup-blocked':'Your browser blocked the sign-in popup — trying an alternate method.','auth/unauthorized-domain':'This domain is not authorized for Google Sign-In. Contact the site owner.','permission-denied':'You don\'t have permission to do that.','unavailable':'Service temporarily unavailable — check your connection and try again.','deadline-exceeded':'The request timed out. Please try again.'};return map[err.code]||err.message||'Something went wrong. Please try again.';}
 
