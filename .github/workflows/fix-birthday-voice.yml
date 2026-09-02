@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/fix-birthday-voice.yml'
+      - 'birthday-edition/index.html'
   workflow_dispatch:
 jobs:
   fix:
@@ -17,21 +18,18 @@ jobs:
           from pathlib import Path
           p=Path('birthday-edition/index.html')
           s=p.read_text(encoding='utf-8')
-          replacements = [
-              ('Happy birthday from Ovesh.', 'Happy birthday to Ovesh.'),
-              ('Happy birthday from Ovesh!', 'Happy birthday to Ovesh!'),
-              ('Happy birthday from Ovesh', 'Happy birthday to Ovesh'),
-              ('happy birthday from Ovesh.', 'happy birthday to Ovesh.'),
-              ('happy birthday from Ovesh!', 'happy birthday to Ovesh!'),
-              ('happy birthday from Ovesh', 'happy birthday to Ovesh'),
-          ]
           original=s
-          for a,b in replacements:
+          for a,b in [
+              ('Happy birthday from Ovesh.','Happy birthday to Ovesh.'),
+              ('Happy birthday from Ovesh!','Happy birthday to Ovesh!'),
+              ('Happy birthday from Ovesh','Happy birthday to Ovesh'),
+              ('happy birthday from Ovesh.','happy birthday to Ovesh.'),
+              ('happy birthday from Ovesh!','happy birthday to Ovesh!'),
+              ('happy birthday from Ovesh','happy birthday to Ovesh'),
+              ('birthday from Ovesh','birthday to Ovesh'),
+              ('Birthday from Ovesh','Birthday to Ovesh'),
+          ]:
               s=s.replace(a,b)
-          if s==original:
-              print('No exact phrase found; checking common script variants.')
-              s=s.replace('birthday from Ovesh','birthday to Ovesh')
-              s=s.replace('Birthday from Ovesh','Birthday to Ovesh')
           if s==original:
               raise SystemExit('Target wording not found; no commit made.')
           p.write_text(s,encoding='utf-8')
