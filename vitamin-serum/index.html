@@ -25,6 +25,7 @@
   </div>
   <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div>
   <div class="scan"></div>
+  <div class="private-mark"><span>PRIVATE PROJECT</span><b>© 2026 OVESH MALPURA<br>CYBER LABS</b><small>ALL RIGHTS RESERVED · UNAUTHORIZED USE PROHIBITED</small></div>
 </div>
 <main id="app">
 <nav class="nav">
@@ -57,15 +58,18 @@
     <a href="routine.html"><b>05</b><span>C + Glutathione</span><small>Full antioxidant routine</small><em>↗</em></a>
   </div>
 </section>
-<footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span></footer>
+<section class="private-archive">
+  <div class="archive-image"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — OVESH Cyber Labs creator" loading="lazy"><span>CREATOR / OWNER</span></div>
+  <div class="archive-copy"><div class="micro">PRIVATE DIGITAL ARCHIVE · OVESH CYBER LABS</div><h3>OVESH<br><em>MALPURA.</em></h3><p>This is a private project and original creative work by Ovesh Malpura Cyber Labs. Content, visual identity, concept, interface and project materials are reserved.</p><div class="copyright-line">© 2026 OVESH MALPURA CYBER LABS <span>ALL RIGHTS RESERVED</span></div><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div>
+</section>
+<footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span><span>© OVESH MALPURA CYBER LABS</span></footer>
 </main>
 <script>
 const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error');
-function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('unlocking');setTimeout(()=>gate.classList.add('hidden'),1250)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
+function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.add('unlocking');gate.classList.add('unlocking');setTimeout(()=>{document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')},1050)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
 form.addEventListener('submit',unlock);
 if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
 const stage=document.querySelector('.stage'),product=document.querySelector('.product');
-stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});
-stage.addEventListener('pointerleave',()=>product.style.transform='');
+if(stage&&product){stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='')}
 </script>
 </body></html>
