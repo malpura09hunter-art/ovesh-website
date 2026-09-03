@@ -61,7 +61,7 @@
 </main>
 <script>
 const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error');
-function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
+function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('unlocking');setTimeout(()=>gate.classList.add('hidden'),1250)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
 form.addEventListener('submit',unlock);
 if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
 const stage=document.querySelector('.stage'),product=document.querySelector('.product');
