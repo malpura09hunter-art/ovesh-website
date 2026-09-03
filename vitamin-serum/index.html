@@ -25,7 +25,25 @@
   </div>
   <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div>
   <div class="scan"></div>
-  <div class="private-mark"><span>PRIVATE PROJECT</span><b>© 2026 OVESH MALPURA<br>CYBER LABS</b><small>ALL RIGHTS RESERVED · UNAUTHORIZED USE PROHIBITED</small></div>
+  <div class="private-mark"><div class="private-creator"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator" loading="eager"><div><span>PRIVATE PROJECT</span><small>CREATOR / OWNER</small></div></div><b>© 2026<br>OVESH MALPURA<br>CYBER LABS</b><strong>ALL RIGHTS RESERVED</strong><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div>
+</div>
+<div id="warning" class="warning-overlay" aria-hidden="true">
+  <div class="warning-backdrop"></div>
+  <div class="warning-panel">
+    <div class="warning-scan"></div>
+    <div class="warning-head"><span>OVESH™ SECURITY PROTOCOL</span><b>ACCESS GRANTED</b></div>
+    <div class="warning-body">
+      <div class="warning-portrait"><div class="portrait-ring"></div><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator and Owner" loading="eager"><span>CREATOR / OWNER</span></div>
+      <div class="warning-copy">
+        <div class="warning-code">⚠ PRIVATE PROJECT · AUTHORIZED ACCESS ONLY</div>
+        <h2>READ BEFORE<br><em>ENTERING.</em></h2>
+        <p>You are entering a protected OVESH™ project environment. This experience is an original academic and creative project created by Ovesh Malpura Cyber Labs.</p>
+        <div class="warning-copyright"><strong>© 2026 OVESH MALPURA<br>CYBER LABS</strong><span>ALL RIGHTS RESERVED</span></div>
+        <p class="warning-legal">The project concept, visual identity, interface, written content, presentation structure and associated creative materials are private project work. Unauthorized copying, reproduction, distribution, modification or republication is prohibited.</p>
+        <div class="warning-actions"><button id="acknowledge">I UNDERSTAND — ENTER PROJECT <span>↗</span></button><small>By continuing, you acknowledge this private-project notice.</small></div>
+      </div>
+    </div>
+  </div>
 </div>
 <main id="app">
 <nav class="nav">
@@ -65,9 +83,11 @@
 <footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span><span>© OVESH MALPURA CYBER LABS</span></footer>
 </main>
 <script>
-const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error');
-function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.add('unlocking');gate.classList.add('unlocking');setTimeout(()=>{document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')},1050)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
+const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error'),warning=document.getElementById('warning'),ack=document.getElementById('acknowledge');
+function showWarning(){warning.classList.add('visible');warning.setAttribute('aria-hidden','false');setTimeout(()=>ack.focus(),500)}
+function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){document.body.classList.add('unlocking');gate.classList.add('unlocking');setTimeout(()=>{document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden');showWarning()},1050)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
 form.addEventListener('submit',unlock);
+ack.addEventListener('click',()=>{warning.classList.add('leaving');setTimeout(()=>{warning.classList.remove('visible','leaving');warning.setAttribute('aria-hidden','true');sessionStorage.setItem('oveshUnlocked','1')},700)});
 if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
 const stage=document.querySelector('.stage'),product=document.querySelector('.product');
 if(stage&&product){stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='')}
