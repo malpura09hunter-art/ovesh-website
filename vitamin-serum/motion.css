@@ -1,4 +1,4 @@
-/* OVESH CINEMATIC MOTION LAYER */
+/* OVESH CINEMATIC MOTION LAYER — ULTRA UNLOCK EDITION */
 @keyframes oveshReveal{0%{opacity:0;transform:translateY(70px) scale(.9);filter:blur(18px)}100%{opacity:1;transform:none;filter:none}}
 @keyframes oveshFloat{0%,100%{transform:translate3d(0,0,0) rotateZ(0)}25%{transform:translate3d(12px,-18px,0) rotateZ(1deg)}50%{transform:translate3d(-8px,-32px,0) rotateZ(-1deg)}75%{transform:translate3d(-15px,-12px,0) rotateZ(.5deg)}}
 @keyframes oveshOrbit{to{transform:rotate(360deg)}}
@@ -9,6 +9,7 @@
 @keyframes oveshPulse{0%,100%{box-shadow:0 0 0 0 #d7bb7200}50%{box-shadow:0 0 70px 12px #d7bb721c}}
 @keyframes oveshDrift{0%{background-position:0 0,0 0}50%{background-position:90px -50px,-70px 60px}100%{background-position:180px -100px,-140px 120px}}
 
+/* GLOBAL CINEMATIC LAYER */
 body.home:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:40;background:linear-gradient(110deg,transparent 35%,#ffffff08 48%,#d7bb7210 50%,transparent 55%);transform:translateX(-130%) skewX(-18deg);animation:oveshShimmer 8s ease-in-out infinite 2s}
 .home-hero:after{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 50% 50%,transparent 0 28%,#d7bb7208 29%,transparent 30%),radial-gradient(circle at 50% 50%,transparent 0 48%,#ffffff05 49%,transparent 50%);animation:oveshOrbit 30s linear infinite;pointer-events:none}
 .home-hero:before{content:"";position:absolute;width:120vw;height:120vw;left:-10vw;top:-10vw;border:1px solid #d7bb7218;border-radius:50%;box-shadow:0 0 100px #d7bb7208;animation:oveshOrbitReverse 45s linear infinite}
@@ -25,13 +26,40 @@ body.home:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:40
 .launch-grid a:hover{transform:translateY(-14px) rotateX(4deg) rotateY(-3deg) scale(1.02)!important}
 .launch-grid a:after{content:"";position:absolute;left:-100%;top:0;width:45%;height:100%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-18deg);transition:none}
 .launch-grid a:hover:after{animation:oveshShimmer 1s ease forwards}
+
+/* THE UNLOCK SCREEN — cinematic, layered, alive */
+#gate{perspective:1400px;overflow:hidden}
 #gate .gate-bg{animation:oveshGlow 7s ease-in-out infinite!important}
 #gate .stars{animation:oveshDrift 18s linear infinite!important}
 #gate .gate-copy{animation:oveshReveal 1.4s cubic-bezier(.16,1,.3,1) both!important}
-#gate .sealed-product{animation:oveshFloat 6s ease-in-out infinite!important}
-#gate .sealed-product:before{content:"";position:absolute;inset:-100px;border-radius:50%;background:radial-gradient(circle,#d7bb7240,transparent 65%);animation:oveshGlow 3.5s ease-in-out infinite;z-index:-1}
+#gate .sealed-product{animation:oveshFloat 6s ease-in-out infinite!important;transform-style:preserve-3d;filter:drop-shadow(0 35px 80px #0008)}
+#gate .sealed-product:before{content:"";position:absolute;inset:-140px;border-radius:50%;background:radial-gradient(circle,#d7bb7248 0,#d7bb721c 22%,transparent 68%);animation:oveshGlow 3.5s ease-in-out infinite;z-index:-1}
+#gate .sealed-product:after{content:"";position:absolute;inset:-90px;border:1px solid #d7bb7225;border-radius:50%;box-shadow:0 0 80px #d7bb7215,0 0 160px #d7bb720b;animation:oveshOrbit 11s linear infinite;pointer-events:none}
+#gate .sealed-cap,#gate .sealed-body,#gate .sealed-label{transition:transform .7s cubic-bezier(.16,1,.3,1),filter .7s}
+#gate .sealed-body{box-shadow:inset 8px 0 25px #ffffff08,inset -12px 0 35px #0008,0 0 45px #d7bb7215!important}
+#gate .sealed-label{overflow:hidden;transform-style:preserve-3d;box-shadow:0 0 25px #d7bb7210}
+#gate .sealed-label:after{content:"";position:absolute;top:-20%;bottom:-20%;left:-80%;width:55%;background:linear-gradient(90deg,transparent,#fff9,transparent);transform:skewX(-20deg);animation:oveshShimmer 3.8s ease-in-out infinite}
 #gate .scan{animation:oveshScan 4s linear infinite!important}
-#gate .gate-copy button{animation:oveshPulse 2.8s ease-in-out infinite}
+#gate .gate-copy button{animation:oveshPulse 2.8s ease-in-out infinite;position:relative;overflow:hidden}
+#gate .gate-copy button:before{content:"";position:absolute;inset:-100% -30%;background:linear-gradient(105deg,transparent 43%,#fff7 50%,transparent 57%);transform:translateX(-60%);animation:oveshShimmer 3s ease-in-out infinite}
+#gate .gate-copy button:hover{transform:translateY(-3px) scale(1.035);filter:brightness(1.15);box-shadow:0 18px 55px #d7bb7240!important}
+#gate .gate-copy input{transition:border-color .4s,box-shadow .4s,transform .4s}
+#gate .gate-copy input:focus{border-color:#d7bb72!important;box-shadow:0 0 0 4px #d7bb7210,0 0 45px #d7bb7220!important;transform:translateY(-2px)}
+#gate .micro{animation:oveshPulse 4s ease-in-out infinite}
+#gate .rule{position:relative;overflow:hidden}
+#gate .rule:after{content:"";position:absolute;left:-40%;top:0;width:30%;height:100%;background:#d7bb72;box-shadow:0 0 18px #d7bb72;animation:oveshShimmer 4s ease-in-out infinite}
+
+/* unlock burst / portal transition */
+@keyframes gatePortal{0%{opacity:1;transform:scale(1) rotate(0);filter:brightness(1)}45%{opacity:1;transform:scale(1.03) rotate(.5deg);filter:brightness(1.8)}100%{opacity:0;transform:scale(1.22) rotate(-1deg);filter:brightness(2.8) blur(12px)}}
+@keyframes gateCopyExit{0%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:0;transform:scale(.72) translateY(-30px);filter:blur(16px)}}
+@keyframes gateBottleExit{0%{opacity:1;transform:scale(1)}35%{transform:scale(1.12)}100%{opacity:0;transform:scale(1.7);filter:blur(18px) brightness(2)}}
+#gate.unlocking{animation:gatePortal 1.25s cubic-bezier(.16,1,.3,1) forwards;pointer-events:none}
+#gate.unlocking .gate-copy{animation:gateCopyExit .7s ease-in forwards!important}
+#gate.unlocking .sealed-product{animation:gateBottleExit 1s cubic-bezier(.16,1,.3,1) forwards!important}
+#gate.unlocking .scan{animation:gatePortal .8s ease-in forwards!important}
+#gate.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+/* interior pages */
 .page-hero:before{animation:oveshOrbitReverse 24s linear infinite!important}
 .page-hero:after{animation:oveshDrift 20s linear infinite!important}
 .page-title{animation:oveshReveal 1.25s cubic-bezier(.16,1,.3,1) both!important}
@@ -46,5 +74,5 @@ body.home:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:40
 .orb-ring{animation:oveshOrbit 6s linear infinite!important}
 .orb-ring.r2{animation:oveshOrbitReverse 9s linear infinite!important}
 .liquid{animation:oveshFloat 5s ease-in-out infinite!important}
-@media(max-width:900px){.home-hero:before{width:180vw;height:180vw;left:-40vw;top:0}.stage .ring{animation-duration:18s!important}.product{animation-duration:8s!important}}
-@media(prefers-reduced-motion:reduce){body.home:after,.home-hero:before,.home-hero:after,#gate .sealed-product:before{animation:none!important}}
+@media(max-width:900px){.home-hero:before{width:180vw;height:180vw;left:-40vw;top:0}.stage .ring{animation-duration:18s!important}.product{animation-duration:8s!important}#gate .sealed-product:after{inset:-55px}#gate .sealed-product:before{inset:-80px}}
+@media(prefers-reduced-motion:reduce){body.home:after,.home-hero:before,.home-hero:after,#gate .sealed-product:before,#gate .sealed-product:after{animation:none!important}}
