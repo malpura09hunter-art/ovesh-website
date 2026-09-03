@@ -1,1 +1,75 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="OVESH™ Serum — a cinematic academic Vitamin C skincare experience."><meta name="theme-color" content="#050609"><meta property="og:title" content="OVESH™ Serum — Science × Skincare"><meta property="og:description" content="Explore the OVESH Vitamin C serum concept through five chapters."><meta property="og:type" content="website"><title>OVESH™ SERUM — Enter the Formula</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"></head><body class="locked home"><div id="gate"><div class="gate-bg"></div><div class="stars"></div><div class="gate-top"><span>OVESH™ / PRIVATE FORMULA ACCESS</span><b>FORMULA 01</b></div><div class="gate-copy"><div class="micro">A NEW SKINCARE EXPERIENCE</div><h1>Need <em>glow?</em></h1><p>Try OVESH Vitamin C Serum</p><div class="rule"></div><form id="entry"><input id="password" type="password" autocomplete="off" placeholder="enter access code"><button>Unlock</button></form><div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small></div><div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div><div class="scan"></div></div><main id="app"><nav class="nav"><a class="brand" href="index.html">OVESH<sup>™</sup></a><div class="links"><a href="product.html">Product</a><a href="formula.html">Formula</a><a href="science.html">Science</a><a href="ingredients.html">Ingredients</a><a href="how-it-works.html">How it works</a></div><a class="nav-cta" href="formula.html">Open formula ↗</a></nav><section class="home-hero"><div class="home-copy"><div class="micro">VITAMIN C · NIGHT RADIANCE</div><h2>RADIANCE<br><em>UNLOCKED.</em></h2><p>A cinematic Vitamin C serum concept where formulation science meets a luxury night-serum world.</p><div class="actions"><a class="gold" href="product.html">Discover OVESH</a><a class="ghost" href="formula.html">View formula</a></div><div class="meta"><span>SEALED FORMULA · 01</span><span>SCIENCE × SKINCARE</span></div></div><div class="stage"><div class="halo"></div><div class="ring"></div><div class="ring r2"></div><div class="product"><div class="box"><b>OVESH</b><span>VITAMIN C<br>SERUM</span></div><div class="bottle"><div class="cap">OVESH</div><div class="glass"></div><div class="label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><i>SEALED · 01</i></div></div></div></div></section><section class="home-chapters"><div class="wrap"><div class="eyebrow">Explore the experience</div><h3>One product.<br><em>Five chapters.</em></h3><div class="chapter-grid"><a href="product.html"><b>01</b><strong>The Product</strong><span>Meet OVESH SERUM</span></a><a href="formula.html"><b>02</b><strong>The Formula</strong><span>Explore the architecture</span></a><a href="science.html"><b>03</b><strong>The Science</strong><span>Understand Vitamin C</span></a><a href="ingredients.html"><b>04</b><strong>Ingredients</strong><span>Inspect each active</span></a><a href="how-it-works.html"><b>05</b><strong>How It Works</strong><span>Follow the experience</span></a></div></div></section><footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span></footer></main><script>const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error');function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}form.addEventListener('submit',unlock);if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}const stage=document.querySelector('.stage'),product=document.querySelector('.product');stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='');</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OVESH™ Serum — a cinematic academic Vitamin C skincare experience.">
+<meta name="theme-color" content="#050609">
+<meta property="og:title" content="OVESH™ Serum — Science × Skincare">
+<meta property="og:description" content="Explore the OVESH Vitamin C serum concept through five dedicated chapters.">
+<meta property="og:type" content="website">
+<title>OVESH™ SERUM — Enter the Formula</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="locked home">
+<div id="gate">
+  <div class="gate-bg"></div><div class="stars"></div>
+  <div class="gate-top"><span>OVESH™ / PRIVATE FORMULA ACCESS</span><b>FORMULA 01</b></div>
+  <div class="gate-copy">
+    <div class="micro">A NEW SKINCARE EXPERIENCE</div>
+    <h1>Need <em>glow?</em></h1>
+    <p>Try OVESH Vitamin C Serum</p><div class="rule"></div>
+    <form id="entry"><input id="password" type="password" autocomplete="off" placeholder="enter access code"><button>Unlock</button></form>
+    <div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small>
+  </div>
+  <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div>
+  <div class="scan"></div>
+</div>
+
+<main id="app">
+<nav class="nav">
+  <a class="brand" href="index.html">OVESH<sup>™</sup></a>
+  <div class="links">
+    <a href="product.html">Product</a><a href="formula.html">Formula</a><a href="science.html">Science</a><a href="ingredients.html">Ingredients</a><a href="how-it-works.html">How it works</a>
+  </div>
+  <a class="nav-cta" href="formula.html">Open formula ↗</a>
+</nav>
+
+<section class="home-hero">
+  <div class="home-copy">
+    <div class="micro">VITAMIN C · NIGHT RADIANCE</div>
+    <h2>RADIANCE<br><em>UNLOCKED.</em></h2>
+    <p>A cinematic Vitamin C serum concept where formulation science meets a luxury night-serum world.</p>
+    <div class="actions"><a class="gold" href="product.html">Discover OVESH</a><a class="ghost" href="formula.html">View formula</a></div>
+    <div class="meta"><span>SEALED FORMULA · 01</span><span>SCIENCE × SKINCARE</span></div>
+  </div>
+  <div class="stage"><div class="halo"></div><div class="ring"></div><div class="ring r2"></div><div class="product">
+    <div class="box"><b>OVESH</b><span>VITAMIN C<br>SERUM</span></div>
+    <div class="bottle"><div class="cap">OVESH</div><div class="glass"></div><div class="label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><i>SEALED · 01</i></div></div>
+  </div></div>
+</section>
+
+<section class="chapter-launch">
+  <div class="launch-line"><span>THE EXPERIENCE</span><i></i><span>05 CHAPTERS</span></div>
+  <div class="launch-grid">
+    <a href="product.html"><b>01</b><span>Product</span><small>Meet the serum</small><em>↗</em></a>
+    <a href="formula.html"><b>02</b><span>Formula</span><small>Explore the architecture</small><em>↗</em></a>
+    <a href="science.html"><b>03</b><span>Science</span><small>Understand Vitamin C</small><em>↗</em></a>
+    <a href="ingredients.html"><b>04</b><span>Ingredients</span><small>Inspect each active</small><em>↗</em></a>
+    <a href="how-it-works.html"><b>05</b><span>How it works</span><small>Follow the experience</small><em>↗</em></a>
+  </div>
+</section>
+
+<footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span></footer>
+</main>
+<script>
+const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error');
+function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){sessionStorage.setItem('oveshUnlocked','1');document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
+form.addEventListener('submit',unlock);
+if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
+const stage=document.querySelector('.stage'),product=document.querySelector('.product');
+stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});
+stage.addEventListener('pointerleave',()=>product.style.transform='');
+</script>
+</body></html>
