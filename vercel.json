@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/vitaminserum", "destination": "/vitamin-serum/index.html" },
     { "source": "/vitaminserum/", "destination": "/vitamin-serum/index.html" },
+    { "source": "/vitaminserum/(.*)", "destination": "/vitamin-serum/$1" },
     { "source": "/birthday-edition", "destination": "/birthday-edition/index.html" },
     { "source": "/birthday-edition/", "destination": "/birthday-edition/index.html" },
     { "source": "/ovesh/compiler", "destination": "/compiler.html" },
