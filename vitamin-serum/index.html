@@ -7,126 +7,43 @@
 <meta property="og:title" content="OVESH™ Serum — Science × Skincare">
 <meta property="og:description" content="Explore the OVESH Vitamin C serum concept through five dedicated chapters.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://malpuraovesh.vercel.app/ovesh-malpura-profile.jpg.PNG">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://malpuraovesh.vercel.app/ovesh-malpura-profile.jpg.PNG">
 <title>OVESH™ SERUM — Enter the Formula</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/vitamin-serum/styles.css"><link rel="stylesheet" href="/vitamin-serum/motion.css">
 <style>
-/* OVESH LUXURY EXPERIENCE OVERRIDES — visual polish only */
-.warning-body{grid-template-columns:230px 1fr;gap:52px;padding:45px 58px}
-.warning-portrait{width:230px;max-width:230px;justify-self:center}
-.warning-portrait img{width:58%;height:58%;padding:6px}
-.warning-portrait .portrait-ring{inset:8%}
-.warning-portrait>span{bottom:9%;font-size:6px;padding:7px 10px}
-.warning-copy h2{font-size:clamp(42px,6vw,78px)}
-.private-mark{width:min(350px,34vw);padding:15px;gap:6px}
-.private-creator img{width:54px;height:54px}
-.private-mark b{font-size:clamp(21px,2.7vw,35px)}
-.private-mark strong{font-size:8px}
-.private-mark>small{font-size:6px}
-/* subtle luxury depth across the experience */
-#app{animation:pageLuxReveal 1.4s cubic-bezier(.16,1,.3,1) both}
-.nav{transition:background .5s,backdrop-filter .5s,transform .5s}
-.nav:hover{backdrop-filter:blur(18px)}
-.home-copy .micro,.home-copy h2,.home-copy p,.home-copy .actions,.home-copy .meta{animation:luxContentIn 1.2s cubic-bezier(.16,1,.3,1) both}
-.home-copy h2{animation-delay:.08s}.home-copy p{animation-delay:.16s}.home-copy .actions{animation-delay:.24s}.home-copy .meta{animation-delay:.32s}
-.launch-line{animation:luxContentIn 1.1s .15s both}
-.launch-grid a{transition:transform .65s cubic-bezier(.16,1,.3,1),box-shadow .65s,border-color .5s,background .5s}
-.private-archive{animation:luxContentIn 1.2s both}
-.archive-image{transition:transform .8s cubic-bezier(.16,1,.3,1),box-shadow .8s}
-.archive-image:hover{transform:translateY(-8px) scale(1.015);box-shadow:0 45px 120px #000}
-footer{animation:luxContentIn 1s .2s both}
-@keyframes pageLuxReveal{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}
-@keyframes luxContentIn{from{opacity:0;transform:translateY(28px);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
-@media(max-width:900px){
- .warning-body{grid-template-columns:1fr;gap:24px;padding:28px 24px}
- .warning-portrait{width:150px;max-width:150px;margin:auto}
- .warning-portrait img{width:62%;height:62%;padding:5px}
- .warning-copy h2{font-size:clamp(38px,12vw,62px)}
- .private-mark{width:auto;right:4%;left:4%;bottom:2%;padding:12px}
- .private-creator img{width:48px;height:48px}
- .private-mark b{font-size:22px}
-}
+.warning-body{grid-template-columns:230px 1fr;gap:52px;padding:45px 58px}.warning-portrait{width:230px;max-width:230px;justify-self:center}.warning-portrait img{width:58%;height:58%;padding:6px}.warning-portrait .portrait-ring{inset:8%}.warning-portrait>span{bottom:9%;font-size:6px;padding:7px 10px}.warning-copy h2{font-size:clamp(42px,6vw,78px)}
+.private-mark{width:min(350px,34vw);padding:15px;gap:6px}.private-creator img{width:54px;height:54px}.private-mark b{font-size:clamp(21px,2.7vw,35px)}.private-mark strong{font-size:8px}.private-mark>small{font-size:6px}
+#app{animation:pageLuxReveal 1.4s cubic-bezier(.16,1,.3,1) both}.nav{transition:background .5s,backdrop-filter .5s,transform .5s}.nav:hover{backdrop-filter:blur(18px)}
+.home-copy .micro,.home-copy h2,.home-copy p,.home-copy .actions,.home-copy .meta{animation:luxContentIn 1.2s cubic-bezier(.16,1,.3,1) both}.home-copy h2{animation-delay:.08s}.home-copy p{animation-delay:.16s}.home-copy .actions{animation-delay:.24s}.home-copy .meta{animation-delay:.32s}.launch-line{animation:luxContentIn 1.1s .15s both}.launch-grid a{transition:transform .65s cubic-bezier(.16,1,.3,1),box-shadow .65s,border-color .5s,background .5s}.private-archive{animation:luxContentIn 1.2s both}.archive-image{transition:transform .8s cubic-bezier(.16,1,.3,1),box-shadow .8s}.archive-image:hover{transform:translateY(-8px) scale(1.015);box-shadow:0 45px 120px #000}footer{animation:luxContentIn 1s .2s both}@keyframes pageLuxReveal{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}@keyframes luxContentIn{from{opacity:0;transform:translateY(28px);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
+.contact-archive{position:relative;overflow:hidden;padding:100px max(24px,calc((100vw - 1180px)/2));background:linear-gradient(180deg,#07080c,#030407);color:#f5eee2;border-top:1px solid #ffffff10}.contact-archive:before{content:"";position:absolute;width:600px;height:600px;right:-260px;top:-260px;border:1px solid #d7bb7218;border-radius:50%;animation:oveshOrbitReverse 32s linear infinite}.contact-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.contact-copy h3{margin:18px 0 20px;font:500 clamp(48px,7vw,92px)/.84 'Playfair Display',serif;letter-spacing:-.06em}.contact-copy h3 em{color:#d7bb72}.contact-copy p{max-width:570px;color:#858a95;line-height:1.8}.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}.contact-card{display:block;padding:20px;border:1px solid #ffffff14;background:#0b0d12;transition:transform .45s,background .45s,border-color .45s;position:relative;overflow:hidden}.contact-card:after{content:"";position:absolute;top:0;bottom:0;left:-100%;width:45%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-18deg)}.contact-card:hover{transform:translateY(-7px);background:#11141b;border-color:#d7bb7250}.contact-card:hover:after{animation:oveshShimmer 1s ease forwards}.contact-card b{display:block;color:#d7bb72;font-size:7px;letter-spacing:.2em;margin-bottom:9px}.contact-card span{display:block;color:#f5eee2;font-size:13px}.contact-visual{display:flex;justify-content:center}.contact-portrait{width:min(360px,80vw);aspect-ratio:1;position:relative;padding:14px;border:1px solid #d7bb7250;background:#090b10;box-shadow:0 35px 100px #000}.contact-portrait img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.82);transition:transform 1s cubic-bezier(.16,1,.3,1),filter 1s}.contact-portrait:hover img{transform:scale(1.035);filter:saturate(1)}.contact-portrait:before{content:"";position:absolute;inset:-18px;border:1px solid #d7bb7218;border-radius:50%;animation:oveshOrbit 22s linear infinite}.contact-portrait span{position:absolute;left:28px;bottom:28px;padding:8px 11px;background:#050609e8;border:1px solid #d7bb7240;color:#d7bb72;font-size:7px;letter-spacing:.18em}.contact-note{margin-top:22px;color:#5f646f;font-size:7px;letter-spacing:.1em;line-height:1.7}
+@media(max-width:900px){.warning-body{grid-template-columns:1fr;gap:24px;padding:28px 24px}.warning-portrait{width:150px;max-width:150px;margin:auto}.warning-portrait img{width:62%;height:62%;padding:5px}.warning-copy h2{font-size:clamp(38px,12vw,62px)}.private-mark{width:auto;right:4%;left:4%;bottom:2%;padding:12px}.private-creator img{width:48px;height:48px}.private-mark b{font-size:22px}.contact-inner{grid-template-columns:1fr;gap:45px}.contact-grid{grid-template-columns:1fr}.contact-portrait{width:min(280px,78vw)}}
 </style>
 </head>
 <body class="locked home">
 <div id="gate">
-  <div class="gate-bg"></div><div class="stars"></div>
-  <div class="gate-top"><span>OVESH™ / PRIVATE FORMULA ACCESS</span><b>FORMULA 01</b></div>
-  <div class="gate-copy">
-    <div class="micro">A NEW SKINCARE EXPERIENCE</div>
-    <h1>Need <em>glow?</em></h1>
-    <p>Try OVESH Vitamin C Serum</p><div class="rule"></div>
-    <form id="entry"><input id="password" type="password" autocomplete="off" placeholder="enter access code"><button>Unlock</button></form>
-    <div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small>
-  </div>
-  <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div>
-  <div class="scan"></div>
+  <div class="gate-bg"></div><div class="stars"></div><div class="gate-top"><span>OVESH™ / PRIVATE FORMULA ACCESS</span><b>FORMULA 01</b></div>
+  <div class="gate-copy"><div class="micro">A NEW SKINCARE EXPERIENCE</div><h1>Need <em>glow?</em></h1><p>Try OVESH Vitamin C Serum</p><div class="rule"></div><form id="entry"><input id="password" type="password" autocomplete="off" placeholder="enter access code"><button>Unlock</button></form><div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small></div>
+  <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div><div class="scan"></div>
   <div class="private-mark"><div class="private-creator"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator" loading="eager"><div><span>PRIVATE PROJECT</span><small>CREATOR / OWNER</small></div></div><b>© 2026<br>OVESH MALPURA<br>CYBER LABS</b><strong>ALL RIGHTS RESERVED</strong><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div>
 </div>
-<div id="warning" class="warning-overlay" aria-hidden="true">
-  <div class="warning-backdrop"></div>
-  <div class="warning-panel">
-    <div class="warning-scan"></div>
-    <div class="warning-head"><span>OVESH™ SECURITY PROTOCOL</span><b>ACCESS GRANTED</b></div>
-    <div class="warning-body">
-      <div class="warning-portrait"><div class="portrait-ring"></div><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator and Owner" loading="eager"><span>CREATOR / OWNER</span></div>
-      <div class="warning-copy">
-        <div class="warning-code">⚠ PRIVATE PROJECT · AUTHORIZED ACCESS ONLY</div>
-        <h2>READ BEFORE<br><em>ENTERING.</em></h2>
-        <p>You are entering a protected OVESH™ project environment. This experience is an original academic and creative project created by Ovesh Malpura Cyber Labs.</p>
-        <div class="warning-copyright"><strong>© 2026 OVESH MALPURA<br>CYBER LABS</strong><span>ALL RIGHTS RESERVED</span></div>
-        <p class="warning-legal">The project concept, visual identity, interface, written content, presentation structure and associated creative materials are private project work. Unauthorized copying, reproduction, distribution, modification or republication is prohibited.</p>
-        <div class="warning-actions"><button id="acknowledge">I UNDERSTAND — ENTER PROJECT <span>↗</span></button><small>By continuing, you acknowledge this private-project notice.</small></div>
-      </div>
-    </div>
-  </div>
-</div>
+<div id="warning" class="warning-overlay" aria-hidden="true"><div class="warning-backdrop"></div><div class="warning-panel"><div class="warning-scan"></div><div class="warning-head"><span>OVESH™ SECURITY PROTOCOL</span><b>ACCESS GRANTED</b></div><div class="warning-body"><div class="warning-portrait"><div class="portrait-ring"></div><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator and Owner" loading="eager"><span>CREATOR / OWNER</span></div><div class="warning-copy"><div class="warning-code">⚠ PRIVATE PROJECT · AUTHORIZED ACCESS ONLY</div><h2>READ BEFORE<br><em>ENTERING.</em></h2><p>You are entering a protected OVESH™ project environment. This experience is an original academic and creative project created by Ovesh Malpura Cyber Labs.</p><div class="warning-copyright"><strong>© 2026 OVESH MALPURA<br>CYBER LABS</strong><span>ALL RIGHTS RESERVED</span></div><p class="warning-legal">The project concept, visual identity, interface, written content, presentation structure and associated creative materials are private project work. Unauthorized copying, reproduction, distribution, modification or republication is prohibited.</p><div class="warning-actions"><button id="acknowledge">I UNDERSTAND — ENTER PROJECT <span>↗</span></button><small>By continuing, you acknowledge this private-project notice.</small></div></div></div></div></div>
 <main id="app">
-<nav class="nav">
-  <a class="brand" href="index.html">OVESH<sup>™</sup></a>
-  <div class="links">
-    <a href="product.html">Product</a><a href="formula.html">Formula</a><a href="science.html">Science</a><a href="ingredients.html">Ingredients</a><a href="routine.html">C + Glutathione</a>
-  </div>
-  <a class="nav-cta" href="formula.html">Open formula ↗</a>
-</nav>
-<section class="home-hero">
-  <div class="home-copy">
-    <div class="micro">VITAMIN C · NIGHT RADIANCE</div>
-    <h2>RADIANCE<br><em>UNLOCKED.</em></h2>
-    <p>A cinematic Vitamin C serum concept where formulation science meets a luxury night-serum world.</p>
-    <div class="actions"><a class="gold" href="product.html">Discover OVESH</a><a class="ghost" href="formula.html">View formula</a></div>
-    <div class="meta"><span>SEALED FORMULA · 01</span><span>SCIENCE × SKINCARE</span></div>
-  </div>
-  <div class="stage"><div class="halo"></div><div class="ring"></div><div class="ring r2"></div><div class="product">
-    <div class="box"><b>OVESH</b><span>VITAMIN C<br>SERUM</span></div>
-    <div class="bottle"><div class="cap">OVESH</div><div class="glass"></div><div class="label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><i>SEALED · 01</i></div></div>
-  </div></div>
-</section>
-<section class="chapter-launch">
-  <div class="launch-line"><span>THE EXPERIENCE</span><i></i><span>05 CHAPTERS</span></div>
-  <div class="launch-grid">
-    <a href="product.html"><b>01</b><span>Product</span><small>Meet the serum</small><em>↗</em></a>
-    <a href="formula.html"><b>02</b><span>Formula</span><small>Explore the architecture</small><em>↗</em></a>
-    <a href="science.html"><b>03</b><span>Science</span><small>Understand Vitamin C</small><em>↗</em></a>
-    <a href="ingredients.html"><b>04</b><span>Ingredients</span><small>Inspect each active</small><em>↗</em></a>
-    <a href="routine.html"><b>05</b><span>C + Glutathione</span><small>Full antioxidant routine</small><em>↗</em></a>
-  </div>
-</section>
-<section class="private-archive">
-  <div class="archive-image"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — OVESH Cyber Labs creator" loading="lazy"><span>CREATOR / OWNER</span></div>
-  <div class="archive-copy"><div class="micro">PRIVATE DIGITAL ARCHIVE · OVESH CYBER LABS</div><h3>OVESH<br><em>MALPURA.</em></h3><p>This is a private project and original creative work by Ovesh Malpura Cyber Labs. Content, visual identity, concept, interface and project materials are reserved.</p><div class="copyright-line">© 2026 OVESH MALPURA CYBER LABS <span>ALL RIGHTS RESERVED</span></div><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div>
-</section>
+<nav class="nav"><a class="brand" href="index.html">OVESH<sup>™</sup></a><div class="links"><a href="product.html">Product</a><a href="formula.html">Formula</a><a href="science.html">Science</a><a href="ingredients.html">Ingredients</a><a href="routine.html">C + Glutathione</a></div><a class="nav-cta" href="formula.html">Open formula ↗</a></nav>
+<section class="home-hero"><div class="home-copy"><div class="micro">VITAMIN C · NIGHT RADIANCE</div><h2>RADIANCE<br><em>UNLOCKED.</em></h2><p>A cinematic Vitamin C serum concept where formulation science meets a luxury night-serum world.</p><div class="actions"><a class="gold" href="product.html">Discover OVESH</a><a class="ghost" href="formula.html">View formula</a></div><div class="meta"><span>SEALED FORMULA · 01</span><span>SCIENCE × SKINCARE</span></div></div><div class="stage"><div class="halo"></div><div class="ring"></div><div class="ring r2"></div><div class="product"><div class="box"><b>OVESH</b><span>VITAMIN C<br>SERUM</span></div><div class="bottle"><div class="cap">OVESH</div><div class="glass"></div><div class="label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><i>SEALED · 01</i></div></div></div></div></section>
+<section class="chapter-launch"><div class="launch-line"><span>THE EXPERIENCE</span><i></i><span>05 CHAPTERS</span></div><div class="launch-grid"><a href="product.html"><b>01</b><span>Product</span><small>Meet the serum</small><em>↗</em></a><a href="formula.html"><b>02</b><span>Formula</span><small>Explore the architecture</small><em>↗</em></a><a href="science.html"><b>03</b><span>Science</span><small>Understand Vitamin C</small><em>↗</em></a><a href="ingredients.html"><b>04</b><span>Ingredients</span><small>Inspect each active</small><em>↗</em></a><a href="routine.html"><b>05</b><span>C + Glutathione</span><small>Full antioxidant routine</small><em>↗</em></a></div></section>
+<section class="private-archive"><div class="archive-image"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — OVESH Cyber Labs creator" loading="lazy"><span>CREATOR / OWNER</span></div><div class="archive-copy"><div class="micro">PRIVATE DIGITAL ARCHIVE · OVESH CYBER LABS</div><h3>OVESH<br><em>MALPURA.</em></h3><p>This is a private project and original creative work by Ovesh Malpura Cyber Labs. Content, visual identity, concept, interface and project materials are reserved.</p><div class="copyright-line">© 2026 OVESH MALPURA CYBER LABS <span>ALL RIGHTS RESERVED</span></div><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div></section>
+<section class="contact-archive"><div class="contact-inner"><div class="contact-copy"><div class="micro">REACH THE CREATOR · OVESH CYBER LABS</div><h3>LET'S<br><em>CONNECT.</em></h3><p>For project collaboration, technology conversations, or questions about this academic experience, connect through the public channels below.</p><div class="contact-grid"><a class="contact-card" href="https://malpuraovesh.vercel.app/" target="_blank" rel="noopener"><b>PORTFOLIO</b><span>Ovesh Malpura ↗</span></a><a class="contact-card" href="https://www.instagram.com/im.ovesh/" target="_blank" rel="noopener"><b>INSTAGRAM</b><span>@im.ovesh ↗</span></a></div><div class="contact-note">PUBLIC CONTACT CHANNELS ONLY · OVESH MALPURA CYBER LABS · EDUCATIONAL PROJECT · 2026</div></div><div class="contact-visual"><div class="contact-portrait"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — OVESH Cyber Labs" loading="lazy"><span>OVESH MALPURA · CYBER LABS</span></div></div></div></section>
 <footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span><span>© OVESH MALPURA CYBER LABS</span></footer>
 </main>
 <script>
 const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error'),warning=document.getElementById('warning'),ack=document.getElementById('acknowledge');
 function showWarning(){warning.classList.add('visible');warning.setAttribute('aria-hidden','false');setTimeout(()=>ack.focus(),500)}
 function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){document.body.classList.add('unlocking');gate.classList.add('unlocking');setTimeout(()=>{document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden');showWarning()},1050)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
-form.addEventListener('submit',unlock);
-ack.addEventListener('click',()=>{warning.classList.add('leaving');setTimeout(()=>{warning.classList.remove('visible','leaving');warning.setAttribute('aria-hidden','true');sessionStorage.setItem('oveshUnlocked','1')},700)});
-if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
-const stage=document.querySelector('.stage'),product=document.querySelector('.product');
-if(stage&&product){stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='')}
+form.addEventListener('submit',unlock);ack.addEventListener('click',()=>{warning.classList.add('leaving');setTimeout(()=>{warning.classList.remove('visible','leaving');warning.setAttribute('aria-hidden','true');sessionStorage.setItem('oveshUnlocked','1')},700)});if(sessionStorage.getItem('oveshUnlocked')==='1'){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
+const stage=document.querySelector('.stage'),product=document.querySelector('.product');if(stage&&product){stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='')}
 </script>
 </body></html>
