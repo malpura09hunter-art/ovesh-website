@@ -34,6 +34,9 @@
     { "source": "/oveshcloud/trash", "destination": "/oveshcloud/index.html" }
   ],
   "headers": [
+    { "source": "/vitaminserum", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
+    { "source": "/vitaminserum/", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
+    { "source": "/vitaminserum/(.*).html", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
     { "source": "/oveshcloud/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
     { "source": "/compiler.html", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
     { "source": "/api/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
