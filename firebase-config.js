@@ -46,7 +46,6 @@ async function requireAdmin(onReady,onDenied){
 function fmtDate(ts){if(!ts)return '—';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleDateString('en-IN',{year:'numeric',month:'short',day:'numeric'});}
 function friendlyError(err){const map={'auth/user-not-found':'No account found with that email.','auth/wrong-password':'Incorrect password. Try again.','auth/invalid-credential':'Incorrect email or password.','auth/email-already-in-use':'An account with that email already exists.','auth/weak-password':'Password should be at least 6 characters.','auth/invalid-email':'Please enter a valid email address.','auth/too-many-requests':'Too many attempts. Please wait a moment and try again.','auth/network-request-failed':'Network error — check your connection and try again.','auth/requires-recent-login':'Please log out and log back in, then try this action again.','auth/user-disabled':'This account has been disabled. Contact support.','auth/account-exists-with-different-credential':'An account already exists with this email using a different sign-in method.','auth/popup-blocked':'Your browser blocked the sign-in popup — trying an alternate method.','auth/unauthorized-domain':'This domain is not authorized for Google Sign-In. Contact the site owner.','permission-denied':'You don\'t have permission to do that.','unavailable':'Service temporarily unavailable — check your connection and try again.','deadline-exceeded':'The request timed out. Please try again.'};return map[err.code]||err.message||'Something went wrong. Please try again.';}
 
-/* OveshCloud-only visual/login enhancement loader. */
 if(location.pathname.startsWith('/oveshcloud')){
   const s=document.createElement('script');
   s.src='/oveshcloud/hero-security.js?v=20260821';
@@ -54,7 +53,7 @@ if(location.pathname.startsWith('/oveshcloud')){
   document.head.appendChild(s);
 }
 
-/* Runtime guard: app.js expects telemetry/security nodes that older markup may not contain. */
+/* Safe compatibility nodes + birthday removal. */
 (function(){
   const ids=['loginDevice','loginBrowser','loginOS','loginLocation','loginIP','secDevice','secBrowser','secOS','secScreen','secIP','secTime','secPrecise','secIPLocation'];
   ids.forEach(id=>{if(!document.getElementById(id)){const n=document.createElement('span');n.id=id;n.hidden=true;document.body.appendChild(n)}});
@@ -62,51 +61,39 @@ if(location.pathname.startsWith('/oveshcloud')){
   style.textContent='#birthdayView{display:none!important;visibility:hidden!important;pointer-events:none!important}';
   document.head.appendChild(style);
   const b=document.getElementById('birthdayView');
-  if(b){b.classList.add('hidden');b.setAttribute('aria-hidden','true')}
+  if(b){b.classList.add('hidden');b.setAttribute('aria-hidden','true');b.style.setProperty('display','none','important')}
 })();
 
-/* ============================================================
-   OVESH CLOUD LOGIN RECOVERY
-   Prevents a failed visual/security transition from leaving the
-   user on a blank screen. This does not bypass authentication:
-   it only recovers the already-authenticated UI transition.
-   ============================================================ */
+/* Authenticated security-screen recovery. Authentication itself is still performed by /api/oveshcloud-auth. */
 (function(){
   function boot(){
     const sec=document.getElementById('securityView');
     const welcome=document.getElementById('welcomeView');
     const app=document.getElementById('appView');
     const login=document.getElementById('loginView');
-    const birthday=document.getElementById('birthdayView');
+    const enter=document.getElementById('enterBtn');
     if(!sec||!welcome||!app||!login)return;
-
-    if(birthday){birthday.classList.add('hidden');birthday.style.setProperty('display','none','important');birthday.setAttribute('aria-hidden','true')}
-
     const recover=()=>{
       if(!sec.classList.contains('hidden')){
         sec.style.display='block';
         const modal=sec.querySelector('.security-modal');
-        if(modal)modal.style.display='block';
+        if(modal){modal.style.display='block';modal.style.visibility='visible';modal.style.opacity='1'}
         if(!sec.dataset.recoveryTimer){
           sec.dataset.recoveryTimer='1';
           setTimeout(()=>{
             sec.classList.add('hidden');
             sec.style.display='none';
-            welcome.classList.add('hidden');
-            welcome.style.display='none';
-            app.classList.remove('hidden');
-            app.style.display='grid';
-            try{if(typeof window.render==='function')window.render('command')}catch(e){console.warn('Workspace render recovery:',e)}
-            const page=document.getElementById('page');
-            if(page&&!page.innerHTML.trim())page.innerHTML='<div style="padding:40px;color:#8e99ad;font-family:system-ui">OVESH CLOUD workspace loading…</div>';
+            if(enter){
+              enter.click();
+            }else{
+              welcome.classList.add('hidden');
+              app.classList.remove('hidden');
+            }
           },2400);
         }
       }
     };
-
-    const observer=new MutationObserver(recover);
-    observer.observe(sec,{attributes:true,attributeFilter:['class','style']});
-    observer.observe(welcome,{attributes:true,attributeFilter:['class','style']});
+    new MutationObserver(recover).observe(sec,{attributes:true,attributeFilter:['class','style']});
     recover();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
