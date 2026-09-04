@@ -53,3 +53,14 @@ if(location.pathname.startsWith('/oveshcloud')){
   s.defer=true;
   document.head.appendChild(s);
 }
+
+/* Runtime guard: app.js expects telemetry/security nodes that older markup may not contain. */
+(function(){
+  const ids=['loginDevice','loginBrowser','loginOS','loginLocation','loginIP','secDevice','secBrowser','secOS','secScreen','secIP','secTime','secPrecise','secIPLocation'];
+  ids.forEach(id=>{if(!document.getElementById(id)){const n=document.createElement('span');n.id=id;n.hidden=true;document.body.appendChild(n)}});
+  const style=document.createElement('style');
+  style.textContent='#birthdayView{display:none!important;visibility:hidden!important;pointer-events:none!important}';
+  document.head.appendChild(style);
+  const b=document.getElementById('birthdayView');
+  if(b){b.classList.add('hidden');b.setAttribute('aria-hidden','true')}
+})();
