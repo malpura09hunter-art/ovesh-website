@@ -64,3 +64,50 @@ if(location.pathname.startsWith('/oveshcloud')){
   const b=document.getElementById('birthdayView');
   if(b){b.classList.add('hidden');b.setAttribute('aria-hidden','true')}
 })();
+
+/* ============================================================
+   OVESH CLOUD LOGIN RECOVERY
+   Prevents a failed visual/security transition from leaving the
+   user on a blank screen. This does not bypass authentication:
+   it only recovers the already-authenticated UI transition.
+   ============================================================ */
+(function(){
+  function boot(){
+    const sec=document.getElementById('securityView');
+    const welcome=document.getElementById('welcomeView');
+    const app=document.getElementById('appView');
+    const login=document.getElementById('loginView');
+    const birthday=document.getElementById('birthdayView');
+    if(!sec||!welcome||!app||!login)return;
+
+    if(birthday){birthday.classList.add('hidden');birthday.style.setProperty('display','none','important');birthday.setAttribute('aria-hidden','true')}
+
+    const recover=()=>{
+      if(!sec.classList.contains('hidden')){
+        sec.style.display='block';
+        const modal=sec.querySelector('.security-modal');
+        if(modal)modal.style.display='block';
+        if(!sec.dataset.recoveryTimer){
+          sec.dataset.recoveryTimer='1';
+          setTimeout(()=>{
+            sec.classList.add('hidden');
+            sec.style.display='none';
+            welcome.classList.add('hidden');
+            welcome.style.display='none';
+            app.classList.remove('hidden');
+            app.style.display='grid';
+            try{if(typeof window.render==='function')window.render('command')}catch(e){console.warn('Workspace render recovery:',e)}
+            const page=document.getElementById('page');
+            if(page&&!page.innerHTML.trim())page.innerHTML='<div style="padding:40px;color:#8e99ad;font-family:system-ui">OVESH CLOUD workspace loading…</div>';
+          },2400);
+        }
+      }
+    };
+
+    const observer=new MutationObserver(recover);
+    observer.observe(sec,{attributes:true,attributeFilter:['class','style']});
+    observer.observe(welcome,{attributes:true,attributeFilter:['class','style']});
+    recover();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
