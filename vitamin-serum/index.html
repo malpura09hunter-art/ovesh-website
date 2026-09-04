@@ -20,16 +20,17 @@
 #app{animation:pageLuxReveal 1.4s cubic-bezier(.16,1,.3,1) both}.nav{transition:background .5s,backdrop-filter .5s,transform .5s}.nav:hover{backdrop-filter:blur(18px)}
 .home-copy .micro,.home-copy h2,.home-copy p,.home-copy .actions,.home-copy .meta{animation:luxContentIn 1.2s cubic-bezier(.16,1,.3,1) both}.home-copy h2{animation-delay:.08s}.home-copy p{animation-delay:.16s}.home-copy .actions{animation-delay:.24s}.home-copy .meta{animation-delay:.32s}.launch-line{animation:luxContentIn 1.1s .15s both}.launch-grid a{transition:transform .65s cubic-bezier(.16,1,.3,1),box-shadow .65s,border-color .5s,background .5s}.private-archive{animation:luxContentIn 1.2s both}.archive-image{transition:transform .8s cubic-bezier(.16,1,.3,1),box-shadow .8s}.archive-image:hover{transform:translateY(-8px) scale(1.015);box-shadow:0 45px 120px #000}footer{animation:luxContentIn 1s .2s both}@keyframes pageLuxReveal{from{opacity:0;filter:blur(8px)}to{opacity:1;filter:none}}@keyframes luxContentIn{from{opacity:0;transform:translateY(28px);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
 .contact-archive{position:relative;overflow:hidden;padding:100px max(24px,calc((100vw - 1180px)/2));background:linear-gradient(180deg,#07080c,#030407);color:#f5eee2;border-top:1px solid #ffffff10}.contact-archive:before{content:"";position:absolute;width:600px;height:600px;right:-260px;top:-260px;border:1px solid #d7bb7218;border-radius:50%;animation:oveshOrbitReverse 32s linear infinite}.contact-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.contact-copy h3{margin:18px 0 20px;font:500 clamp(48px,7vw,92px)/.84 'Playfair Display',serif;letter-spacing:-.06em}.contact-copy h3 em{color:#d7bb72}.contact-copy p{max-width:570px;color:#858a95;line-height:1.8}.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}.contact-card{display:block;padding:20px;border:1px solid #ffffff14;background:#0b0d12;transition:transform .45s,background .45s,border-color .45s;position:relative;overflow:hidden}.contact-card:after{content:"";position:absolute;top:0;bottom:0;left:-100%;width:45%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-18deg)}.contact-card:hover{transform:translateY(-7px);background:#11141b;border-color:#d7bb7250}.contact-card:hover:after{animation:oveshShimmer 1s ease forwards}.contact-card b{display:block;color:#d7bb72;font-size:7px;letter-spacing:.2em;margin-bottom:9px}.contact-card span{display:block;color:#f5eee2;font-size:13px}.contact-visual{display:flex;justify-content:center}.contact-portrait{width:min(360px,80vw);aspect-ratio:1;position:relative;padding:14px;border:1px solid #d7bb7250;background:#090b10;box-shadow:0 35px 100px #000}.contact-portrait img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.82);transition:transform 1s cubic-bezier(.16,1,.3,1),filter 1s}.contact-portrait:hover img{transform:scale(1.035);filter:saturate(1)}.contact-portrait:before{content:"";position:absolute;inset:-18px;border:1px solid #d7bb7218;border-radius:50%;animation:oveshOrbit 22s linear infinite}.contact-portrait span{position:absolute;left:28px;bottom:28px;padding:8px 11px;background:#050609e8;border:1px solid #d7bb7240;color:#d7bb72;font-size:7px;letter-spacing:.18em}.contact-note{margin-top:22px;color:#5f646f;font-size:7px;letter-spacing:.1em;line-height:1.7}
-/* iOS/Safari stability: keep the unlocked document renderable during cinematic transitions. */
 html,body{min-height:100%;background:#030406}body{overflow-x:hidden}#app{min-height:100svh;visibility:visible}body.unlocked #app{opacity:1!important;visibility:visible!important;filter:none!important;transform:none!important;animation:none!important}body.unlocked #gate{opacity:0!important;visibility:hidden!important;pointer-events:none!important}body.unlocked #warning{visibility:visible;opacity:1;pointer-events:auto}body.unlocked #warning:not(.visible){visibility:hidden;opacity:0;pointer-events:none}
 @media(max-width:900px){.warning-body{grid-template-columns:1fr;gap:24px;padding:28px 24px}.warning-portrait{width:150px;max-width:150px;margin:auto}.warning-portrait img{width:62%;height:62%;padding:5px}.warning-copy h2{font-size:clamp(38px,12vw,62px)}.private-mark{width:auto;right:4%;left:4%;bottom:2%;padding:12px}.private-creator img{width:48px;height:48px}.private-mark b{font-size:22px}.contact-inner{grid-template-columns:1fr;gap:45px}.contact-grid{grid-template-columns:1fr}.contact-portrait{width:min(280px,78vw)}body.unlocked{overflow-x:hidden}.warning-overlay{padding:12px;padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom))}.warning-panel{width:100%;max-height:calc(100svh - 24px);-webkit-overflow-scrolling:touch}.warning-head{padding:15px 17px}.warning-actions button{width:100%;min-height:50px}.home-hero{min-height:100svh}}
 @media(prefers-reduced-motion:reduce){#app{animation:none!important}}
+/* Mobile interaction hardening */
+@media(max-width:900px){#gate{position:fixed;inset:0;width:100%;height:100%;height:100dvh;min-height:100svh;touch-action:manipulation}.gate-copy{z-index:20}.gate-copy form{position:relative;z-index:30}.gate-copy input{position:relative;z-index:31;pointer-events:auto;-webkit-appearance:none;appearance:none}.gate-copy button{position:relative;z-index:32;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}.warning-overlay{z-index:1000}.warning-panel{position:relative;z-index:1001}.warning-actions button{position:relative;z-index:1002;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}}
 </style>
 </head>
 <body class="locked home">
 <div id="gate">
   <div class="gate-bg"></div><div class="stars"></div><div class="gate-top"><span>OVESH™ / PRIVATE FORMULA ACCESS</span><b>FORMULA 01</b></div>
-  <div class="gate-copy"><div class="micro">A NEW SKINCARE EXPERIENCE</div><h1>Need <em>glow?</em></h1><p>Try OVESH Vitamin C Serum</p><div class="rule"></div><form id="entry"><input id="password" type="password" autocomplete="off" placeholder="enter access code"><button type="submit">Unlock</button></form><div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small></div>
+  <div class="gate-copy"><div class="micro">A NEW SKINCARE EXPERIENCE</div><h1>Need <em>glow?</em></h1><p>Try OVESH Vitamin C Serum</p><div class="rule"></div><form id="entry"><input id="password" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="enter access code"><button type="submit" id="unlockBtn">Unlock</button></form><div id="error"></div><small>The bottle is sealed · enter the access code to reveal the formula</small></div>
   <div class="sealed-product"><div class="sealed-cap">SEALED</div><div class="sealed-body"></div><div class="sealed-label"><small>VITAMIN C</small><strong>OVESH<br>SERUM</strong><span>SEALED · FORMULA 01</span></div></div><div class="scan"></div>
   <div class="private-mark"><div class="private-creator"><img src="/ovesh-malpura-profile.jpg.PNG" alt="Ovesh Malpura — Creator" loading="eager"><div><span>PRIVATE PROJECT</span><small>CREATOR / OWNER</small></div></div><b>© 2026<br>OVESH MALPURA<br>CYBER LABS</b><strong>ALL RIGHTS RESERVED</strong><small>PRIVATE PROJECT · DO NOT COPY · REPRODUCE · DISTRIBUTE · OR REPUBLISH WITHOUT PERMISSION</small></div>
 </div>
@@ -43,14 +44,60 @@ html,body{min-height:100%;background:#030406}body{overflow-x:hidden}#app{min-hei
 <footer><span>OVESH™ SERUM</span><span>Educational Life Science Project · 2026</span><span>© OVESH MALPURA CYBER LABS</span></footer>
 </main>
 <script>
-const gate=document.getElementById('gate'),form=document.getElementById('entry'),input=document.getElementById('password'),error=document.getElementById('error'),warning=document.getElementById('warning'),ack=document.getElementById('acknowledge');
-function safeSessionGet(){try{return sessionStorage.getItem('oveshUnlocked')==='1'}catch(e){return false}}
-function safeSessionSet(){try{sessionStorage.setItem('oveshUnlocked','1')}catch(e){}}
-function showWarning(){warning.classList.add('visible');warning.setAttribute('aria-hidden','false');setTimeout(()=>{if(ack)ack.focus()},350)}
-function revealProject(){document.body.classList.remove('locked','unlocking');document.body.classList.add('unlocked');gate.classList.remove('unlocking');gate.classList.add('hidden');showWarning()}
-function unlock(e){e.preventDefault();if(input.value.trim().toLowerCase()==='ovesh'){document.body.classList.add('unlocking');gate.classList.add('unlocking');setTimeout(revealProject,700)}else{error.textContent='ACCESS DENIED · TRY AGAIN';input.value='';input.focus()}}
-form.addEventListener('submit',unlock);ack.addEventListener('click',()=>{warning.classList.add('leaving');setTimeout(()=>{warning.classList.remove('visible','leaving');warning.setAttribute('aria-hidden','true');safeSessionSet()},500)});
-if(safeSessionGet()){document.body.classList.remove('locked');document.body.classList.add('unlocked');gate.classList.add('hidden')}
-const stage=document.querySelector('.stage'),product=document.querySelector('.product');if(stage&&product){stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform=`rotateY(${(x-.5)*12}deg) rotateX(${(y-.5)*-8}deg)`});stage.addEventListener('pointerleave',()=>product.style.transform='')}
+(function(){
+  'use strict';
+  function init(){
+    var body=document.body;
+    var gate=document.getElementById('gate');
+    var form=document.getElementById('entry');
+    var input=document.getElementById('password');
+    var button=document.getElementById('unlockBtn');
+    var error=document.getElementById('error');
+    var warning=document.getElementById('warning');
+    var ack=document.getElementById('acknowledge');
+    if(!body||!gate||!form||!input||!button||!warning||!ack)return;
+    function sessionGet(){try{return window.sessionStorage&&window.sessionStorage.getItem('oveshUnlocked')==='1'}catch(e){return false}}
+    function sessionSet(){try{if(window.sessionStorage)window.sessionStorage.setItem('oveshUnlocked','1')}catch(e){}}
+    function showWarning(){warning.classList.add('visible');warning.setAttribute('aria-hidden','false');body.classList.add('unlocked');body.classList.remove('locked','unlocking');gate.classList.add('hidden');}
+    function unlock(ev){
+      if(ev&&ev.preventDefault)ev.preventDefault();
+      var value=(input.value||'').trim().toLowerCase();
+      if(value==='ovesh'){
+        if(error)error.textContent='';
+        showWarning();
+        setTimeout(function(){try{ack.focus()}catch(e){}},50);
+      }else{
+        if(error)error.textContent='ACCESS DENIED · TRY AGAIN';
+        input.value='';
+        try{input.focus()}catch(e){}
+      }
+      return false;
+    }
+    form.addEventListener('submit',unlock,false);
+    button.addEventListener('click',unlock,false);
+    ack.addEventListener('click',function(ev){
+      if(ev&&ev.preventDefault)ev.preventDefault();
+      warning.classList.remove('visible','leaving');
+      warning.setAttribute('aria-hidden','true');
+      body.classList.add('unlocked');
+      body.classList.remove('locked','unlocking');
+      gate.classList.add('hidden');
+      sessionSet();
+    },false);
+    if(sessionGet()){
+      body.classList.remove('locked','unlocking');
+      body.classList.add('unlocked');
+      gate.classList.add('hidden');
+      warning.classList.remove('visible');
+      warning.setAttribute('aria-hidden','true');
+    }
+    var stage=document.querySelector('.stage'),product=document.querySelector('.product');
+    if(stage&&product&&window.matchMedia&&window.matchMedia('(pointer:fine)').matches){
+      stage.addEventListener('pointermove',function(e){var r=stage.getBoundingClientRect(),x=e.clientX/r.width,y=e.clientY/r.height;product.style.transform='rotateY('+((x-.5)*12)+'deg) rotateX('+((y-.5)*-8)+'deg)';},false);
+      stage.addEventListener('pointerleave',function(){product.style.transform='';},false);
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,false);else init();
+})();
 </script>
 </body></html>
