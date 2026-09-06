@@ -5,6 +5,18 @@
 (function () {
   'use strict';
 
+  // Compatibility fix: app.js uses AbortSignal.timeout() for optional
+  // IP-location telemetry. Older Safari/WebViews do not provide it, and
+  // that missing API can throw synchronously before the countdown is started.
+  // Define the standard API before the user reaches the security screen.
+  if (typeof window.AbortSignal !== 'undefined' && typeof window.AbortSignal.timeout !== 'function') {
+    window.AbortSignal.timeout = function (milliseconds) {
+      var controller = new AbortController();
+      setTimeout(function () { controller.abort(); }, Math.max(0, Number(milliseconds) || 0));
+      return controller.signal;
+    };
+  }
+
   function get(id) { return document.getElementById(id); }
 
   function openAppSafely() {
@@ -30,21 +42,29 @@
     window.__oveshSecurityWrapped = true;
   }
 
-  // Safety recovery: if the security overlay is visible after authentication
-  // and the normal continuation handler has failed, expose the existing
-  // Continue control rather than leaving a dead-end overlay.
+  // Independent fallback: if the normal countdown is ever interrupted by a
+  // browser/API failure, recover from the visible security overlay without
+  // changing the intended security UX or login flow.
   document.addEventListener('DOMContentLoaded', function () {
     var security = get('securityView');
     var continueBtn = get('continueBtn');
-    if (!security || !continueBtn || continueBtn.__oveshRecoveryBound) return;
+    if (!security || !continueBtn) return;
 
     continueBtn.__oveshRecoveryBound = true;
     continueBtn.addEventListener('click', function () {
       setTimeout(function () {
-        if (!security.classList.contains('hidden')) {
-          openAppSafely();
-        }
+        if (!security.classList.contains('hidden')) openAppSafely();
       }, 0);
     }, true);
+
+    var observer = new MutationObserver(function () {
+      if (security.classList.contains('hidden')) return;
+      if (security.__oveshRecoveryTimer) return;
+      security.__oveshRecoveryTimer = setTimeout(function () {
+        security.__oveshRecoveryTimer = null;
+        if (!security.classList.contains('hidden')) openAppSafely();
+      }, 2500);
+    });
+    observer.observe(security, { attributes: true, attributeFilter: ['class'] });
   });
 })();
