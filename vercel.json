@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    { "source": "/admin", "destination": "/admin/admin.htm" },
+    { "source": "/admin/", "destination": "/admin/admin.htm" },
+    { "source": "/admin/dashboard", "destination": "/admin/admin-dashboard.html" },
+    { "source": "/admin/dashboard/", "destination": "/admin/admin-dashboard.html" },
     { "source": "/styles.css", "destination": "/vitamin-serum/styles.css" },
     { "source": "/vitaminserum", "destination": "/vitamin-serum/index.html" },
     { "source": "/vitaminserum/", "destination": "/vitamin-serum/index.html" },
