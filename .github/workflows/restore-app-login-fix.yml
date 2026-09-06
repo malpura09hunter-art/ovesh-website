@@ -1,0 +1,39 @@
+name: Restore OVESH Cloud app and repair login
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore app.js from known-good revision and apply minimal fix
+        run: |
+          git checkout da0e8c07649ae4a9ef16f3444786e108822caa39 -- oveshcloud/app.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('oveshcloud/app.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("$('#continueBtn').onclick=welcome;\nconst enterBtn=$('#enterBtn');", "$('#continueBtn')?.addEventListener('click',openApp);\nconst enterBtn=$('#enterBtn');")
+          s=s.replace("$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};", "$('#logoutBtn')?.addEventListener('click',()=>{sessionStorage.clear();location.reload()});")
+          p.write_text(s,encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/restore-app-login-fix.yml
+
+      - name: Commit repaired app
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add oveshcloud/app.js .github/workflows/restore-app-login-fix.yml
+          git commit -m "Restore complete OVESH Cloud app and repair login handlers"
+          git push
