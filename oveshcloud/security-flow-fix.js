@@ -25,26 +25,13 @@
     if (!app) return;
     if (security) security.classList.add('hidden');
     app.classList.remove('hidden');
-    document.body.classList.remove('security-active');
   }
 
-  // If the existing app exposes openApp, wrap it so an exception in optional
-  // security telemetry cannot leave the user trapped on the security overlay.
-  if (typeof window.openApp === 'function' && !window.__oveshSecurityWrapped) {
-    var originalOpenApp = window.openApp;
-    window.openApp = function () {
-      try { return originalOpenApp.apply(this, arguments); }
-      catch (error) {
-        console.error('[OVESH SECURITY] App transition failed:', error);
-        openAppSafely();
-      }
-    };
-    window.__oveshSecurityWrapped = true;
-  }
-
-  // Independent fallback: if the normal countdown is ever interrupted by a
-  // browser/API failure, recover from the visible security overlay without
-  // changing the intended security UX or login flow.
+  // Defense-in-depth fallback: openApp() itself (in app.js) now hides
+  // #securityView directly, which is the real fix for the stuck-overlay bug.
+  // This listener/observer pair stays only as a safety net in case a future
+  // change to the transition path regresses it again — it does nothing when
+  // the overlay is already hidden.
   document.addEventListener('DOMContentLoaded', function () {
     var security = get('securityView');
     var continueBtn = get('continueBtn');

@@ -15,7 +15,7 @@ function detectLogin(){let d=dev();setText('loginDevice',d.device);setText('logi
 async function auth(user,pass){let controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);try{let r=await fetch('/api/oveshcloud-auth',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({username:user,password:pass}),signal:controller.signal}),x={};try{x=await r.json()}catch{}if(!r.ok)throw Error(x.error||`Authentication failed (${r.status})`);return x}catch(e){if(e.name==='AbortError')throw Error('Authentication timed out. Please try again.');if(e instanceof TypeError)throw Error('Unable to reach Ovesh Cloud authentication server. Please try again.');throw e}finally{clearTimeout(timer)}}
 function showSecurity(data){securityData=data.security||{};let d=dev();$('#loginView')?.classList.add('hidden');$('#securityView')?.classList.remove('hidden');setText('secDevice',d.device);setText('secBrowser',d.browser);setText('secOS',d.os);setText('secScreen',d.screen);setText('secIP',securityData.ip||'Unavailable');setText('secTime',new Date(securityData.timestamp||Date.now()).toLocaleString('en-IN'));let p=$('#secPrecise');if(navigator.geolocation)navigator.geolocation.getCurrentPosition(x=>{if(p)p.textContent=`Permission granted · ${x.coords.latitude.toFixed(4)}, ${x.coords.longitude.toFixed(4)}`},()=>{if(p)p.textContent='Permission not granted'},{timeout:1500,maximumAge:300000});else if(p)p.textContent='Not supported';if(securityData.ip){fetch(`https://ipwho.is/${encodeURIComponent(securityData.ip)}`,{signal:AbortSignal.timeout(1400)}).then(r=>r.json()).then(x=>setText('secIPLocation',x.success===false?'Unavailable':[x.city,x.region,x.country].filter(Boolean).join(', ')||'Unavailable')).catch(()=>setText('secIPLocation','Unavailable'))}else setText('secIPLocation','Unavailable');say();let n=2;setText('countdown','Continuing in 2s');clearInterval(window.secTimer);window.secTimer=setInterval(()=>{n--;setText('countdown',n>0?`Continuing in ${n}s`:'Opening workspace…');if(n<=0){clearInterval(window.secTimer);openApp()}},1000)}
 function welcome(){openApp()}
-function openApp(){$('#welcomeView')?.classList.add('hidden');$('#appView')?.classList.remove('hidden');render('command');connectFirebase()}
+function openApp(){$('#securityView')?.classList.add('hidden');$('#appView')?.classList.remove('hidden');render('command');connectFirebase()}
 async function connectFirebase(){try{if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();await loadFiles();await loadCollege()}catch(e){console.warn(e);showToast('Cloud connection is not ready. Check Firebase Authentication, Firestore and Storage rules.')}}
 async function loadFiles(){try{let s=await firebase.firestore().collection('oveshCloudFiles').orderBy('createdAt','desc').limit(100).get();files=s.docs.map(d=>({id:d.id,...d.data()}))}catch{files=[]}}
 async function loadCollege(){if(!firebase.auth().currentUser)return;let db=firebase.firestore();for(const k of Object.keys(cols)){try{let s=await db.collection(cols[k]).limit(300).get();college[k]=s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){console.warn('College load',k,e);college[k]=[]}}render(currentPage==='college'?'college':'command')}
@@ -84,24 +84,6 @@ async function upload(){let input=$('#fileInput'),status=$('#uploadStatus');if(!
 function showToast(t){let x=$('#toast');x.textContent=t;x.classList.remove('hidden');setTimeout(()=>x.classList.add('hidden'),2800)}
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();let b=$('#loginBtn'),err=$('#loginError');b.disabled=true;err.textContent='';try{let x=await auth($('#username').value.trim(),$('#password').value);showSecurity(x);setText('loginIP',x.security?.ip||'Unavailable')}catch(x){err.textContent=x.message;b.disabled=false}});
 $('#continueBtn')?.addEventListener('click',openApp);
-const enterBtn=$('#enterBtn');
-if(enterBtn){
-  enterBtn.type='button';
-  enterBtn.addEventListener('click',function(e){
-    e.preventDefault();e.stopPropagation();
-    const welcomeView=$('#welcomeView'),appView=$('#appView'),loginView=$('#loginView'),securityView=$('#securityView');
-    if(loginView)loginView.classList.add('hidden');
-    if(securityView)securityView.classList.add('hidden');
-    if(welcomeView)welcomeView.classList.add('hidden');
-    if(appView){
-      appView.classList.remove('hidden');
-      appView.style.display='grid';
-    }
-    try{render('command')}catch(err){console.error('OVESH enter render',err);}
-    try{connectFirebase()}catch(err){console.error('OVESH Firebase connect',err);}
-  },{capture:true});
-}
 $('#logoutBtn')?.addEventListener('click',()=>{sessionStorage.clear();location.reload()});
-window.OVESH_ENTER_BUTTON_HARD_FIX_V1=true;
 detectLogin();
 })();
