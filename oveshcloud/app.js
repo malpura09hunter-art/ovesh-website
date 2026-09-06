@@ -83,5 +83,25 @@ function filterCollege(q){let s=(q||'').toLowerCase(),st=($('#statusFilter')?.va
 async function upload(){let input=$('#fileInput'),status=$('#uploadStatus');if(!input.files.length)return showToast('Choose files first.');try{for(let i=0;i<input.files.length;i++){let f=input.files[i],path=`ovesh-cloud/${uid()}/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`,ref=firebase.storage().ref(path),task=ref.put(f,{contentType:f.type||'application/octet-stream'});await new Promise((res,rej)=>task.on('state_changed',s=>status.textContent=`Uploading ${i+1}/${input.files.length} · ${Math.round(s.bytesTransferred/s.totalBytes*100)}%`,rej,res));let url=await ref.getDownloadURL();await firebase.firestore().collection('oveshCloudFiles').add({name:f.name,size:f.size,contentType:f.type||'application/octet-stream',storagePath:path,url,uploadedBy:uid(),createdAt:now()})}await loadFiles();showToast('Upload complete.');render('storage')}catch(e){console.error(e);status.textContent=e.code||e.message;showToast('Upload failed — check Firebase Storage rules.')}}
 function showToast(t){let x=$('#toast');x.textContent=t;x.classList.remove('hidden');setTimeout(()=>x.classList.add('hidden'),2800)}
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();let b=$('#loginBtn'),err=$('#loginError');b.disabled=true;err.textContent='';try{let x=await auth($('#username').value.trim(),$('#password').value);showSecurity(x);setText('loginIP',x.security?.ip||'Unavailable')}catch(x){err.textContent=x.message;b.disabled=false}});
-$('#continueBtn').onclick=welcome;$('#enterBtn').onclick=openApp;$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};detectLogin();
+$('#continueBtn').onclick=welcome;
+const enterBtn=$('#enterBtn');
+if(enterBtn){
+  enterBtn.type='button';
+  enterBtn.addEventListener('click',function(e){
+    e.preventDefault();e.stopPropagation();
+    const welcomeView=$('#welcomeView'),appView=$('#appView'),loginView=$('#loginView'),securityView=$('#securityView');
+    if(loginView)loginView.classList.add('hidden');
+    if(securityView)securityView.classList.add('hidden');
+    if(welcomeView)welcomeView.classList.add('hidden');
+    if(appView){
+      appView.classList.remove('hidden');
+      appView.style.display='grid';
+    }
+    try{render('command')}catch(err){console.error('OVESH enter render',err);}
+    try{connectFirebase()}catch(err){console.error('OVESH Firebase connect',err);}
+  },{capture:true});
+}
+$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};
+window.OVESH_ENTER_BUTTON_HARD_FIX_V1=true;
+detectLogin();
 })();
