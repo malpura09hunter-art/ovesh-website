@@ -15,3 +15,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 window.addEventListener('ovesh:b2-files',inject);
 window.OVESH_SHARE={share,inject};
 })();
+
+// Login safety guard: the legacy Security Logs overlay must never block entry.
+(()=>{'use strict';
+const continueToWorkspace=()=>{const b=document.getElementById('continueBtn');if(b){b.click();return true}return false};
+const enterWorkspace=()=>{const w=document.getElementById('welcomeView'),b=document.getElementById('enterBtn');if(w&&!w.classList.contains('hidden')&&b){b.click();return true}return false};
+const guard=()=>{const s=document.getElementById('securityView');if(s&&!s.classList.contains('hidden')){continueToWorkspace();setTimeout(enterWorkspace,80);setTimeout(enterWorkspace,250);setTimeout(enterWorkspace,700)}};
+new MutationObserver(guard).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
+setInterval(guard,250);
+})();
