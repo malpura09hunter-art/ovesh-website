@@ -1,32 +1,12 @@
 (()=>{'use strict';
 const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-let injected=false;
-function collectContext(){
-  const lines=[];
-  const page=document.querySelector('#page');
-  if(page) lines.push('CURRENT PAGE: '+(document.querySelector('#pageTitle')?.textContent||'Unknown'));
-  try{
-    if(window.firebase?.auth?.().currentUser) lines.push('AUTHENTICATED OWNER: yes');
-    const nav=[...document.querySelectorAll('#nav button')].map(x=>x.textContent.trim()).filter(Boolean);
-    if(nav.length) lines.push('NAVIGATION: '+nav.join(' | '));
-  }catch{}
-  if(page) lines.push('VISIBLE WORKSPACE TEXT:\n'+page.innerText.slice(0,12000));
-  return lines.join('\n').slice(0,28000);
-}
-function add(){
-  if(injected||!document.querySelector('#page')||!document.querySelector('#pageTitle'))return;
-  const title=document.querySelector('#pageTitle').textContent.trim();
-  if(title!=='Command Center')return;
-  const page=document.querySelector('#page');
-  if(page.querySelector('.ask-ovesh-card')){injected=true;return}
-  const card=document.createElement('section');
-  card.className='ask-ovesh-card';
-  card.innerHTML=`<div class="ask-ovesh-head"><div class="ask-ovesh-title"><div class="ask-ovesh-orb">AI</div><div><h3>ASK OVESH AI</h3><p>Your intelligent cloud workspace assistant</p></div></div><span class="ask-ovesh-status">READY</span></div><div class="ask-ovesh-prompts"><button data-ai-prompt="Find my most relevant files">Find relevant files</button><button data-ai-prompt="What is in my College workspace?">Analyze College</button><button data-ai-prompt="Give me a quick overview of my cloud">Cloud overview</button></div><form class="ask-ovesh-form"><input class="ask-ovesh-input" autocomplete="off" placeholder="Ask anything about your OVESH CLOUD…" maxlength="1200"><button class="ask-ovesh-send primary-btn" type="submit">ASK AI →</button></form><div class="ask-ovesh-answer"></div><div class="ask-ovesh-context">Context-aware: uses the workspace information currently available to your session.</div></section>`;
-  page.appendChild(card); injected=true;
-  const input=card.querySelector('.ask-ovesh-input'),answer=card.querySelector('.ask-ovesh-answer'),form=card.querySelector('form');
-  card.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.aiPrompt;input.focus()}));
-  form.addEventListener('submit',async e=>{e.preventDefault();const message=input.value.trim();if(!message)return;answer.className='ask-ovesh-answer show loading';answer.textContent='OVESH AI is thinking…';card.querySelector('.ask-ovesh-status').textContent='PROCESSING';card.querySelector('.ask-ovesh-send').disabled=true;try{const r=await fetch('/api/ovesh-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,context:collectContext()})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'AI request failed');answer.className='ask-ovesh-answer show';answer.textContent=data.answer}catch(err){answer.className='ask-ovesh-answer show ask-ovesh-error';answer.textContent=err.message||'OVESH AI is unavailable right now.'}finally{card.querySelector('.ask-ovesh-status').textContent='READY';card.querySelector('.ask-ovesh-send').disabled=false}});
-}
-new MutationObserver(()=>{if(!injected)add()}).observe(document.body,{childList:true,subtree:true});
-setTimeout(add,700);
+let installed=false;
+function collectContext(){const lines=[];const page=document.querySelector('#page');lines.push('CURRENT PAGE: '+(document.querySelector('#pageTitle')?.textContent||'Unknown'));try{if(window.firebase?.auth?.().currentUser)lines.push('AUTHENTICATED OWNER: yes');const nav=[...document.querySelectorAll('#nav button')].map(x=>x.textContent.trim()).filter(Boolean);if(nav.length)lines.push('NAVIGATION: '+nav.join(' | '))}catch{}if(page)lines.push('VISIBLE WORKSPACE TEXT:\n'+page.innerText.slice(0,12000));return lines.join('\n').slice(0,28000)}
+function openAI(){const modal=document.querySelector('#oveshAiModal');if(!modal)return;modal.classList.add('open');document.querySelector('.ovesh-ai-input')?.focus()}
+function closeAI(){document.querySelector('#oveshAiModal')?.classList.remove('open')}
+function install(){if(installed)return;const nav=document.querySelector('#nav');const app=document.querySelector('#appView');if(!nav||!app)return;
+const old=nav.querySelector('[data-page="ask-ai"]');if(!old){const b=document.createElement('button');b.dataset.page='ask-ai';b.innerHTML='✦<span>Ask Ovesh AI</span>';b.title='Ask Ovesh AI';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openAI()});nav.appendChild(b)}
+if(!document.querySelector('#oveshAiModal')){const m=document.createElement('div');m.id='oveshAiModal';m.className='ovesh-ai-modal';m.innerHTML=`<div class="ovesh-ai-backdrop" data-ai-close></div><section class="ovesh-ai-panel" role="dialog" aria-modal="true" aria-label="Ask Ovesh AI"><header class="ovesh-ai-panel-head"><div class="ovesh-ai-brand"><div class="ovesh-ai-orb">AI</div><div><div class="ovesh-ai-kicker">OVESH CLOUD™ / INTELLIGENCE</div><h2>ASK OVESH AI</h2><p>Workspace-aware AI assistant</p></div></div><button class="ovesh-ai-close" data-ai-close aria-label="Close">×</button></header><div class="ovesh-ai-status"><i></i><span>AI CORE READY</span><small>PRIVATE SESSION</small></div><div class="ovesh-ai-prompts"><button data-ai-prompt="Find my most relevant files">Find relevant files</button><button data-ai-prompt="Analyze my College workspace and summarize what needs attention">Analyze College</button><button data-ai-prompt="Give me a quick overview of my cloud">Cloud overview</button></div><form class="ovesh-ai-form"><textarea class="ovesh-ai-input" maxlength="2000" rows="4" placeholder="Ask anything about your OVESH CLOUD…"></textarea><div class="ovesh-ai-form-foot"><span>Context from your current workspace is included automatically.</span><button class="primary-btn ovesh-ai-send" type="submit">ASK OVESH AI <span>→</span></button></div></form><div class="ovesh-ai-answer" aria-live="polite"></div></section>`;document.body.appendChild(m)}
+const modal=document.querySelector('#oveshAiModal'),input=modal.querySelector('.ovesh-ai-input'),answer=modal.querySelector('.ovesh-ai-answer'),form=modal.querySelector('.ovesh-ai-form');modal.querySelectorAll('[data-ai-close]').forEach(x=>x.addEventListener('click',closeAI));modal.querySelectorAll('[data-ai-prompt]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.aiPrompt;input.focus()}));form.addEventListener('submit',async e=>{e.preventDefault();const message=input.value.trim();if(!message)return;answer.className='ovesh-ai-answer show loading';answer.textContent='OVESH AI is thinking…';modal.querySelector('.ovesh-ai-send').disabled=true;modal.querySelector('.ovesh-ai-status span').textContent='AI CORE PROCESSING';try{const r=await fetch('/api/ovesh-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,context:collectContext()})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||`AI request failed (${r.status})`);answer.className='ovesh-ai-answer show';answer.textContent=data.answer||'No response received.'}catch(err){answer.className='ovesh-ai-answer show error';answer.textContent=err.message||'OVESH AI is unavailable right now.'}finally{modal.querySelector('.ovesh-ai-send').disabled=false;modal.querySelector('.ovesh-ai-status span').textContent='AI CORE READY'}})});installed=true}
+const observer=new MutationObserver(install);observer.observe(document.documentElement,{childList:true,subtree:true});setTimeout(install,300);setTimeout(install,1500);setTimeout(install,4000);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAI()});
 })();
