@@ -19,6 +19,8 @@
     { "source": "/compiler", "destination": "/compiler.html" },
     { "source": "/ovesh/college", "destination": "/oveshcloud/index.html" },
     { "source": "/ovesh/college/(.*)", "destination": "/oveshcloud/index.html" },
+    { "source": "/ovesh/share", "destination": "/oveshcloud/share.html" },
+    { "source": "/ovesh/share/", "destination": "/oveshcloud/share.html" },
     { "source": "/ovesh", "destination": "/oveshcloud/public.html" },
     { "source": "/ovesh/", "destination": "/oveshcloud/public.html" },
     { "source": "/ovesh/login", "destination": "/oveshcloud/index.html" },
