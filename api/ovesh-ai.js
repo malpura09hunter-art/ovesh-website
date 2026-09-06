@@ -17,7 +17,10 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://malpuraovesh.vercel.app',
-        'X-Title': 'OVESH CLOUD™ — ASK OVESH AI'
+        // HTTP header values must stay within the ByteString/Latin-1 range.
+        // Keep the trademark symbol in visible UI text/system prompts, but use
+        // an ASCII-only title for the provider header.
+        'X-Title': 'OVESH CLOUD - ASK OVESH AI'
       },
       body: JSON.stringify({
         model: process.env.OVESH_AI_MODEL || 'openai/gpt-4o-mini',
