@@ -1,0 +1,45 @@
+name: OVESH Cloud enter-button repair
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair welcome-to-workspace transition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('oveshcloud/app.js')
+          s = p.read_text(encoding='utf-8')
+          marker = 'OVESH_ENTER_BUTTON_HARD_FIX_V1'
+          if marker not in s:
+              old = "$('#continueBtn').onclick=welcome;$('#enterBtn').onclick=openApp;$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};detectLogin();"
+              new = """$('#continueBtn').onclick=welcome;\nconst enterBtn=$('#enterBtn');\nif(enterBtn){\n  enterBtn.type='button';\n  enterBtn.addEventListener('click',function(e){\n    e.preventDefault();e.stopPropagation();\n    const welcomeView=$('#welcomeView'),appView=$('#appView'),loginView=$('#loginView'),securityView=$('#securityView');\n    if(loginView)loginView.classList.add('hidden');\n    if(securityView)securityView.classList.add('hidden');\n    if(welcomeView)welcomeView.classList.add('hidden');\n    if(appView){\n      appView.classList.remove('hidden');\n      appView.style.display='grid';\n    }\n    try{render('command')}catch(err){console.error('OVESH enter render',err);}\n    try{connectFirebase()}catch(err){console.error('OVESH Firebase connect',err);}\n  },{capture:true});\n}\n$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};\nwindow.OVESH_ENTER_BUTTON_HARD_FIX_V1=true;\ndetectLogin();"""
+              if old not in s:
+                  raise SystemExit('Expected app.js boot sequence was not found; refusing unsafe edit.')
+              p.write_text(s.replace(old,new,1),encoding='utf-8')
+
+          i = Path('oveshcloud/index.html')
+          if i.exists():
+              t=i.read_text(encoding='utf-8')
+              t=t.replace('/oveshcloud/app.js?v=1.1.1','/oveshcloud/app.js?v=1.1.2')
+              i.write_text(t,encoding='utf-8')
+          PY
+          if git diff --quiet; then
+            echo 'No repair needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add oveshcloud/app.js oveshcloud/index.html
+          git commit -m 'Repair OVESH Cloud welcome transition'
+          git push
