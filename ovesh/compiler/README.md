@@ -12,4 +12,4 @@ Project source repository:
 
 https://github.com/malpura09hunter-art/ovesh-website
 
-This project identity is separate from the main Ovesh Malpura profile and from private projects such as OVESH CLOUD.
+This project identity is separate from the main Ovesh Malpura profile.
