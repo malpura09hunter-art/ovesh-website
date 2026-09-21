@@ -324,12 +324,12 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
       <div class="shop-admin-view" data-shop-view="reviews"><div id="cmsListRoot-shop-reviews"></div></div>
       <div class="shop-admin-view" data-shop-view="settings">
         <div class="panel shop-settings-panel">
-          <div class="panel-head"><h3>Shop Settings</h3></div>
+          <div class="panel-head"><h3>Shop Settings</h3><span class="status-pill status-Published">ACTIVE</span></div>
           <div class="shop-settings-grid">
-            <div><span>Public catalog</span><strong>Published products are visible on the storefront.</strong></div>
-            <div><span>Order storage</span><strong>Checkout requests use the protected Service Requests workflow.</strong></div>
-            <div><span>Customer data</span><strong>Name, email, phone, requirements, services, totals and status remain attached to the request.</strong></div>
-            <div><span>Payment state</span><strong>Current checkout is request/quote based. Payment gateway integration can be connected without creating another dashboard.</strong></div>
+            <div><span>Catalog Management</span><strong>Use Products to add, edit, duplicate, delete, publish and change prices.</strong><button type="button" class="cms-secondary" data-shop-jump="products">Manage Products →</button></div>
+            <div><span>Categories</span><strong>Create and edit storefront categories, icons, descriptions and display order.</strong><button type="button" class="cms-secondary" data-shop-jump="categories">Manage Categories →</button></div>
+            <div><span>Orders & Customers</span><strong>Shop requests are linked to the existing protected Service Requests workflow.</strong><button type="button" class="cms-secondary" data-shop-jump="orders">Manage Orders →</button></div>
+            <div><span>Payments</span><strong>Current checkout records the payment state as quote/payment pending. No payment is marked successful from the browser.</strong></div>
           </div>
         </div>
       </div>
