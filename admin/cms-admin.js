@@ -931,9 +931,14 @@
     root.innerHTML = '<div class="panel"><div class="panel-head"><h3>Orders</h3><span class="cms-muted">Loading…</span></div></div>';
 
     try {
-      const snap = await db.collection('service_requests').orderBy('createdAt', 'desc').get();
+      const snap = await db.collection('service_requests').get();
       shopOrders = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        .filter((x) => x.source === 'shop' || String(x.orderId || '').startsWith('SHOP-'));
+        .filter((x) => x.source === 'shop' || String(x.orderId || '').startsWith('SHOP-'))
+        .sort((a, b) => {
+          const at = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+          const bt = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+          return bt - at;
+        });
     } catch (e) {
       root.innerHTML = '<div class="panel"><div class="cms-empty">' + esc(friendlyError(e)) + '</div></div>';
       return;
@@ -1027,12 +1032,12 @@
     shopOrders.forEach((x) => {
       const email = String(x.email || '').toLowerCase();
       if (!email) return;
-      if (!byEmail[email]) byEmail[email] = { name: x.fullName || '—', email, phone: x.phone || '—', orders: 0, value: 0, last: x.createdAt, uid: x.userId || '—' };
+      if (!byEmail[email]) byEmail[email] = { name: x.fullName || '—', email, phone: x.phone || '—', orders: 0, value: 0, last: x.createdAt, uid: x.userId || x.uid || '—' };
       byEmail[email].orders += 1;
       byEmail[email].value += Number(x.estimatedTotal || 0);
       if (x.fullName) byEmail[email].name = x.fullName;
       if (x.phone) byEmail[email].phone = x.phone;
-      if (x.userId) byEmail[email].uid = x.userId;
+      if (x.userId || x.uid) byEmail[email].uid = x.userId || x.uid;
       byEmail[email].last = x.createdAt || byEmail[email].last;
     });
     const customers = Object.values(byEmail).sort((a,b) => Number(b.value) - Number(a.value));
@@ -1101,7 +1106,7 @@
         <div class="modal-row"><span>CUSTOMER</span><span>${esc(x.fullName || '—')}</span></div>
         <div class="modal-row"><span>EMAIL</span><span>${esc(x.email || '—')}</span></div>
         <div class="modal-row"><span>PHONE</span><span>${esc(x.phone || '—')}</span></div>
-        <div class="modal-row"><span>FIREBASE UID</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;">${esc(x.userId || 'Guest request')}</span></div>
+        <div class="modal-row"><span>FIREBASE UID</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;">${esc(x.userId || x.uid || 'Guest request')}</span></div>
         <div class="modal-row"><span>SERVICES</span><span>${esc(x.selectedService || '—')}</span></div>
         <div class="modal-row"><span>TOTAL</span><span>${shopMoney(x.estimatedTotal)}</span></div>
         <div class="modal-row"><span>PAYMENT</span><span>${esc(x.paymentStatus || 'Quote / payment pending')}</span></div>
