@@ -1,5 +1,5 @@
 const nodemailer=require('nodemailer');
-const {buildAgreementPdf}=require('./shop-agreement-pdf');
+const {buildAgreementPdf}=require('./shop-agreement');
 let transporter;
 function getTransporter(){if(!transporter)transporter=nodemailer.createTransport({host:process.env.ZOHO_SMTP_HOST||'smtp.zoho.in',port:465,secure:true,auth:{user:process.env.ZOHO_USER,pass:process.env.ZOHO_APP_PASSWORD},connectionTimeout:8000,greetingTimeout:8000,socketTimeout:8000});return transporter;}
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');}
