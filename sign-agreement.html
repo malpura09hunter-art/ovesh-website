@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign Client Agreement | Ovesh Malpura Cyber Labs</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{--bg:#030a03;--bg2:#071107;--text:#e5ffe9;--muted:#79a782;--green:#39ff14;--border:rgba(57,255,20,.18)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,rgba(57,255,20,.08),transparent 35%),var(--bg);color:var(--text);font-family:Arial,sans-serif}.wrap{max-width:760px;margin:0 auto;padding:42px 18px 70px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--green);font-weight:800}h1{font-size:30px;margin:10px 0 8px}.muted{color:var(--muted);line-height:1.6}.card{margin-top:24px;padding:22px;background:rgba(57,255,20,.035);border:1px solid var(--border);border-radius:14px}.terms{max-height:360px;overflow:auto;padding-right:8px}.terms h3{color:var(--green);font-size:14px;margin:18px 0 6px}.terms p{color:#a9c9af;font-size:13px;line-height:1.65;margin:0}.field{margin-top:20px}.field label{display:block;color:#a9c9af;font-size:13px;margin-bottom:7px}.field input{width:100%;padding:12px;background:#030a03;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:15px}.mode{display:flex;gap:8px;margin:12px 0}.mode button{padding:9px 12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer}.mode button.active{background:var(--green);color:#021002}.signature-box{border:1px dashed rgba(57,255,20,.4);border-radius:9px;background:#020602;overflow:hidden}.signature-box canvas{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}.sig-actions{display:flex;justify-content:space-between;padding:8px;border-top:1px solid var(--border)}.sig-actions button,.primary{padding:10px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}.primary{width:100%;margin-top:18px;background:var(--green);color:#021002;border:0;font-weight:800}.check{display:flex;gap:10px;align-items:flex-start;margin-top:18px;color:#c8ffd4;font-size:13px;line-height:1.5}.check input{width:19px;height:19px;min-width:19px;accent-color:var(--green)}.status{margin-top:14px;font-size:13px}.success{color:var(--green)}.error{color:#ff7788}.hidden{display:none}.signed{border-color:rgba(57,255,20,.45);box-shadow:0 0 24px rgba(57,255,20,.07)}.signed-note{padding:12px;border-radius:8px;background:rgba(57,255,20,.05);color:#c8ffd4;font-size:13px;line-height:1.6}@media(max-width:600px){.wrap{padding-top:28px}h1{font-size:25px}.terms{max-height:300px}.signature-box canvas{height:150px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="eyebrow">OVESH MALPURA CYBER LABS</div>
+<h1>Review &amp; Sign Client Agreement</h1>
+<p class="muted">Please review the agreement for your service request. Signing records your acknowledgement of the version shown below.</p>
+<div id="requestCard" class="card"><div id="requestInfo" class="muted">Loading request…</div></div>
+<div class="card">
+<div class="eyebrow">CLIENT SERVICE AGREEMENT · VERSION 1.0</div>
+<div class="terms">
+<h3>1. Scope</h3><p>Services follow the accepted request or later-approved quotation. Work outside the agreed scope may require a separate quote.</p>
+<h3>2. Requirements &amp; revisions</h3><p>The client provides accurate requirements, content, approvals and access. Changes or additional features may affect price and delivery time.</p>
+<h3>3. Pricing &amp; payment</h3><p>Shop prices may be estimates or starting prices. Final pricing and payment terms are confirmed in the applicable quotation or invoice.</p>
+<h3>4. Delivery</h3><p>Timelines are estimates and depend on scope, feedback, approvals and third-party services.</p>
+<h3>5. Third-party services</h3><p>Domains, hosting, APIs, software subscriptions, AI providers and other third-party services may have separate fees and terms.</p>
+<h3>6. Ownership &amp; licenses</h3><p>After agreed payments are completed, deliverables are provided as specified in the quotation. Third-party components remain subject to their own licenses.</p>
+<h3>7. Security &amp; acceptable use</h3><p>Cybersecurity work is performed only with authorized scope and permission. Unlawful access, credential theft, malware deployment and unauthorized testing are not included.</p>
+<h3>8. Cancellation &amp; refunds</h3><p>Cancellation and refund terms depend on project stage and the applicable quotation or invoice. Completed work and non-refundable third-party costs may not be refundable.</p>
+<h3>9. Support</h3><p>Post-delivery support is included only when stated in the quotation. New features and work outside included support are additional.</p>
+<h3>10. Confidentiality</h3><p>Both parties should protect non-public business, technical and project information, subject to legal requirements and necessary service providers.</p>
+<h3>11. Acceptance</h3><p>Submitting a request confirms review of these terms. A request is not itself final acceptance of a quotation or a guarantee that the project will be accepted.</p>
+</div>
+</div>
+<div id="signCard" class="card">
+<div class="field"><label for="signName">Full legal name</label><input id="signName" autocomplete="name" maxlength="160" placeholder="Enter your full name"></div>
+<div class="field"><label>Signature</label>
+<div class="mode"><button id="drawMode" class="active" type="button">Draw signature</button><button id="typeMode" type="button">Type signature</button></div>
+<div id="drawPanel" class="signature-box"><canvas id="sigCanvas"></canvas><div class="sig-actions"><span class="muted">Sign inside the box</span><button id="clearSig" type="button">Clear</button></div></div>
+<div id="typePanel" class="hidden"><input id="typedSig" placeholder="Type your name as your signature"></div>
+</div>
+<label class="check"><input id="accept" type="checkbox"> <span>I confirm that I reviewed the Client Service Agreement above and intend to sign and acknowledge Version 1.0 for this service request.</span></label>
+<button id="signBtn" class="primary" type="button">Sign Agreement</button>
+<div id="status" class="status"></div>
+</div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id), params=new URLSearchParams(location.search), orderId=params.get('orderId')||'';
+let mode='draw',drawing=false,ctx;
+function setStatus(t,c){$('status').textContent=t;$('status').className='status '+(c||'')}
+function setupCanvas(){
+ const c=$('sigCanvas'),dpr=Math.max(1,window.devicePixelRatio||1),rect=c.getBoundingClientRect();
+ c.width=Math.round(rect.width*dpr);c.height=Math.round(rect.height*dpr);ctx=c.getContext('2d');ctx.scale(dpr,dpr);ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#39ff14';
+ function pos(e){const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+ c.onpointerdown=e=>{drawing=true;c.setPointerCapture(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};
+ c.onpointermove=e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()};
+ c.onpointerup=()=>drawing=false;c.onpointercancel=()=>drawing=false;
+}
+function clearSig(){if(!ctx)return;const c=$('sigCanvas');ctx.clearRect(0,0,c.width,c.height)}
+$('drawMode').onclick=()=>{mode='draw';$('drawMode').classList.add('active');$('typeMode').classList.remove('active');$('drawPanel').classList.remove('hidden');$('typePanel').classList.add('hidden')};
+$('typeMode').onclick=()=>{mode='type';$('typeMode').classList.add('active');$('drawMode').classList.remove('active');$('typePanel').classList.remove('hidden');$('drawPanel').classList.add('hidden')};
+$('clearSig').onclick=clearSig;
+window.addEventListener('resize',()=>{if(mode==='draw')setupCanvas()});
+setupCanvas();
+if(!orderId){setStatus('Missing service request reference.','error');$('signBtn').disabled=true;return}
+$('requestInfo').textContent='Request reference: '+orderId;
+auth.onAuthStateChanged(user=>{
+ if(!user){setStatus('Please sign in with the client account that received this email. Redirecting…','error');setTimeout(()=>location.href='login.html?return='+encodeURIComponent('sign-agreement.html?orderId='+orderId),700);return}
+ $('signName').value=user.displayName||'';
+ $('signBtn').onclick=async()=>{
+   const name=$('signName').value.trim(),accepted=$('accept').checked;
+   if(!name)return setStatus('Enter your full legal name.','error');
+   if(!accepted)return setStatus('Please confirm that you reviewed the agreement.','error');
+   let signature='';
+   if(mode==='draw'){signature=$('sigCanvas').toDataURL('image/png');if(!signature||signature.length<100)return setStatus('Please draw your signature.','error')}
+   else{signature=$('typedSig').value.trim();if(!signature)return setStatus('Type your signature.','error')}
+   $('signBtn').disabled=true;setStatus('Recording signature…');
+   try{
+     const token=await user.getIdToken();
+     const r=await fetch('/api/sign-shop-agreement',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({orderId,fullName:name,signatureType:mode,signature})});
+     const data=await r.json().catch(()=>({}));
+     if(!r.ok)throw new Error(data.error||'Could not record signature');
+     $('signCard').classList.add('signed');$('signCard').innerHTML='<div class="signed-note"><strong>✓ Agreement signed successfully.</strong><br>Request: '+orderId+'<br>Agreement version: 1.0<br>Signed as: '+name+'<br><br>Your signature and acceptance timestamp have been recorded with this service request.</div>';
+   }catch(e){setStatus(e.message||'Could not record signature.','error');$('signBtn').disabled=false}
+ };
+});
+})();
+</script>
+</body>
+</html>
