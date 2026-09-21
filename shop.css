@@ -2,3 +2,19 @@
 
 
 .agreement-check{display:flex;gap:10px;align-items:flex-start;margin:16px 0;color:#c8ffd4;font-size:13px;line-height:1.5}.agreement-check input{margin-top:3px}.inline-link{border:0;background:none;padding:0;color:#39ff14;text-decoration:underline;cursor:pointer;font:inherit}.agreement-box{max-height:82vh;overflow:auto}.agreement-copy h3{color:#39ff14;font-size:14px;margin:18px 0 6px}.agreement-copy p{color:#a9c9af;font-size:13px;line-height:1.65;margin:0}
+
+/* Visible checkout agreement */
+.checkout-agreement{margin:20px 0;padding:20px;background:rgba(57,255,20,.035);border:1px solid var(--border);border-radius:12px}
+.checkout-agreement h3{margin:7px 0 3px;color:var(--text);font-size:18px}
+.agreement-meta{font-size:12px;margin:0 0 14px}
+.checkout-agreement .agreement-copy h4{color:var(--green);font-size:13px;margin:15px 0 5px}
+.checkout-agreement .agreement-copy p{color:#a9c9af;font-size:12.5px;line-height:1.65;margin:0}
+.agreement-services{margin:14px 0}
+.agreement-selected{padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:rgba(57,255,20,.035);color:#c8ffd4;font-size:12px;line-height:1.6}
+.agreement-service-policies{display:grid;gap:12px;margin-top:12px}
+.agreement-service-policies>h4,.agreement-service-policies>p{margin-left:0}
+.agreement-service-policies{color:#a9c9af;font-size:12.5px;line-height:1.6}
+.agreement-service-policies h4{color:var(--green);font-size:13px;margin:0 0 5px}
+.agreement-service-policies p{margin:0 0 7px}
+.agreement-notice{margin-top:12px!important;padding:11px 12px;border-left:2px solid var(--green);background:rgba(57,255,20,.025);color:#b7d8bd!important;font-size:12px!important;line-height:1.55!important}
+.agreement-box .agreement-service-policies{margin-bottom:12px}
