@@ -248,8 +248,6 @@
         f('order', 'Order', 'number')
       ]
     }
-  ];
-
     {
       key: 'shop-products', title: 'Shop Products', subtitle: 'Storefront catalog: services, prices, categories, features and publishing.',
       collection: 'shop_products', search: ['name','description','category','status'],
@@ -267,6 +265,9 @@
       key: 'shop-reviews', title: 'Shop Reviews', subtitle: 'Moderate customer reviews before publishing them.', collection: 'shop_reviews', search: ['customerName','productName','review'],
       fields: [f('customerName','Customer Name','text',true),f('customerEmail','Customer Email','email'),f('productName','Product / Service','text'),f('rating','Rating','number'),f('review','Review','textarea',true),f('status','Status','select',false,'',['Published','Pending','Hidden'])]
     },
+
+  ];
+
   function f(name, label, type, required, help, options) {
     return { name, label, type, required: !!required, help: help || '', options: options || [] };
   }
