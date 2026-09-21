@@ -56,9 +56,35 @@
       <label>Phone <span class="muted">(optional)</span><input name="phone" autocomplete="tel"></label>
       <label>Requirements / message<textarea name="message" required rows="5" placeholder="Tell us what you want built, automated or secured…"></textarea></label>
       <div id="checkoutSummary" class="summary"></div>
+      <label class="agreement-check"><input id="agreementAccepted" name="agreementAccepted" type="checkbox" required> <span>I have read and agree to the <button type="button" id="agreementBtn" class="inline-link">Client Service Agreement &amp; Project Terms</button>.</span></label>
       <button class="primary full" type="submit">Submit Request</button>
       <div id="checkoutStatus" class="status"></div>
     </form>
+  </div>
+</div>
+
+<div id="agreementModal" class="modal">
+  <div class="modal-box agreement-box">
+    <button class="modal-x" id="closeAgreement" type="button">×</button>
+    <div class="eyebrow">CLIENT SERVICE AGREEMENT</div>
+    <h2>Project Terms &amp; Agreement</h2>
+    <p class="muted">Version 1.0 · Effective September 21, 2026</p>
+    <div class="agreement-copy">
+      <h3>1. Scope</h3><p>Ovesh Malpura Cyber Labs will provide the services described in the accepted project request or later-approved quotation. Work outside the agreed scope may require a separate quote.</p>
+      <h3>2. Requirements &amp; revisions</h3><p>The client is responsible for providing accurate requirements, content, approvals and access needed for the project. Changes or additional features after approval may affect price and delivery time.</p>
+      <h3>3. Pricing &amp; payment</h3><p>Prices shown in the Shop are estimates or starting prices unless expressly stated as fixed. Final pricing is confirmed after requirements review. Payment terms, deposits and milestones will be stated in the applicable quotation or invoice.</p>
+      <h3>4. Delivery</h3><p>Delivery timelines are estimates and depend on scope, client feedback, third-party services and required approvals. Delays caused by missing client materials or approvals may extend the timeline.</p>
+      <h3>5. Third-party services</h3><p>Domains, hosting, APIs, software subscriptions, AI providers and other third-party services may have separate fees and terms. The client is responsible for charges on services registered in the client's name unless otherwise agreed.</p>
+      <h3>6. Ownership &amp; licenses</h3><p>After agreed payments are completed, the client receives the project deliverables specified in the quotation. Third-party libraries, fonts, APIs, stock assets and other licensed components remain subject to their own licenses.</p>
+      <h3>7. Security &amp; acceptable use</h3><p>Security testing and cybersecurity work is performed only with authorized scope and permission. The client must not request unlawful access, credential theft, malware deployment or unauthorized testing.</p>
+      <h3>8. Cancellation &amp; refunds</h3><p>Cancellation, refund and rescheduling terms depend on the project stage and any quotation or invoice issued. Work already completed, approved third-party costs and non-refundable charges may not be refundable.</p>
+      <h3>9. Support</h3><p>Post-delivery support or maintenance is included only when stated in the quotation. New features and work outside included support are treated as additional work.</p>
+      <h3>10. Confidentiality</h3><p>Both parties should protect non-public business, technical and project information shared for the engagement, except where disclosure is required by law or necessary to deliver an agreed third-party service.</p>
+      <h3>11. Acceptance</h3><p>By checking the agreement box and submitting a project request, the client confirms that they have reviewed these terms and understand that submitting a request does not itself constitute final acceptance of a quotation or guarantee that the project will be accepted.</p>
+    </div>
+    <button class="primary full" id="agreementDone" type="button">I Understand</button>
+  </div>
+</div>
   </div>
 </div>
 
