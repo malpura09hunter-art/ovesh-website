@@ -8,7 +8,7 @@ async function authenticate(req){
   if(!header.startsWith('Bearer ')) throw Object.assign(new Error('Missing authentication'),{statusCode:401});
   const idToken=header.slice(7).trim();
   if(!idToken) throw Object.assign(new Error('Missing authentication'),{statusCode:401});
-  const key=process.env.FIREBASE_WEB_API_KEY;
+  const key=process.env.FIREBASE_WEB_API_KEY||'AIzaSyDB8ZVagSc8C3o3tdrwUcuflZhT8X5lMZ0';
   if(!key) throw Object.assign(new Error('Firebase API key is not configured'),{statusCode:500});
   const response=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken})});
   if(!response.ok) throw Object.assign(new Error('Invalid authentication'),{statusCode:401});
