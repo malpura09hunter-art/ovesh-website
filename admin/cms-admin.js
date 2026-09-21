@@ -247,7 +247,7 @@
         f('status', 'Status', 'select', false, '', ['Published', 'Draft', 'Archived']),
         f('order', 'Order', 'number')
       ]
-    }
+    },
     {
       key: 'shop-products', title: 'Shop Products', subtitle: 'Storefront catalog: services, prices, categories, features and publishing.',
       collection: 'shop_products', search: ['name','description','category','status'],
