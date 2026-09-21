@@ -38,7 +38,7 @@ module.exports=async(req,res)=>{
     signedAt:{timestampValue:new Date().toISOString()},
     agreementVersion:{stringValue:'1.0'}
   };
-  const url=base+'/'+doc.name.split('/').map(encodeURIComponent).join('/')+'?updateMask.fieldPaths=signature&updateMask.fieldPaths=signature';
+  const url=base+'/'+doc.name.split('/').map(encodeURIComponent).join('/')+'?updateMask.fieldPaths=signature';
   const ur=await fetch(url,{method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({fields:{signature:{mapValue:{fields:signatureFields}}}})});
   if(!ur.ok)throw Object.assign(new Error('Could not record signature'),{statusCode:500});
   return res.status(200).json({ok:true});
