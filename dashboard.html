@@ -364,8 +364,12 @@ document.getElementById('requestForm').addEventListener('submit', async (e) => {
 async function loadMyRequests(uid) {
   const body = document.getElementById('requestsBody');
   try {
-    const snap = await db.collection('service_requests').where('uid', '==', uid).orderBy('createdAt', 'desc').get();
-    myRequests = snap.docs.map(d => d.data());
+    const snap = await db.collection('service_requests').where('uid', '==', uid).get();
+    myRequests = snap.docs.map(d => d.data()).sort((a, b) => {
+      const at = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+      const bt = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+      return bt - at;
+    });
 
     document.getElementById('statTotalRequests').textContent = myRequests.length;
     document.getElementById('statPending').textContent = myRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
