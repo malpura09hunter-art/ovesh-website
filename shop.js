@@ -32,7 +32,14 @@ function openAgreement(){
   const serviceBox=$('agreementServices');
   if(serviceBox){
     const names=cart.map(x=>String(x.name||'')).filter(Boolean);
-    serviceBox.innerHTML='<strong>Services covered by this request</strong><br>'+names.map(esc).join('<br>');
+    const lower=names.join(' ').toLowerCase();
+    let scope='The selected services will be delivered according to the final approved scope and quotation.';
+    if(lower.includes('ai automation')) scope='<strong>AI Automation — Service-Specific Scope:</strong> workflow mapping, approved AI integrations, automation configuration and testing for the business processes described in the approved scope. AI-generated output may require human review and depends on the selected AI provider and connected services.';
+    else if(lower.includes('ai assistant')) scope='<strong>AI Assistant — Service-Specific Scope:</strong> assistant configuration, knowledge setup, prompt/workflow configuration and lead or support functionality described in the approved scope. AI responses may require human review and depend on the connected model and knowledge sources.';
+    else if(lower.includes('security review')) scope='<strong>Website Security Review — Service-Specific Scope:</strong> authorized review of the website and agreed security areas, findings documentation and hardening guidance. Testing is limited to the systems and scope approved by the client.';
+    else if(lower.includes('premium business website')) scope='<strong>Premium Business Website — Service-Specific Scope:</strong> design, development, responsive implementation, deployment and the website features listed in the approved scope.';
+    else if(lower.includes('business automation system')) scope='<strong>Business Automation System — Service-Specific Scope:</strong> workflow mapping, approved integrations, automation configuration and testing for the business processes listed in the approved scope.';
+    serviceBox.innerHTML='<strong>Services covered by this request</strong><br>'+names.map(esc).join('<br>')+'<div class="agreement-service-scope">'+scope+'</div>';
   }
   $('agreementModal').classList.add('open')
 }
