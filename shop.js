@@ -18,7 +18,25 @@ window.removeCart=id=>{cart=cart.filter(x=>x.id!==id);save()};window.changeQty=(
 function openCart(){$('cartDrawer').classList.add('open');$('overlay').classList.add('open')};function closeCart(){$('cartDrawer').classList.remove('open');$('overlay').classList.remove('open')}
 $('cartBtn').onclick=openCart;$('closeCart').onclick=closeCart;$('overlay').onclick=closeCart;$('search').oninput=renderProducts;
 function waitForAuth(){return new Promise(resolve=>{if(auth.currentUser)return resolve(auth.currentUser);const unsub=auth.onAuthStateChanged(user=>{unsub();resolve(user||null);});});}
-function openAgreement(){$('agreementModal').classList.add('open')}function closeAgreement(){$('agreementModal').classList.remove('open')}function renderAccount(user){const link=$('accountLink');if(!link)return;if(user){const email=String(user.email||'').trim();link.href='dashboard.html';link.textContent=email?'Account · '+email:'Account';link.title=email;}else{link.href='login.html?return=shop';link.textContent='Account';link.title='Sign in to your account';}}
+function serviceAgreementText(items){
+  const names=(items||[]).map(x=>String(x.name||'')).filter(Boolean);
+  const lower=names.join(' ').toLowerCase();
+  if(lower.includes('ai automation')) return 'AI Automation: workflow mapping, approved AI integrations, automation setup and testing for the business processes described in the approved scope. AI output can require human review and depends on the selected AI provider and connected services.';
+  if(lower.includes('ai assistant')) return 'AI Assistant: assistant configuration, knowledge setup, prompt/workflow configuration and lead or support functionality described in the approved scope. AI responses can require human review and depend on the connected model and knowledge sources.';
+  if(lower.includes('security review')) return 'Website Security Review: authorized review of the website and agreed security areas, findings documentation and hardening guidance. Testing is limited to the systems and scope approved by the client.';
+  if(lower.includes('premium business website')) return 'Premium Business Website: design, development, responsive implementation, deployment and the website features listed in the approved scope.';
+  if(lower.includes('business automation system')) return 'Business Automation System: workflow mapping, approved integrations, automation configuration and testing for the business processes listed in the approved scope.';
+  return 'The selected services will be delivered according to the final approved scope and quotation.';
+}
+function openAgreement(){
+  const serviceBox=$('agreementServices');
+  if(serviceBox){
+    const names=cart.map(x=>String(x.name||'')).filter(Boolean);
+    serviceBox.innerHTML='<strong>Services covered by this request</strong><br>'+names.map(esc).join('<br>');
+  }
+  $('agreementModal').classList.add('open')
+}
+function closeAgreement(){$('agreementModal').classList.remove('open')}function renderAccount(user){const link=$('accountLink');if(!link)return;if(user){const email=String(user.email||'').trim();link.href='dashboard.html';link.textContent=email?'Account · '+email:'Account';link.title=email;}else{link.href='login.html?return=shop';link.textContent='Account';link.title='Sign in to your account';}}
 $('agreementBtn').onclick=openAgreement;$('closeAgreement').onclick=closeAgreement;$('agreementDone').onclick=closeAgreement;
 $('checkoutBtn').onclick=async()=>{const user=await waitForAuth();if(!user){localStorage.setItem('oveshShopReturn','1');window.location.href='login.html?return=shop';return;}$('checkoutSummary').innerHTML=cart.map(x=>esc(x.name)+' × '+x.qty).join('<br>');$('checkoutStatus').textContent='';$('checkoutModal').classList.add('open')};document.querySelector('[data-close]').onclick=()=>$('checkoutModal').classList.remove('open');
 $('checkoutForm').onsubmit=async e=>{e.preventDefault();const user=await waitForAuth();if(!user){localStorage.setItem('oveshShopReturn','1');window.location.href='login.html?return=shop';return;}const f=new FormData(e.target);f.set('email',user.email||'');const emailField=e.target.querySelector('[name="email"]');if(emailField)emailField.value=user.email||'';const items=cart.map(x=>({productId:x.id,name:x.name,qty:x.qty,price:x.price})),orderId='SHOP-'+Date.now().toString().slice(-8);const payload={source:'shop',orderId,fullName:String(f.get('fullName')||'').trim(),email:String(f.get('email')||'').trim(),phone:String(f.get('phone')||'').trim(),selectedService:items.map(x=>x.name).join(', '),items,estimatedTotal:items.reduce((a,x)=>a+x.price*x.qty,0),uid:user.uid,userId:user.uid,projectDescription:String(f.get('message')||'').trim(),agreementVersion:'1.0',agreementAccepted:true,agreementAcceptedAt:new Date().toISOString(),status:'Pending',paymentStatus:'Quote / payment pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()};const s=$('checkoutStatus');s.textContent='Submitting…';try{await db.collection('service_requests').add(payload);
