@@ -32,11 +32,21 @@ module.exports=async(req,res)=>{
     const agreementAccepted=agreementVersion==='1.0';
     if(!agreementAccepted)return res.status(400).json({error:'Agreement acceptance required'});
     const agreementDate=String(agreementAcceptedAt||'');
+    const serviceNames=safeItems.map(x=>x.name);
+    const serviceText=serviceNames.join(', ');
+    const lowerServices=serviceNames.join(' ').toLowerCase();
+    let serviceSpecific='The selected services will be delivered according to the final approved scope and quotation.';
+    if(lowerServices.includes('ai automation')) serviceSpecific='AI Automation: workflow mapping, approved AI integrations, automation configuration and testing for the business processes described in the approved scope. AI-generated output may require human review and depends on the selected AI provider and connected services.';
+    else if(lowerServices.includes('ai assistant')) serviceSpecific='AI Assistant: assistant configuration, knowledge setup, prompt/workflow configuration and lead or support functionality described in the approved scope. AI responses may require human review and depend on the connected model and knowledge sources.';
+    else if(lowerServices.includes('security review')) serviceSpecific='Website Security Review: authorized review of the website and agreed security areas, findings documentation and hardening guidance. Testing is limited to the systems and scope approved by the client.';
+    else if(lowerServices.includes('premium business website')) serviceSpecific='Premium Business Website: design, development, responsive implementation, deployment and the website features listed in the approved scope.';
+    else if(lowerServices.includes('business automation system')) serviceSpecific='Business Automation System: workflow mapping, approved integrations, automation configuration and testing for the business processes listed in the approved scope.';
+    const serviceSpecificHtml='<div style="border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:14px;margin:18px 0"><p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">SERVICE-SPECIFIC SCOPE</p><p style="color:#c8ffd4;font-size:13px;line-height:1.6;margin:0 0 8px"><strong>Selected service(s):</strong> '+esc(serviceText)+'</p><p style="color:#a9c9af;font-size:12px;line-height:1.6;margin:0">'+esc(serviceSpecific)+'</p></div>';
     const agreementHtml=`
       <div style="border-top:1px solid rgba(0,255,65,.12);margin-top:24px;padding-top:20px">
         <p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">CLIENT SERVICE AGREEMENT · VERSION 1.0</p>
         <h2 style="color:#39ff14;font-size:18px;margin:0 0 12px">Project Terms</h2>
-        <p style="color:#a9c9af;font-size:12px;line-height:1.6">By submitting this request, you confirmed that you reviewed and accepted the Client Service Agreement &amp; Project Terms shown at checkout. This email keeps a copy of the terms applicable to your request.</p>
+        <p style="color:#a9c9af;font-size:12px;line-height:1.6">By submitting this request, you confirmed that you reviewed and accepted the Client Service Agreement &amp; Project Terms shown at checkout. This email keeps a copy of the terms applicable to your request.</p>${serviceSpecificHtml}
         <ol style="color:#a9c9af;font-size:12px;line-height:1.65;padding-left:20px">
           <li><strong style="color:#c8ffd4">Scope:</strong> Work follows the accepted request or later-approved quotation. Out-of-scope work may require a separate quote.</li>
           <li><strong style="color:#c8ffd4">Requirements &amp; revisions:</strong> You provide accurate requirements, content, approvals and access. Changes may affect price and timeline.</li>
