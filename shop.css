@@ -18,3 +18,19 @@
 .agreement-service-policies p{margin:0 0 7px}
 .agreement-notice{margin-top:12px!important;padding:11px 12px;border-left:2px solid var(--green);background:rgba(57,255,20,.025);color:#b7d8bd!important;font-size:12px!important;line-height:1.55!important}
 .agreement-box .agreement-service-policies{margin-bottom:12px}
+
+/* Agreement polish */
+.agreement-check{position:relative;gap:14px;align-items:center;margin:18px 0;padding:14px 15px;border-color:rgba(57,255,20,.20);background:rgba(57,255,20,.04);transition:border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.agreement-check:hover{border-color:rgba(57,255,20,.42);background:rgba(57,255,20,.065);box-shadow:0 0 18px rgba(57,255,20,.07)}
+.agreement-check:focus-within{border-color:rgba(57,255,20,.55);box-shadow:0 0 0 2px rgba(57,255,20,.10),0 0 20px rgba(57,255,20,.08)}
+.agreement-check input{appearance:none;-webkit-appearance:none;width:22px;height:22px;min-width:22px;margin:0;border:2px solid #39ff14;border-radius:5px;background:#030a03;display:grid;place-content:center;box-shadow:0 0 8px rgba(57,255,20,.12);transition:background .15s ease,box-shadow .15s ease,transform .15s ease;cursor:pointer}
+.agreement-check input::before{content:"✓";font-size:16px;font-weight:900;line-height:1;color:#021002;transform:scale(0);transition:transform .12s ease}
+.agreement-check input:checked{background:#39ff14;box-shadow:0 0 12px rgba(57,255,20,.32)}
+.agreement-check input:checked::before{transform:scale(1)}
+.agreement-check input:active{transform:scale(.94)}
+.agreement-check input:focus-visible{outline:2px solid #c8ffd4;outline-offset:3px}
+.agreement-check span{font-weight:500}
+.agreement-check .required-badge{display:inline-block;margin-left:7px;padding:2px 7px;border:1px solid rgba(57,255,20,.24);border-radius:999px;color:#39ff14;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:800;vertical-align:2px}
+.agreement-accepted{display:none;margin:-8px 0 14px 51px;color:#39ff14;font-size:12px;font-weight:700}
+.agreement-check:has(input:checked)+.agreement-accepted{display:block}
+@media(max-width:650px){.agreement-check{align-items:flex-start;padding:15px}.agreement-check input{width:24px;height:24px;min-width:24px}.agreement-check input::before{font-size:17px}.agreement-accepted{margin-left:53px}}
