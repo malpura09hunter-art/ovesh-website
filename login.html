@@ -215,7 +215,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   body::before, .card, .pane.active, .overlay-badge, .overlay-ring::before { animation: none !important; }
   .auth-overlay, .overlay-ring, .overlay-phase, .field input, .btn-primary, .btn-google, .tab-btn, .logo-link, .overlay-btn, .msg { transition-duration: 0.15s !important; }
 }
-</style>
+.route-overlay{position:fixed;inset:0;z-index:1000;background:rgba(3,10,3,.94);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility .3s ease}.route-overlay.active{opacity:1;visibility:visible;pointer-events:auto}.route-card{width:min(520px,100%);background:#060f06;border:1px solid rgba(0,255,65,.22);border-radius:14px;padding:34px;box-shadow:0 0 45px rgba(0,255,65,.12);transform:translateY(12px) scale(.98);transition:transform .35s cubic-bezier(.22,1,.36,1)}.route-overlay.active .route-card{transform:none}.route-card h2{font-family:'Orbitron',sans-serif;color:#39ff14;font-size:26px;margin:6px 0 8px}.route-card>p{color:#7fa389;margin:0 0 24px}.route-options{display:grid;gap:12px}.route-option{width:100%;display:flex;align-items:center;gap:16px;text-align:left;background:rgba(0,255,65,.035);border:1px solid rgba(0,255,65,.16);border-radius:10px;padding:16px;color:#c8ffd4;cursor:pointer;transition:transform .2s ease,border-color .2s ease,background .2s ease}.route-option:hover{transform:translateY(-2px);border-color:rgba(0,255,65,.45);background:rgba(0,255,65,.08)}.route-icon{font-size:27px;width:38px;text-align:center}.route-option strong{display:block;font-family:'Rajdhani',sans-serif;font-size:17px}.route-option small{display:block;color:#6f8d74;font-size:13px;margin-top:3px}@media(max-width:520px){.route-card{padding:26px 20px}.route-option{padding:14px}}</style>
 </head>
 <body>
 
@@ -252,7 +252,7 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   </div>
 </div>
 
-<a href="index.html" class="logo-link">← OVESH MALPURA CYBER LABS</a>
+<div class="route-overlay" id="routeOverlay" aria-hidden="true"><div class="route-card"><div class="eyebrow">ACCOUNT READY</div><h2 id="routeTitle">Welcome</h2><p id="routeSubtitle">Where would you like to go?</p><div class="route-options"><button type="button" class="route-option" id="routeShop"><span class="route-icon">🛒</span><span><strong>I need a service</strong><small>Explore services, solutions and Shop</small></span></button><button type="button" class="route-option" id="routePortal"><span class="route-icon">💼</span><span><strong>I'm already a client</strong><small>Open your Client Portal, projects and updates</small></span></button></div></div></div><a href="index.html" class="logo-link">← OVESH MALPURA CYBER LABS</a>
 
 <div class="card">
   <div class="eyebrow">Client Portal</div>
@@ -416,10 +416,8 @@ document.getElementById('overlayForgotPw').addEventListener('click', () => {
   switchTab('reset-pane', document.querySelector('.tab-btn'));
 });
 
-// Redirect if already logged in
-auth.onAuthStateChanged(user => {
-  if (user) window.location.href = 'dashboard.html';
-});
+let pendingRouteUser=null;function getReturnTarget(){const params=new URLSearchParams(window.location.search);return params.get('return')==='shop'||localStorage.getItem('oveshShopReturn')==='1'?'shop':'auto'}async function accountHasShopActivity(user){try{const snap=await db.collection('service_requests').where('userId','==',user.uid).limit(1).get();return !snap.empty}catch(err){console.info('Account activity check unavailable; using first-login routing.');return false}}function showRouteChooser(user,hasActivity){pendingRouteUser=user;const name=(user.displayName||user.email||'there').trim();document.getElementById('routeTitle').textContent='Welcome, '+name;document.getElementById('routeSubtitle').textContent=hasActivity?'Your account already has service activity. Continue to your Client Portal or keep shopping.':'What would you like to do?';document.getElementById('routePortal').querySelector('small').textContent=hasActivity?'Your services, orders, projects and updates':'Already working with us? Open your Client Portal';document.getElementById('routeOverlay').classList.add('active');document.getElementById('routeOverlay').setAttribute('aria-hidden','false')}async function routeAfterAuth(user){const target=getReturnTarget();localStorage.removeItem('oveshShopReturn');if(target==='shop'){window.location.href='shop.html';return}const hasActivity=await accountHasShopActivity(user);showRouteChooser(user,hasActivity)}document.getElementById('routeShop').addEventListener('click',()=>{localStorage.removeItem('oveshShopReturn');window.location.href='shop.html'});document.getElementById('routePortal').addEventListener('click',()=>{localStorage.removeItem('oveshShopReturn');window.location.href='dashboard.html'});// Redirect if already logged in
+auth.onAuthStateChanged(async user=>{if(user){const target=getReturnTarget();if(target==='shop'){window.location.href='shop.html';return}const hasActivity=await accountHasShopActivity(user);showRouteChooser(user,hasActivity)}});
 
 // Catch the result of a redirect-based Google sign-in (popup fallback).
 // Runs harmlessly on every page load; resolves to null if no redirect occurred.
@@ -437,7 +435,7 @@ auth.getRedirectResult().then(async (result) => {
     }
     sendLoginAlert(result.user);
     await showAccessGranted(result.user.displayName);
-    window.location.href = 'dashboard.html';
+    await routeAfterAuth(result.user);
   }
 }).catch(err => {
   if (err.code !== 'auth/no-auth-event') showMsg(friendlyError(err), 'error');
@@ -517,7 +515,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }, { merge: true }).catch(err => console.warn('Could not sync lastLogin:', err.message));
     sendLoginAlert(cred.user);
     await showAccessGranted(cred.user.displayName);
-    window.location.href = 'dashboard.html';
+    await routeAfterAuth(cred.user);
   } catch (err) {
     // A real, failed authentication attempt — show the security-gateway
     // rejection experience. The message stays fully generic regardless of
@@ -555,7 +553,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       body: JSON.stringify({ email, name })
     }).catch(err => console.warn('Could not send welcome email:', err.message));
     showMsg('Account created! A verification email has been sent to ' + email + '.', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1800);
+    setTimeout(() => routeAfterAuth(cred.user), 1800);
   } catch (err) {
     showMsg(friendlyError(err), 'error');
   }
