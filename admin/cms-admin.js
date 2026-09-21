@@ -856,22 +856,215 @@
   }
 
   let shopOrders = [];
-  async function renderShopOrders() {
-    const root=byId('shopOrdersRoot'); if(!root)return;
-    root.innerHTML='<div class="panel"><div class="panel-head"><h3>Shop Orders & Quotes</h3><span class="cms-muted">Loading…</span></div></div>';
-    try{
-      const snap=await db.collection('service_requests').orderBy('createdAt','desc').get();
-      shopOrders=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.source==='shop'||String(x.orderId||'').startsWith('SHOP-'));
-    }catch(e){root.innerHTML='<div class="panel"><div class="cms-empty">'+esc(friendlyError(e))+'</div></div>';return}
-    const customers=new Set(shopOrders.map(x=>String(x.email||'').toLowerCase()).filter(Boolean));
-    const pending=shopOrders.filter(x=>(x.status||'Pending')==='Pending').length;
-    const total=shopOrders.reduce((s,x)=>s+Number(x.estimatedTotal||0),0);
-    byId('shopStatOrders').textContent=shopOrders.length;byId('shopStatCustomers').textContent=customers.size;byId('shopStatQuotes').textContent=pending;byId('shopStatRevenue').textContent='₹'+total.toLocaleString('en-IN');
-    root.innerHTML=\`<div class="panel"><div class="panel-head"><h3>Orders / Quote Requests</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><input class="search-input" id="shopOrderSearch" placeholder="Search name, email, order ID…"><select class="filter-select" id="shopOrderStatus"><option value="">All statuses</option><option>Pending</option><option>Reviewing</option><option>Accepted</option><option>In Progress</option><option>Completed</option><option>Rejected</option></select></div></div><div class="cms-table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Email</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody id="shopOrdersBody"></tbody></table></div></div>\`;
-    const draw=()=>{const q=(byId('shopOrderSearch').value||'').toLowerCase(),sf=byId('shopOrderStatus').value;const rows=shopOrders.filter(x=>(!sf||(x.status||'Pending')===sf)&&(!q||[x.orderId,x.fullName,x.email,x.selectedService].join(' ').toLowerCase().includes(q)));byId('shopOrdersBody').innerHTML=rows.length?rows.map(x=>\`<tr><td>\${esc(x.orderId||x.id)}</td><td>\${esc(x.fullName||'—')}</td><td>\${esc(x.email||'—')}</td><td>\${esc(x.selectedService||'—')}</td><td>₹\${Number(x.estimatedTotal||0).toLocaleString('en-IN')}</td><td>\${esc(x.paymentStatus||'Pending')}</td><td><select class="status-select" onchange="window.updateShopOrderStatus('\${esc(x.id)}',this.value)">\${['Pending','Reviewing','Accepted','In Progress','Completed','Rejected'].map(s=>'<option '+((x.status||'Pending')===s?'selected':'')+'>'+s+'</option>').join('')}</select></td><td>\${fmtDate(x.createdAt)}</td><td><button class="btn-sm" onclick="window.viewShopOrder('\${esc(x.id)}')">View</button></td></tr>\`).join(''):'<tr><td class="cms-empty" colspan="9">No shop orders yet.</td></tr>'};byId('shopOrderSearch').oninput=draw;byId('shopOrderStatus').onchange=draw;draw();
+
+  function initShopAdminTabs() {
+    document.querySelectorAll('[data-shop-tab]').forEach((tab) => {
+      tab.onclick = () => activateShopView(tab.dataset.shopTab);
+    });
+    document.querySelectorAll('[data-shop-jump]').forEach((button) => {
+      button.onclick = () => activateShopView(button.dataset.shopJump);
+    });
   }
-  window.updateShopOrderStatus=async function(id,status){try{await db.collection('service_requests').doc(id).update({status});toast('Order status updated.');renderShopOrders();loadRequests()}catch(e){toast(friendlyError(e),'error')}};
-  window.viewShopOrder=function(id){const x=shopOrders.find(o=>o.id===id);if(!x)return;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=\`<div class="modal-box" style="max-width:760px"><h3>\${esc(x.orderId||'SHOP ORDER')}</h3><div class="modal-row"><span>CUSTOMER</span><span>\${esc(x.fullName||'—')}</span></div><div class="modal-row"><span>EMAIL</span><span>\${esc(x.email||'—')}</span></div><div class="modal-row"><span>PHONE</span><span>\${esc(x.phone||'—')}</span></div><div class="modal-row"><span>SERVICES</span><span>\${esc(x.selectedService||'—')}</span></div><div class="modal-row"><span>TOTAL</span><span>₹\${Number(x.estimatedTotal||0).toLocaleString('en-IN')}</span></div><div class="modal-row"><span>PAYMENT</span><span>\${esc(x.paymentStatus||'Pending')}</span></div><div class="modal-row"><span>STATUS</span><span>\${esc(x.status||'Pending')}</span></div><div style="margin-top:18px"><div class="cms-muted">REQUIREMENTS / MESSAGE</div><p style="white-space:pre-wrap;margin-top:8px">\${esc(x.projectDescription||'—')}</p></div><div style="margin-top:18px"><div class="cms-muted">ITEMS</div><pre style="white-space:pre-wrap;color:var(--text)">\${esc(JSON.stringify(x.items||[],null,2))}</pre></div><div class="modal-actions"><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Close</button></div></div>\`;document.body.appendChild(overlay)};
+
+  function activateShopView(view) {
+    document.querySelectorAll('[data-shop-tab]').forEach((tab) => tab.classList.toggle('active', tab.dataset.shopTab === view));
+    document.querySelectorAll('[data-shop-view]').forEach((pane) => pane.classList.toggle('active', pane.dataset.shopView === view));
+  }
+
+  function shopMoney(value) {
+    return '₹' + Number(value || 0).toLocaleString('en-IN');
+  }
+
+  async function renderShopOrders() {
+    initShopAdminTabs();
+    const root = byId('shopOrdersRoot');
+    if (!root) return;
+    root.innerHTML = '<div class="panel"><div class="panel-head"><h3>Orders</h3><span class="cms-muted">Loading…</span></div></div>';
+
+    try {
+      const snap = await db.collection('service_requests').orderBy('createdAt', 'desc').get();
+      shopOrders = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        .filter((x) => x.source === 'shop' || String(x.orderId || '').startsWith('SHOP-'));
+    } catch (e) {
+      root.innerHTML = '<div class="panel"><div class="cms-empty">' + esc(friendlyError(e)) + '</div></div>';
+      return;
+    }
+
+    const customers = new Set(shopOrders.map((x) => String(x.email || '').toLowerCase()).filter(Boolean));
+    const openQuotes = shopOrders.filter((x) => !['Completed', 'Rejected', 'Cancelled'].includes(x.status || 'Pending')).length;
+    const orderValue = shopOrders.reduce((sum, x) => sum + Number(x.estimatedTotal || 0), 0);
+
+    byId('shopStatOrders').textContent = shopOrders.length;
+    byId('shopStatCustomers').textContent = customers.size;
+    byId('shopStatQuotes').textContent = openQuotes;
+    byId('shopStatRevenue').textContent = shopMoney(orderValue);
+
+    renderRecentShopOrders();
+    renderShopOrdersTable();
+    renderShopCustomers();
+    renderShopQuotes();
+  }
+
+  function renderRecentShopOrders() {
+    const root = byId('shopRecentOrders');
+    if (!root) return;
+    const rows = shopOrders.slice(0, 6);
+    if (!rows.length) {
+      root.innerHTML = '<div class="cms-empty">No shop orders yet.</div>';
+      return;
+    }
+    root.innerHTML = '<div class="shop-mini-table"><table><thead><tr><th>Order</th><th>Customer</th><th>Value</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+      rows.map((x) => '<tr><td>' + esc(x.orderId || x.id) + '</td><td>' + esc(x.fullName || '—') + '</td><td>' + shopMoney(x.estimatedTotal) + '</td><td>' + esc(x.paymentStatus || 'Pending') + '</td><td><span class="status-pill status-' + esc((x.status || 'Pending').replace(/\s/g, '-')) + '">' + esc(x.status || 'Pending') + '</span></td><td>' + fmtDate(x.createdAt) + '</td></tr>').join('') +
+      '</tbody></table></div>';
+  }
+
+  function renderShopOrdersTable() {
+    const root = byId('shopOrdersRoot');
+    if (!root) return;
+    root.innerHTML = `
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Orders</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input class="search-input" id="shopOrderSearch" placeholder="Search order, customer, email…">
+            <select class="filter-select" id="shopOrderStatus">
+              <option value="">All statuses</option>
+              <option>Pending</option><option>Reviewing</option><option>Accepted</option><option>In Progress</option><option>Completed</option><option>Rejected</option>
+            </select>
+            <select class="filter-select" id="shopPaymentFilter">
+              <option value="">All payment states</option>
+              <option>Quote / payment pending</option><option>Paid</option><option>Failed</option><option>Refunded</option>
+            </select>
+          </div>
+        </div>
+        <div class="shop-mini-table"><table>
+          <thead><tr><th>Order</th><th>Customer</th><th>Services</th><th>Total</th><th>Payment</th><th>Status</th><th>Created</th><th></th></tr></thead>
+          <tbody id="shopOrdersBody"></tbody>
+        </table></div>
+      </div>`;
+    const draw = () => {
+      const q = (byId('shopOrderSearch').value || '').toLowerCase();
+      const sf = byId('shopOrderStatus').value;
+      const pf = byId('shopPaymentFilter').value;
+      const rows = shopOrders.filter((x) =>
+        (!sf || (x.status || 'Pending') === sf) &&
+        (!pf || (x.paymentStatus || 'Quote / payment pending') === pf) &&
+        (!q || [x.orderId, x.fullName, x.email, x.phone, x.selectedService].join(' ').toLowerCase().includes(q))
+      );
+      byId('shopOrdersBody').innerHTML = rows.length ? rows.map((x) => `
+        <tr>
+          <td><strong>${esc(x.orderId || x.id)}</strong></td>
+          <td>${esc(x.fullName || '—')}<br><span class="cms-muted">${esc(x.email || '')}</span></td>
+          <td>${esc(x.selectedService || '—')}</td>
+          <td>${shopMoney(x.estimatedTotal)}</td>
+          <td>${esc(x.paymentStatus || 'Quote / payment pending')}</td>
+          <td><select class="status-select" onchange="window.updateShopOrderStatus('${esc(x.id)}',this.value)">
+            ${['Pending','Reviewing','Accepted','In Progress','Completed','Rejected'].map((s) => '<option ' + ((x.status || 'Pending') === s ? 'selected' : '') + '>' + s + '</option>').join('')}
+          </select></td>
+          <td>${fmtDate(x.createdAt)}</td>
+          <td><button class="btn-sm" onclick="window.viewShopOrder('${esc(x.id)}')">View</button></td>
+        </tr>`).join('') : '<tr><td class="cms-empty" colspan="8">No matching orders.</td></tr>';
+    };
+    byId('shopOrderSearch').oninput = draw;
+    byId('shopOrderStatus').onchange = draw;
+    byId('shopPaymentFilter').onchange = draw;
+    draw();
+  }
+
+  function renderShopCustomers() {
+    const root = byId('shopCustomersRoot');
+    if (!root) return;
+    const byEmail = {};
+    shopOrders.forEach((x) => {
+      const email = String(x.email || '').toLowerCase();
+      if (!email) return;
+      if (!byEmail[email]) byEmail[email] = { name: x.fullName || '—', email, phone: x.phone || '—', orders: 0, value: 0, last: x.createdAt, uid: x.userId || '—' };
+      byEmail[email].orders += 1;
+      byEmail[email].value += Number(x.estimatedTotal || 0);
+      if (x.fullName) byEmail[email].name = x.fullName;
+      if (x.phone) byEmail[email].phone = x.phone;
+      if (x.userId) byEmail[email].uid = x.userId;
+      byEmail[email].last = x.createdAt || byEmail[email].last;
+    });
+    const customers = Object.values(byEmail).sort((a,b) => Number(b.value) - Number(a.value));
+    root.innerHTML = `
+      <div class="panel">
+        <div class="panel-head"><h3>Customers</h3><input class="search-input" id="shopCustomerSearch" placeholder="Search name, email, phone…"></div>
+        <div id="shopCustomerList"></div>
+      </div>`;
+    const draw = () => {
+      const q = (byId('shopCustomerSearch').value || '').toLowerCase();
+      const rows = customers.filter((x) => [x.name,x.email,x.phone,x.uid].join(' ').toLowerCase().includes(q));
+      byId('shopCustomerList').innerHTML = rows.length ? rows.map((x) => `
+        <div class="shop-customer-card">
+          <div><span class="muted-label">Customer</span><strong>${esc(x.name)}</strong></div>
+          <div><span class="muted-label">Contact</span><span>${esc(x.email)}<br>${esc(x.phone)}</span></div>
+          <div><span class="muted-label">Activity</span><span>${x.orders} order${x.orders === 1 ? '' : 's'} · ${shopMoney(x.value)}</span></div>
+          <div><span class="muted-label">Last request</span><span>${fmtDate(x.last)}</span></div>
+        </div>`).join('') : '<div class="cms-empty">No customers found.</div>';
+    };
+    byId('shopCustomerSearch').oninput = draw;
+    draw();
+  }
+
+  function renderShopQuotes() {
+    const root = byId('shopQuotesRoot');
+    if (!root) return;
+    const quotes = shopOrders.filter((x) => !['Completed','Rejected','Cancelled'].includes(x.status || 'Pending'));
+    root.innerHTML = `
+      <div class="panel">
+        <div class="panel-head"><h3>Quotes & Requirements</h3><span class="cms-muted">Requests awaiting review, acceptance or completion.</span></div>
+        <div class="shop-mini-table"><table>
+          <thead><tr><th>Reference</th><th>Customer</th><th>Services</th><th>Requirements</th><th>Value</th><th>Status</th><th></th></tr></thead>
+          <tbody>${quotes.length ? quotes.map((x) => `
+            <tr>
+              <td>${esc(x.orderId || x.id)}</td>
+              <td>${esc(x.fullName || '—')}<br><span class="cms-muted">${esc(x.email || '')}</span></td>
+              <td>${esc(x.selectedService || '—')}</td>
+              <td style="max-width:280px;white-space:normal;">${esc(x.projectDescription || '—')}</td>
+              <td>${shopMoney(x.estimatedTotal)}</td>
+              <td><span class="status-pill status-${esc((x.status || 'Pending').replace(/\s/g,'-'))}">${esc(x.status || 'Pending')}</span></td>
+              <td><button class="btn-sm" onclick="window.viewShopOrder('${esc(x.id)}')">Open</button></td>
+            </tr>`).join('') : '<tr><td class="cms-empty" colspan="7">No open quotes.</td></tr>'}</tbody>
+        </table></div>
+      </div>`;
+  }
+
+  window.updateShopOrderStatus = async function(id, status) {
+    try {
+      await db.collection('service_requests').doc(id).update({ status, updatedAt: now(), updatedBy: activeUser ? activeUser.uid : '' });
+      toast('Order status updated.');
+      renderShopOrders();
+      loadRequests();
+    } catch (e) {
+      toast(friendlyError(e), 'error');
+    }
+  };
+
+  window.viewShopOrder = function(id) {
+    const x = shopOrders.find((o) => o.id === id);
+    if (!x) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:820px">
+        <h3>${esc(x.orderId || 'SHOP ORDER')}</h3>
+        <div class="modal-row"><span>CUSTOMER</span><span>${esc(x.fullName || '—')}</span></div>
+        <div class="modal-row"><span>EMAIL</span><span>${esc(x.email || '—')}</span></div>
+        <div class="modal-row"><span>PHONE</span><span>${esc(x.phone || '—')}</span></div>
+        <div class="modal-row"><span>FIREBASE UID</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;">${esc(x.userId || 'Guest request')}</span></div>
+        <div class="modal-row"><span>SERVICES</span><span>${esc(x.selectedService || '—')}</span></div>
+        <div class="modal-row"><span>TOTAL</span><span>${shopMoney(x.estimatedTotal)}</span></div>
+        <div class="modal-row"><span>PAYMENT</span><span>${esc(x.paymentStatus || 'Quote / payment pending')}</span></div>
+        <div class="modal-row"><span>STATUS</span><span>${esc(x.status || 'Pending')}</span></div>
+        <div class="modal-row"><span>CREATED</span><span>${fmtDate(x.createdAt)}</span></div>
+        <div style="margin-top:18px"><div class="cms-muted">REQUIREMENTS / MESSAGE</div><p style="white-space:pre-wrap;margin-top:8px">${esc(x.projectDescription || '—')}</p></div>
+        <div style="margin-top:18px"><div class="cms-muted">ORDER ITEMS</div><pre style="white-space:pre-wrap;color:var(--text);font-size:12px">${esc(JSON.stringify(x.items || [], null, 2))}</pre></div>
+        <div class="modal-actions"><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Close</button></div>
+      </div>`;
+    document.body.appendChild(overlay);
+  };
+
   function renderProfile() {
     const root = byId('cmsProfileRoot');
     if (!root || !activeUser) return;
