@@ -34,3 +34,5 @@
 .agreement-accepted{display:none;margin:-8px 0 14px 51px;color:#39ff14;font-size:12px;font-weight:700}
 .agreement-check:has(input:checked)+.agreement-accepted{display:block}
 @media(max-width:650px){.agreement-check{align-items:flex-start;padding:15px}.agreement-check input{width:24px;height:24px;min-width:24px}.agreement-check input::before{font-size:17px}.agreement-accepted{margin-left:53px}}
+
+.agreement-download-confirm{margin:18px 0;padding:15px;border:1px solid rgba(57,255,20,.2);border-radius:10px;background:rgba(57,255,20,.04);display:flex;flex-direction:column;gap:8px}.agreement-download-confirm strong{color:#39ff14}.agreement-download-confirm span{color:#7fa389;font-size:12px;line-height:1.5}.agreement-download-confirm .primary{margin-top:4px}
