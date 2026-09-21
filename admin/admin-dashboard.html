@@ -110,6 +110,19 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
 .modal-row span:first-child { color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .modal-close { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+
+/* Shop Admin */
+.shop-admin-nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;padding:6px;background:rgba(0,255,65,.025);border:1px solid var(--border);border-radius:10px;position:sticky;top:84px;z-index:5;backdrop-filter:blur(12px)}
+.shop-admin-tab{border:1px solid transparent;background:transparent;color:var(--muted);padding:9px 13px;border-radius:7px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px}
+.shop-admin-tab:hover{color:var(--text);background:rgba(0,255,65,.05)}
+.shop-admin-tab.active{color:var(--neon3);background:rgba(0,255,65,.10);border-color:var(--border)}
+.shop-admin-view{display:none}.shop-admin-view.active{display:block}
+.shop-admin-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-bottom:24px}.shop-admin-card{margin:0}.shop-admin-list{padding:8px 0}.shop-admin-list button{display:flex;justify-content:space-between;gap:16px;width:100%;padding:15px 20px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);text-align:left;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:14px}.shop-admin-list button:last-child{border-bottom:0}.shop-admin-list button:hover{background:rgba(0,255,65,.04);color:var(--neon3)}
+.shop-status-list{padding:4px 20px 14px}.shop-status-list div{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid var(--border);font-size:13px}.shop-status-list div:last-child{border-bottom:0}.shop-status-list span{color:var(--muted)}.shop-status-list strong{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon3);text-align:right}
+.shop-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:4px 20px 20px}.shop-settings-grid div{padding:15px 0;border-bottom:1px solid var(--border)}.shop-settings-grid span{display:block;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}.shop-settings-grid strong{font-size:14px;font-weight:600;color:var(--text)}
+.shop-mini-table{width:100%;overflow:auto}.shop-mini-table table{min-width:650px}.shop-customer-card{padding:18px 20px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1.3fr 1fr 1fr .7fr;gap:15px;align-items:center}.shop-customer-card:last-child{border-bottom:0}.shop-customer-card .muted-label{display:block;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:10px;text-transform:uppercase;margin-bottom:4px}.shop-customer-card strong{font-size:14px}.shop-customer-card span{font-size:13px;color:var(--text)}
+@media(max-width:900px){.shop-admin-grid,.shop-settings-grid{grid-template-columns:1fr}.shop-admin-nav{position:static}.shop-customer-card{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.shop-customer-card{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="cms-admin.css">
 </head>
@@ -247,23 +260,78 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
 
     <div class="pane" id="pane-shop">
       <div class="cms-toolbar">
-        <div><h2>Shop Command Center</h2><div class="pane-sub">Manage your digital storefront, customers, orders, quotes and catalog.</div></div>
-        <a class="cms-secondary" href="../shop.html" target="_blank" rel="noopener">Open Shop ↗</a>
+        <div>
+          <h2>Shop</h2>
+          <div class="pane-sub">Storefront operations — catalog, orders, customers, quotes and commerce controls.</div>
+        </div>
+        <div class="cms-actions">
+          <span class="cms-pill">ADMIN ONLY</span>
+          <a class="cms-secondary" href="../shop.html" target="_blank" rel="noopener">Open Storefront ↗</a>
+        </div>
       </div>
-      <div class="stat-grid">
-        <div class="stat-card"><div class="num" id="shopStatOrders">—</div><div class="label">Shop Orders</div></div>
-        <div class="stat-card"><div class="num" id="shopStatCustomers">—</div><div class="label">Customers</div></div>
-        <div class="stat-card"><div class="num" id="shopStatQuotes">—</div><div class="label">Pending Quotes</div></div>
-        <div class="stat-card"><div class="num" id="shopStatRevenue">₹0</div><div class="label">Estimated Order Value</div></div>
+
+      <div class="shop-admin-nav" role="tablist" aria-label="Shop management">
+        <button class="shop-admin-tab active" data-shop-tab="overview" type="button">Overview</button>
+        <button class="shop-admin-tab" data-shop-tab="orders" type="button">Orders</button>
+        <button class="shop-admin-tab" data-shop-tab="customers" type="button">Customers</button>
+        <button class="shop-admin-tab" data-shop-tab="quotes" type="button">Quotes</button>
+        <button class="shop-admin-tab" data-shop-tab="products" type="button">Products</button>
+        <button class="shop-admin-tab" data-shop-tab="categories" type="button">Categories</button>
+        <button class="shop-admin-tab" data-shop-tab="coupons" type="button">Coupons</button>
+        <button class="shop-admin-tab" data-shop-tab="reviews" type="button">Reviews</button>
+        <button class="shop-admin-tab" data-shop-tab="settings" type="button">Settings</button>
       </div>
-      <div id="shopOrdersRoot"></div>
-      <div id="cmsListRoot-shop-products"></div>
-      <div id="cmsListRoot-shop-categories"></div>
-      <div id="cmsListRoot-shop-coupons"></div>
-      <div id="cmsListRoot-shop-reviews"></div>
-      <div class="panel" style="padding:20px;">
-        <h3 style="font-family:'Orbitron',sans-serif;margin-bottom:8px;">Shop Settings</h3>
-        <p class="cms-muted">Products are public when published. Customer checkout requests are stored with the existing Service Requests pipeline, so customer email, phone, requirements, selected services, totals and status stay in the same protected admin workflow.</p>
+
+      <div class="shop-admin-view active" data-shop-view="overview">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="num" id="shopStatOrders">—</div><div class="label">Total Orders</div></div>
+          <div class="stat-card"><div class="num" id="shopStatCustomers">—</div><div class="label">Customers</div></div>
+          <div class="stat-card"><div class="num" id="shopStatQuotes">—</div><div class="label">Open Quotes</div></div>
+          <div class="stat-card"><div class="num" id="shopStatRevenue">₹0</div><div class="label">Order Value</div></div>
+        </div>
+        <div class="shop-admin-grid">
+          <div class="panel shop-admin-card">
+            <div class="panel-head"><h3>Store Operations</h3></div>
+            <div class="shop-admin-list">
+              <button type="button" data-shop-jump="orders">Review new orders and update fulfillment status <span>→</span></button>
+              <button type="button" data-shop-jump="quotes">Review customer requirements and quotes <span>→</span></button>
+              <button type="button" data-shop-jump="customers">View customer profiles and activity <span>→</span></button>
+              <button type="button" data-shop-jump="products">Manage public products and pricing <span>→</span></button>
+            </div>
+          </div>
+          <div class="panel shop-admin-card">
+            <div class="panel-head"><h3>Commerce Status</h3></div>
+            <div class="shop-status-list">
+              <div><span>Catalog</span><strong>Firestore</strong></div>
+              <div><span>Requests</span><strong>Service Requests</strong></div>
+              <div><span>Payments</span><strong id="shopPaymentMode">Quote / payment pending</strong></div>
+              <div><span>Customer identity</span><strong>Firebase UID</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Recent Orders</h3><button class="cms-secondary" type="button" data-shop-jump="orders">View all</button></div>
+          <div id="shopRecentOrders"></div>
+        </div>
+      </div>
+
+      <div class="shop-admin-view" data-shop-view="orders"><div id="shopOrdersRoot"></div></div>
+      <div class="shop-admin-view" data-shop-view="customers"><div id="shopCustomersRoot"></div></div>
+      <div class="shop-admin-view" data-shop-view="quotes"><div id="shopQuotesRoot"></div></div>
+      <div class="shop-admin-view" data-shop-view="products"><div id="cmsListRoot-shop-products"></div></div>
+      <div class="shop-admin-view" data-shop-view="categories"><div id="cmsListRoot-shop-categories"></div></div>
+      <div class="shop-admin-view" data-shop-view="coupons"><div id="cmsListRoot-shop-coupons"></div></div>
+      <div class="shop-admin-view" data-shop-view="reviews"><div id="cmsListRoot-shop-reviews"></div></div>
+      <div class="shop-admin-view" data-shop-view="settings">
+        <div class="panel shop-settings-panel">
+          <div class="panel-head"><h3>Shop Settings</h3></div>
+          <div class="shop-settings-grid">
+            <div><span>Public catalog</span><strong>Published products are visible on the storefront.</strong></div>
+            <div><span>Order storage</span><strong>Checkout requests use the protected Service Requests workflow.</strong></div>
+            <div><span>Customer data</span><strong>Name, email, phone, requirements, services, totals and status remain attached to the request.</strong></div>
+            <div><span>Payment state</span><strong>Current checkout is request/quote based. Payment gateway integration can be connected without creating another dashboard.</strong></div>
+          </div>
+        </div>
       </div>
     </div>
 
