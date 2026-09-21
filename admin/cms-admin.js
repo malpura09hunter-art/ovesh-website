@@ -611,24 +611,45 @@
       body.innerHTML = '<tr><td class="cms-empty" colspan="6">No records found.</td></tr>';
       return;
     }
-    body.innerHTML = filtered.map((item) => {
-      const title = item.title || item.question || item.client || item.fileName || item.name || item.id;
-      return `
+    if (config.key === 'shop-products') {
+      body.closest('table').querySelector('thead').innerHTML = '<tr><th>Product / Service</th><th>Price</th><th>Sale Price</th><th>Category</th><th>Status</th><th>Featured</th><th></th></tr>';
+      body.innerHTML = filtered.map((item) => `
         <tr>
-          <td>${esc(title)}</td>
+          <td><strong>${esc(item.name || item.id)}</strong><br><span class="cms-muted">${esc(item.slug || '')}</span></td>
+          <td><strong>₹${Number(item.price || 0).toLocaleString('en-IN')}</strong></td>
+          <td>${Number(item.salePrice || 0) > 0 ? '<strong>₹' + Number(item.salePrice).toLocaleString('en-IN') + '</strong>' : '—'}</td>
+          <td>${esc(item.category || '—')}</td>
           <td><span class="status-pill status-${esc((item.status || 'Published').replace(/\s/g, '-'))}">${esc(item.status || 'Published')}</span></td>
           <td>${item.featured ? 'Yes' : 'No'}</td>
-          <td>${esc(item.order == null ? '' : item.order)}</td>
-          <td>${fmtDate(item.updatedAt || item.createdAt)}</td>
-          <td>
-            <button class="btn-sm" data-edit="${esc(item.id)}">Edit</button>
-            ${config.key === 'media' ? `<button class="btn-sm" data-copy="${esc(item.id)}">Copy URL</button>` : ''}
+          <td style="white-space:nowrap">
+            <button class="btn-sm" data-edit="${esc(item.id)}">Manage</button>
+            <button class="btn-sm" data-duplicate="${esc(item.id)}">Duplicate</button>
             <button class="btn-sm danger" data-delete="${esc(item.id)}">Delete</button>
           </td>
-        </tr>`;
-    }).join('');
+        </tr>`).join('');
+    } else {
+      body.innerHTML = filtered.map((item) => {
+        const title = item.title || item.question || item.client || item.fileName || item.name || item.id;
+        return `
+          <tr>
+            <td>${esc(title)}</td>
+            <td><span class="status-pill status-${esc((item.status || 'Published').replace(/\s/g, '-'))}">${esc(item.status || 'Published')}</span></td>
+            <td>${item.featured ? 'Yes' : 'No'}</td>
+            <td>${esc(item.order == null ? '' : item.order)}</td>
+            <td>${fmtDate(item.updatedAt || item.createdAt)}</td>
+            <td>
+              <button class="btn-sm" data-edit="${esc(item.id)}">Edit</button>
+              ${config.key === 'media' ? `<button class="btn-sm" data-copy="${esc(item.id)}">Copy URL</button>` : ''}
+              <button class="btn-sm danger" data-delete="${esc(item.id)}">Delete</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
     body.querySelectorAll('[data-edit]').forEach((button) => {
       button.onclick = () => openItemEditor(config, state.docs.find((item) => item.id === button.dataset.edit));
+    });
+    body.querySelectorAll('[data-duplicate]').forEach((button) => {
+      button.onclick = () => duplicateShopProduct(button.dataset.duplicate);
     });
     body.querySelectorAll('[data-delete]').forEach((button) => {
       button.onclick = () => deleteItem(config, button.dataset.delete);
@@ -644,7 +665,7 @@
     overlay.className = 'modal-overlay open';
     overlay.innerHTML = `
       <div class="modal-box" style="max-width:760px;">
-        <h3>${isEdit ? 'Edit' : 'Add'} ${esc(config.title.replace(/s$/, ''))}</h3>
+        <h3>${config.key === 'shop-products' ? (isEdit ? 'Manage Product / Service' : 'Add Product / Service') : (isEdit ? 'Edit' : 'Add') + ' ' + esc(config.title.replace(/s$/, ''))}</h3>
         <form class="cms-form-grid" id="itemEditorForm">
           ${config.media ? '<div class="cms-field full"><label>Local Image Upload Preview</label><input type="file" id="mediaFileInput" accept="image/*"><div class="cms-help">Firebase Storage is not initialized yet. This picker previews an image and can store a data URL or pasted Storage URL in Firestore.</div><img id="mediaPreview" class="cms-upload-preview" alt=""></div>' : ''}
           ${config.fields.map((field) => fieldHtml(field, 'editor', item ? item[field.name] : '')).join('')}
@@ -671,6 +692,12 @@
     form.onsubmit = async (event) => {
       event.preventDefault();
       if (!validateForm(form, config.fields)) return;
+      if (config.key === 'shop-products') {
+        const price = Number(form.elements.price && form.elements.price.value || 0);
+        const sale = Number(form.elements.salePrice && form.elements.salePrice.value || 0);
+        if (price < 0 || sale < 0) { toast('Price cannot be negative.', 'error'); return; }
+        if (sale > 0 && price > 0 && sale >= price) { toast('Sale price must be lower than the starting price.', 'error'); return; }
+      }
       setFormDisabled(form, true);
       const payload = {};
       config.fields.forEach((field) => {
@@ -718,6 +745,28 @@
     if (urlInput.value) {
       preview.src = urlInput.value;
       preview.style.display = 'block';
+    }
+  }
+
+  async function duplicateShopProduct(id) {
+    const state = listState['shop-products'];
+    const item = state && state.docs.find((x) => x.id === id);
+    if (!item) return;
+    const copy = { ...item };
+    delete copy.id;
+    copy.name = String(copy.name || 'Product') + ' Copy';
+    copy.slug = slugify(copy.name);
+    copy.status = 'Draft';
+    copy.featured = false;
+    copy.createdAt = now();
+    copy.updatedAt = now();
+    copy.updatedBy = activeUser ? activeUser.uid : '';
+    try {
+      await db.collection('shop_products').add(copy);
+      toast('Product duplicated as Draft.');
+      loadList(listModules.find((x) => x.key === 'shop-products'));
+    } catch (error) {
+      toast(friendlyError(error), 'error');
     }
   }
 
