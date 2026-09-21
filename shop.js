@@ -50,12 +50,121 @@ function openAgreement(){
 function closeAgreement(){$('agreementModal').classList.remove('open')}function renderAccount(user){const link=$('accountLink');if(!link)return;if(user){const email=String(user.email||'').trim();link.href='dashboard.html';link.textContent=email?'Account · '+email:'Account';link.title=email;}else{link.href='login.html?return=shop';link.textContent='Account';link.title='Sign in to your account';}}
 $('agreementBtn').onclick=openAgreement;$('closeAgreement').onclick=closeAgreement;$('agreementDone').onclick=closeAgreement;
 $('checkoutBtn').onclick=async()=>{const user=await waitForAuth();if(!user){localStorage.setItem('oveshShopReturn','1');window.location.href='login.html?return=shop';return;}$('checkoutSummary').innerHTML=cart.map(x=>esc(x.name)+' × '+x.qty).join('<br>');renderAgreementServices('checkoutAgreementServices');$('checkoutStatus').textContent='';$('checkoutModal').classList.add('open')};document.querySelector('[data-close]').onclick=()=>$('checkoutModal').classList.remove('open');
-$('checkoutForm').onsubmit=async e=>{e.preventDefault();const user=await waitForAuth();if(!user){localStorage.setItem('oveshShopReturn','1');window.location.href='login.html?return=shop';return;}const f=new FormData(e.target);f.set('email',user.email||'');const emailField=e.target.querySelector('[name="email"]');if(emailField)emailField.value=user.email||'';const items=cart.map(x=>({productId:x.id,name:x.name,qty:x.qty,price:x.price})),orderId='SHOP-'+Date.now().toString().slice(-8);const payload={source:'shop',orderId,fullName:String(f.get('fullName')||'').trim(),email:String(f.get('email')||'').trim(),phone:String(f.get('phone')||'').trim(),selectedService:items.map(x=>x.name).join(', '),items,estimatedTotal:items.reduce((a,x)=>a+x.price*x.qty,0),uid:user.uid,userId:user.uid,projectDescription:String(f.get('message')||'').trim(),agreementVersion:'1.0',agreementAccepted:true,agreementAcceptedAt:new Date().toISOString(),status:'Pending',paymentStatus:'Quote / payment pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()};const s=$('checkoutStatus');s.textContent='Submitting…';try{await db.collection('service_requests').add(payload);
-const emailResponse=await fetch('/api/send-shop-confirmation',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await user.getIdToken())},body:JSON.stringify({orderId,fullName:payload.fullName,email:user.email||payload.email,items:payload.items,total:payload.estimatedTotal,requirements:payload.projectDescription,agreementVersion:payload.agreementVersion,agreementAcceptedAt:payload.agreementAcceptedAt})});
-let emailResult={};try{emailResult=await emailResponse.json();}catch(_){};
-if(!emailResponse.ok){s.innerHTML='<div class="request-success-card"><div class="request-success-icon">✓</div><div class="request-success-eyebrow">REQUEST SUBMITTED SUCCESSFULLY</div><h3>Thank You, '+esc(payload.fullName)+'!</h3><p class="request-success-main">Your service request has been received and everything is successfully submitted.</p><div class="request-reference"><span>REQUEST REFERENCE</span><strong>'+esc(orderId)+'</strong></div><div class="request-success-details"><p>📧 Confirmation email: <strong>'+esc(payload.email)+'</strong></p><p>📄 Your Client Service Agreement is ready to download, and the same PDF is attached to your confirmation email.</p></div><button type="button" class="primary" id="downloadAgreementCheckout">Download Agreement PDF</button><p class="request-success-next">We’ll review your request and contact you with the next steps.</p></div>';
-const downloadBtn=document.getElementById('downloadAgreementCheckout');if(downloadBtn)downloadBtn.onclick=async()=>{try{downloadBtn.disabled=true;downloadBtn.textContent='Preparing PDF…';const token=await user.getIdToken();const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(orderId),{headers:{Authorization:'Bearer '+token}});if(!r.ok)throw new Error('Could not generate agreement PDF');const blob=await r.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Ovesh-Client-Agreement-'+orderId+'.pdf';document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);downloadBtn.textContent='Agreement PDF Downloaded';}catch(err){downloadBtn.disabled=false;downloadBtn.textContent='Download Agreement PDF';console.error('Agreement PDF download failed:',err.message)}};
-cart=[];save();e.target.reset();}catch(err){console.error('Shop request submission failed:',err.code,err.message,err);const msg=err.code==='permission-denied'?'Your account is signed in, but this request is not permitted. Please contact the lab.':err.code==='unauthenticated'?'Your session expired. Please sign in again.':err.code==='unavailable'?'Service temporarily unavailable. Please try again.':(err.message==='Could not send confirmation email'||err.message==='Email account authentication failed'||err.message==='Email server connection failed')?'Request received, but the confirmation email could not be sent. Please try again later.':'Could not submit right now. Please try again.';s.textContent=msg}};
+$('checkoutForm').onsubmit=async e=>{
+  e.preventDefault();
+  const user=await waitForAuth();
+  if(!user){
+    localStorage.setItem('oveshShopReturn','1');
+    window.location.href='login.html?return=shop';
+    return;
+  }
+  const f=new FormData(e.target);
+  f.set('email',user.email||'');
+  const emailField=e.target.querySelector('[name="email"]');
+  if(emailField)emailField.value=user.email||'';
+  const items=cart.map(x=>({productId:x.id,name:x.name,qty:x.qty,price:x.price}));
+  const orderId='SHOP-'+Date.now().toString().slice(-8);
+  const payload={
+    source:'shop',
+    orderId,
+    fullName:String(f.get('fullName')||'').trim(),
+    email:String(f.get('email')||'').trim(),
+    phone:String(f.get('phone')||'').trim(),
+    selectedService:items.map(x=>x.name).join(', '),
+    items,
+    estimatedTotal:items.reduce((a,x)=>a+x.price*x.qty,0),
+    uid:user.uid,
+    userId:user.uid,
+    projectDescription:String(f.get('message')||'').trim(),
+    agreementVersion:'1.0',
+    agreementAccepted:true,
+    agreementAcceptedAt:new Date().toISOString(),
+    status:'Pending',
+    paymentStatus:'Quote / payment pending',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const s=$('checkoutStatus');
+  s.textContent='Submitting…';
+  try{
+    await db.collection('service_requests').add(payload);
+
+    let emailSent=false;
+    try{
+      const emailResponse=await fetch('/api/send-shop-confirmation',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+(await user.getIdToken())
+        },
+        body:JSON.stringify({
+          orderId,
+          fullName:payload.fullName,
+          email:user.email||payload.email,
+          items:payload.items,
+          total:payload.estimatedTotal,
+          requirements:payload.projectDescription,
+          agreementVersion:payload.agreementVersion,
+          agreementAcceptedAt:payload.agreementAcceptedAt
+        })
+      });
+      emailSent=emailResponse.ok;
+      if(!emailResponse.ok){
+        let emailResult={};
+        try{emailResult=await emailResponse.json()}catch(_){}
+        console.warn('Shop confirmation email failed:',emailResult);
+      }
+    }catch(emailError){
+      console.error('Shop confirmation email request failed:',emailError);
+    }
+
+    s.innerHTML='<div class="request-success-card"><div class="request-success-icon">✓</div><div class="request-success-eyebrow">REQUEST SUBMITTED SUCCESSFULLY</div><h3>Thank You, '+esc(payload.fullName)+'!</h3><p class="request-success-main">Your service request has been received and everything is successfully submitted.</p><div class="request-reference"><span>REQUEST REFERENCE</span><strong>'+esc(orderId)+'</strong></div><div class="request-success-details"><p>📧 Confirmation email: <strong>'+esc(payload.email)+'</strong></p><p>'+(
+      emailSent
+        ? 'A confirmation email with your Client Service Agreement has been sent to your account email.'
+        : 'Your request was saved successfully. The confirmation email could not be sent right now, but you can still download your Client Service Agreement below.'
+    )+'</p></div><button type="button" class="primary" id="downloadAgreementCheckout">Download Agreement PDF</button><p class="request-success-next">We’ll review your request and contact you with the next steps.</p></div>';
+
+    const downloadBtn=document.getElementById('downloadAgreementCheckout');
+    if(downloadBtn)downloadBtn.onclick=async()=>{
+      try{
+        downloadBtn.disabled=true;
+        downloadBtn.textContent='Preparing PDF…';
+        const token=await user.getIdToken();
+        const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(orderId),{
+          headers:{Authorization:'Bearer '+token}
+        });
+        if(!r.ok)throw new Error('Could not generate agreement PDF');
+        const blob=await r.blob();
+        const url=URL.createObjectURL(blob);
+        const link=document.createElement('a');
+        link.href=url;
+        link.download='Ovesh-Client-Agreement-'+orderId+'.pdf';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        downloadBtn.textContent='Agreement PDF Downloaded';
+      }catch(err){
+        downloadBtn.disabled=false;
+        downloadBtn.textContent='Download Agreement PDF';
+        console.error('Agreement PDF download failed:',err.message);
+      }
+    };
+
+    cart=[];
+    save();
+    e.target.reset();
+  }catch(err){
+    console.error('Shop request submission failed:',err.code,err.message,err);
+    const msg=err.code==='permission-denied'
+      ? 'Your account is signed in, but this request is not permitted. Please contact the lab.'
+      : err.code==='unauthenticated'
+      ? 'Your session expired. Please sign in again.'
+      : err.code==='unavailable'
+      ? 'Service temporarily unavailable. Please try again.'
+      : 'Could not submit right now. Please try again.';
+    s.textContent=msg;
+  }
+};
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 auth.onAuthStateChanged(renderAccount);load();renderCart();
 })();
