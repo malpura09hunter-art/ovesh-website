@@ -23,9 +23,9 @@ module.exports=async(req,res)=>{
     const user=await authenticate(req);
     const {orderId,fullName,email,items,total,requirements}=req.body||{};
     if(!/^SHOP-\d{8}$/.test(String(orderId||''))||!Array.isArray(items)||items.length<1||items.length>20)return res.status(400).json({error:'Invalid request details'});
-    const normalizedEmail=String(email||'').trim().toLowerCase();
     const accountEmail=String(user.email||'').trim().toLowerCase();
-    if(!normalizedEmail||!accountEmail||normalizedEmail!==accountEmail)return res.status(403).json({error:'Email does not match the signed-in account'});
+    if(!accountEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail))return res.status(400).json({error:'Signed-in account has no valid email'});
+    const normalizedEmail=accountEmail;
     const safeItems=items.map(x=>({name:String(x.name||'').slice(0,160),qty:Math.max(1,Math.min(99,Number(x.qty)||1))})).filter(x=>x.name);
     if(!safeItems.length)return res.status(400).json({error:'No valid items'});
     const siteUrl=process.env.SITE_URL||'https://malpuraovesh.vercel.app';
@@ -35,6 +35,6 @@ module.exports=async(req,res)=>{
     return res.status(200).json({ok:true});
   }catch(err){
     console.error('SHOP CONFIRMATION EMAIL FAILED:',err.code||err.message);
-    return res.status(err.statusCode||500).json({error:err.statusCode===401?'Authentication required':err.statusCode===403?'Not permitted':'Could not send confirmation email'});
+    return res.status(err.statusCode||500).json({error:err.statusCode===401?'Authentication required':err.statusCode===403?'Not permitted':err.code==='EAUTH'?'Email account authentication failed':err.code==='ECONNECTION'||err.code==='ETIMEDOUT'?'Email server connection failed':'Could not send confirmation email'});
   }
 };
