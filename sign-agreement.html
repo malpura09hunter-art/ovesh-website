@@ -32,7 +32,7 @@
 <h3>11. Acceptance</h3><p>Submitting a request confirms review of these terms. A request is not itself final acceptance of a quotation or a guarantee that the project will be accepted.</p>
 </div>
 </div>
-<div id="signCard" class="card">
+<div id="downloadCard" class="card"><button id="downloadAgreement" class="primary" type="button">Download Agreement PDF</button><div id="downloadStatus" class="status"></div></div>\n<div id="signCard" class="card">
 <div class="field"><label for="signName">Full legal name</label><input id="signName" autocomplete="name" maxlength="160" placeholder="Enter your full name"></div>
 <div class="field"><label>Signature</label>
 <div class="mode"><button id="drawMode" class="active" type="button">Draw signature</button><button id="typeMode" type="button">Type signature</button></div>
@@ -68,6 +68,8 @@ $('typeMode').onclick=()=>{mode='type';$('typeMode').classList.add('active');$('
 $('clearSig').onclick=clearSig;
 window.addEventListener('resize',()=>{if(mode==='draw')setupCanvas()});
 setupCanvas();
+async function downloadAgreement(){try{const user=auth.currentUser;if(!user)return setStatus('Please sign in to download the agreement.','error');$('downloadStatus').textContent='Preparing PDF…';const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(orderId),{headers:{Authorization:'Bearer '+(await user.getIdToken())}});if(!r.ok)throw new Error('Could not generate PDF');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Ovesh-Client-Agreement-'+orderId+'.pdf';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);$('downloadStatus').textContent='Agreement PDF ready for download.';}catch(e){$('downloadStatus').textContent=e.message||'Could not download agreement PDF.';}}
+$('downloadAgreement').onclick=downloadAgreement;
 if(!orderId){setStatus('Missing service request reference.','error');$('signBtn').disabled=true;return}
 $('requestInfo').textContent='Request reference: '+orderId;
 auth.onAuthStateChanged(user=>{
