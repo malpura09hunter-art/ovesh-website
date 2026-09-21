@@ -12,6 +12,12 @@ function validSession(token){
   try{const p=JSON.parse(Buffer.from(payload,'base64url').toString('utf8'));return p.exp>Date.now()&&p.u===(process.env.OVESH_CLOUD_USERNAME||'OVESH');}catch{return false;}
 }
 module.exports=async(req,res)=>{
+  if(req.method==='GET'){
+    const key=process.env.OVESH_CLOUD_VAPID_PUBLIC_KEY;
+    if(!key)return res.status(503).json({ok:false,error:'Push notifications are not configured yet'});
+    res.setHeader('Cache-Control','no-store');
+    return res.status(200).json({ok:true,vapidKey:key});
+  }
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const body=req.body||{},session=body.sessionToken||cookie(req,'ovesh_cloud_session');
   if(!validSession(session))return res.status(401).json({ok:false,error:'Unauthorized'});
