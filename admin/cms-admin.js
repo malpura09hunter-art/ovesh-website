@@ -250,6 +250,23 @@
     }
   ];
 
+    {
+      key: 'shop-products', title: 'Shop Products', subtitle: 'Storefront catalog: services, prices, categories, features and publishing.',
+      collection: 'shop_products', search: ['name','description','category','status'],
+      fields: [f('name','Product / Service Name','text',true),f('slug','Slug','text'),f('description','Description','textarea',true),f('category','Category','select',true,'',['AI','Websites','Cybersecurity','Automation']),f('icon','Icon','text'),f('image','Image URL','url'),f('features','Features','textarea',false,'One feature per line'),f('price','Starting Price (INR)','number'),f('salePrice','Sale Price (INR)','number'),f('status','Status','select',false,'',['Published','Draft','Archived']),f('featured','Featured','checkbox'),f('order','Order','number')]
+    },
+    {
+      key: 'shop-categories', title: 'Shop Categories', subtitle: 'Manage storefront category labels and ordering.', collection: 'shop_categories', search: ['name','description','status'],
+      fields: [f('name','Category Name','text',true),f('slug','Slug','text'),f('description','Description','textarea'),f('icon','Icon','text'),f('order','Order','number'),f('status','Status','select',false,'',['Published','Draft'])]
+    },
+    {
+      key: 'shop-coupons', title: 'Shop Coupons', subtitle: 'Create discount codes for future checkout/payment flows.', collection: 'shop_coupons', search: ['code','description','status'],
+      fields: [f('code','Coupon Code','text',true),f('description','Description','textarea'),f('discountType','Discount Type','select',true,'',['Percentage','Fixed INR']),f('discountValue','Discount Value','number'),f('expiresAt','Expires At','text'),f('usageLimit','Usage Limit','number'),f('status','Status','select',false,'',['Active','Paused','Expired'])]
+    },
+    {
+      key: 'shop-reviews', title: 'Shop Reviews', subtitle: 'Moderate customer reviews before publishing them.', collection: 'shop_reviews', search: ['customerName','productName','review'],
+      fields: [f('customerName','Customer Name','text',true),f('customerEmail','Customer Email','email'),f('productName','Product / Service','text'),f('rating','Rating','number'),f('review','Review','textarea',true),f('status','Status','select',false,'',['Published','Pending','Hidden'])]
+    },
   function f(name, label, type, required, help, options) {
     return { name, label, type, required: !!required, help: help || '', options: options || [] };
   }
@@ -342,6 +359,7 @@
     renderSeo();
     listModules.forEach(renderListModule);
     renderProfile();
+    renderShopOrders();
   }
 
   function renderCmsOverview() {
@@ -836,6 +854,23 @@
       <div class="panel" style="padding:20px;">${body}</div>`;
   }
 
+  let shopOrders = [];
+  async function renderShopOrders() {
+    const root=byId('shopOrdersRoot'); if(!root)return;
+    root.innerHTML='<div class="panel"><div class="panel-head"><h3>Shop Orders & Quotes</h3><span class="cms-muted">Loading…</span></div></div>';
+    try{
+      const snap=await db.collection('service_requests').orderBy('createdAt','desc').get();
+      shopOrders=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.source==='shop'||String(x.orderId||'').startsWith('SHOP-'));
+    }catch(e){root.innerHTML='<div class="panel"><div class="cms-empty">'+esc(friendlyError(e))+'</div></div>';return}
+    const customers=new Set(shopOrders.map(x=>String(x.email||'').toLowerCase()).filter(Boolean));
+    const pending=shopOrders.filter(x=>(x.status||'Pending')==='Pending').length;
+    const total=shopOrders.reduce((s,x)=>s+Number(x.estimatedTotal||0),0);
+    byId('shopStatOrders').textContent=shopOrders.length;byId('shopStatCustomers').textContent=customers.size;byId('shopStatQuotes').textContent=pending;byId('shopStatRevenue').textContent='₹'+total.toLocaleString('en-IN');
+    root.innerHTML=\`<div class="panel"><div class="panel-head"><h3>Orders / Quote Requests</h3><div style="display:flex;gap:10px;flex-wrap:wrap"><input class="search-input" id="shopOrderSearch" placeholder="Search name, email, order ID…"><select class="filter-select" id="shopOrderStatus"><option value="">All statuses</option><option>Pending</option><option>Reviewing</option><option>Accepted</option><option>In Progress</option><option>Completed</option><option>Rejected</option></select></div></div><div class="cms-table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Email</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody id="shopOrdersBody"></tbody></table></div></div>\`;
+    const draw=()=>{const q=(byId('shopOrderSearch').value||'').toLowerCase(),sf=byId('shopOrderStatus').value;const rows=shopOrders.filter(x=>(!sf||(x.status||'Pending')===sf)&&(!q||[x.orderId,x.fullName,x.email,x.selectedService].join(' ').toLowerCase().includes(q)));byId('shopOrdersBody').innerHTML=rows.length?rows.map(x=>\`<tr><td>\${esc(x.orderId||x.id)}</td><td>\${esc(x.fullName||'—')}</td><td>\${esc(x.email||'—')}</td><td>\${esc(x.selectedService||'—')}</td><td>₹\${Number(x.estimatedTotal||0).toLocaleString('en-IN')}</td><td>\${esc(x.paymentStatus||'Pending')}</td><td><select class="status-select" onchange="window.updateShopOrderStatus('\${esc(x.id)}',this.value)">\${['Pending','Reviewing','Accepted','In Progress','Completed','Rejected'].map(s=>'<option '+((x.status||'Pending')===s?'selected':'')+'>'+s+'</option>').join('')}</select></td><td>\${fmtDate(x.createdAt)}</td><td><button class="btn-sm" onclick="window.viewShopOrder('\${esc(x.id)}')">View</button></td></tr>\`).join(''):'<tr><td class="cms-empty" colspan="9">No shop orders yet.</td></tr>'};byId('shopOrderSearch').oninput=draw;byId('shopOrderStatus').onchange=draw;draw();
+  }
+  window.updateShopOrderStatus=async function(id,status){try{await db.collection('service_requests').doc(id).update({status});toast('Order status updated.');renderShopOrders();loadRequests()}catch(e){toast(friendlyError(e),'error')}};
+  window.viewShopOrder=function(id){const x=shopOrders.find(o=>o.id===id);if(!x)return;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=\`<div class="modal-box" style="max-width:760px"><h3>\${esc(x.orderId||'SHOP ORDER')}</h3><div class="modal-row"><span>CUSTOMER</span><span>\${esc(x.fullName||'—')}</span></div><div class="modal-row"><span>EMAIL</span><span>\${esc(x.email||'—')}</span></div><div class="modal-row"><span>PHONE</span><span>\${esc(x.phone||'—')}</span></div><div class="modal-row"><span>SERVICES</span><span>\${esc(x.selectedService||'—')}</span></div><div class="modal-row"><span>TOTAL</span><span>₹\${Number(x.estimatedTotal||0).toLocaleString('en-IN')}</span></div><div class="modal-row"><span>PAYMENT</span><span>\${esc(x.paymentStatus||'Pending')}</span></div><div class="modal-row"><span>STATUS</span><span>\${esc(x.status||'Pending')}</span></div><div style="margin-top:18px"><div class="cms-muted">REQUIREMENTS / MESSAGE</div><p style="white-space:pre-wrap;margin-top:8px">\${esc(x.projectDescription||'—')}</p></div><div style="margin-top:18px"><div class="cms-muted">ITEMS</div><pre style="white-space:pre-wrap;color:var(--text)">\${esc(JSON.stringify(x.items||[],null,2))}</pre></div><div class="modal-actions"><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">Close</button></div></div>\`;document.body.appendChild(overlay)};
   function renderProfile() {
     const root = byId('cmsProfileRoot');
     if (!root || !activeUser) return;
