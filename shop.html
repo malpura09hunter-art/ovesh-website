@@ -56,6 +56,25 @@
       <label>Phone <span class="muted">(optional)</span><input name="phone" autocomplete="tel"></label>
       <label>Requirements / message<textarea name="message" required rows="5" placeholder="Tell us what you want built, automated or secured…"></textarea></label>
       <div id="checkoutSummary" class="summary"></div>
+      <section class="checkout-agreement" aria-labelledby="checkoutAgreementTitle">
+        <div class="eyebrow">REQUIRED TERMS</div>
+        <h3 id="checkoutAgreementTitle">Client Service Agreement &amp; Project Terms</h3>
+        <p class="muted agreement-meta">Version 1.0 · Effective September 21, 2026</p>
+        <div id="checkoutAgreementServices" class="agreement-services" aria-live="polite"></div>
+        <div class="agreement-copy">
+          <h4>1. Scope</h4><p>Ovesh Malpura Cyber Labs will provide the services described in the accepted project request or later-approved quotation. Work outside the agreed scope may require a separate quote.</p>
+          <h4>2. Requirements &amp; revisions</h4><p>The client is responsible for providing accurate requirements, content, approvals and access needed for the project. Changes or additional features after approval may affect price and delivery time.</p>
+          <h4>3. Pricing &amp; payment</h4><p>Prices shown in the Shop are estimates or starting prices unless expressly stated as fixed. Final pricing is confirmed after requirements review. Payment terms, deposits and milestones will be stated in the applicable quotation or invoice.</p>
+          <h4>4. Delivery</h4><p>Delivery timelines are estimates and depend on scope, client feedback, third-party services and required approvals. Delays caused by missing client materials or approvals may extend the timeline.</p>
+          <h4>5. Third-party services</h4><p>Domains, hosting, APIs, software subscriptions, AI providers and other third-party services may have separate fees and terms. The client is responsible for charges on services registered in the client's name unless otherwise agreed.</p>
+          <h4>6. Ownership &amp; licenses</h4><p>After agreed payments are completed, the client receives the project deliverables specified in the quotation. Third-party libraries, fonts, APIs, stock assets and other licensed components remain subject to their own licenses.</p>
+          <h4>7. Security &amp; acceptable use</h4><p>Security testing and cybersecurity work is performed only with authorized scope and permission. The client must not request unlawful access, credential theft, malware deployment or unauthorized testing.</p>
+          <h4>8. Cancellation &amp; refunds</h4><p>Cancellation, refund and rescheduling terms depend on the project stage and any quotation or invoice issued. Work already completed, approved third-party costs and non-refundable charges may not be refundable.</p>
+          <h4>9. Support</h4><p>Post-delivery support or maintenance is included only when stated in the quotation. New features and work outside included support are treated as additional work.</p>
+          <h4>10. Confidentiality</h4><p>Both parties should protect non-public business, technical and project information shared for the engagement, except where disclosure is required by law or necessary to deliver an agreed third-party service.</p>
+          <h4>11. Acceptance</h4><p>By checking the agreement box and submitting a project request, the client confirms that they have reviewed these terms and understand that submitting a request does not itself constitute final acceptance of a quotation or guarantee that the project will be accepted.</p>
+        </div>
+      </section>
       <label class="agreement-check"><input id="agreementAccepted" name="agreementAccepted" type="checkbox" required> <span>I have read and agree to the <button type="button" id="agreementBtn" class="inline-link">Client Service Agreement &amp; Project Terms</button>.</span></label>
       <button class="primary full" type="submit">Submit Request</button>
       <div id="checkoutStatus" class="status"></div>
