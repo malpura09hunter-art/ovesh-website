@@ -50,7 +50,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ---- services/{serviceId} ----
+    // ---- shop_products/{productId} ----\n    // Published catalog is public; only admins may create/edit/delete products.\n    match /shop_products/{productId} {\n      allow read: if true;\n      allow write: if isAdmin();\n    }\n\n    // ---- services/{serviceId} ----
     // Public read (the services page/dashboard is shown to everyone),
     // only admins can create/edit/delete entries. Safe today even though
     // the Services CMS module isn't wired up in the admin UI yet.
