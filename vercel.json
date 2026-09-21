@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/shop", "destination": "/shop.html" },
+    { "source": "/shop/", "destination": "/shop.html" },
     { "source": "/styles.css", "destination": "/vitamin-serum/styles.css" },
     { "source": "/vitaminserum", "destination": "/vitamin-serum/index.html" },
     { "source": "/vitaminserum/", "destination": "/vitamin-serum/index.html" },
