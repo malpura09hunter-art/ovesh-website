@@ -147,6 +147,7 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
     <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">Admin Users</button>
     <button class="side-btn" data-pane="pane-profile" onclick="switchPane('pane-profile', this)">Profile</button>
     <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">Service Requests</button>
+    <button class="side-btn" data-pane="pane-shop" onclick="switchPane('pane-shop', this)">🛒 SHOP</button>
     <a href="../index.html" class="side-btn" style="margin-top:16px;">← Back to Site</a>
   </div>
 
@@ -243,6 +244,28 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
     <div class="pane" id="pane-media"><div id="cmsListRoot-media"></div></div>
     <div class="pane" id="pane-settings"><div id="cmsSingletonRoot-settings"></div></div>
     <div class="pane" id="pane-profile"><div id="cmsProfileRoot"></div></div>
+
+    <div class="pane" id="pane-shop">
+      <div class="cms-toolbar">
+        <div><h2>Shop Command Center</h2><div class="pane-sub">Manage your digital storefront, customers, orders, quotes and catalog.</div></div>
+        <a class="cms-secondary" href="../shop.html" target="_blank" rel="noopener">Open Shop ↗</a>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="num" id="shopStatOrders">—</div><div class="label">Shop Orders</div></div>
+        <div class="stat-card"><div class="num" id="shopStatCustomers">—</div><div class="label">Customers</div></div>
+        <div class="stat-card"><div class="num" id="shopStatQuotes">—</div><div class="label">Pending Quotes</div></div>
+        <div class="stat-card"><div class="num" id="shopStatRevenue">₹0</div><div class="label">Estimated Order Value</div></div>
+      </div>
+      <div id="shopOrdersRoot"></div>
+      <div id="cmsListRoot-shop-products"></div>
+      <div id="cmsListRoot-shop-categories"></div>
+      <div id="cmsListRoot-shop-coupons"></div>
+      <div id="cmsListRoot-shop-reviews"></div>
+      <div class="panel" style="padding:20px;">
+        <h3 style="font-family:'Orbitron',sans-serif;margin-bottom:8px;">Shop Settings</h3>
+        <p class="cms-muted">Products are public when published. Customer checkout requests are stored with the existing Service Requests pipeline, so customer email, phone, requirements, selected services, totals and status stay in the same protected admin workflow.</p>
+      </div>
+    </div>
 
   </div>
 </div>
