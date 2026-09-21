@@ -21,7 +21,7 @@ module.exports=async(req,res)=>{
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   try{
     const user=await authenticate(req);
-    const {orderId,fullName,email,items,total,requirements}=req.body||{};
+    const {orderId,fullName,email,items,total,requirements,agreementVersion,agreementAcceptedAt}=req.body||{};
     if(!/^SHOP-\d{8}$/.test(String(orderId||''))||!Array.isArray(items)||items.length<1||items.length>20)return res.status(400).json({error:'Invalid request details'});
     const accountEmail=String(user.email||'').trim().toLowerCase();
     if(!accountEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(accountEmail))return res.status(400).json({error:'Signed-in account has no valid email'});
@@ -29,9 +29,32 @@ module.exports=async(req,res)=>{
     const safeItems=items.map(x=>({name:String(x.name||'').slice(0,160),qty:Math.max(1,Math.min(99,Number(x.qty)||1))})).filter(x=>x.name);
     if(!safeItems.length)return res.status(400).json({error:'No valid items'});
     const siteUrl=process.env.SITE_URL||'https://malpuraovesh.vercel.app';
+    const agreementAccepted=agreementVersion==='1.0';
+    if(!agreementAccepted)return res.status(400).json({error:'Agreement acceptance required'});
+    const agreementDate=String(agreementAcceptedAt||'');
+    const agreementHtml=`
+      <div style="border-top:1px solid rgba(0,255,65,.12);margin-top:24px;padding-top:20px">
+        <p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">CLIENT SERVICE AGREEMENT · VERSION 1.0</p>
+        <h2 style="color:#39ff14;font-size:18px;margin:0 0 12px">Project Terms</h2>
+        <p style="color:#a9c9af;font-size:12px;line-height:1.6">By submitting this request, you confirmed that you reviewed and accepted the Client Service Agreement &amp; Project Terms shown at checkout. This email keeps a copy of the terms applicable to your request.</p>
+        <ol style="color:#a9c9af;font-size:12px;line-height:1.65;padding-left:20px">
+          <li><strong style="color:#c8ffd4">Scope:</strong> Work follows the accepted request or later-approved quotation. Out-of-scope work may require a separate quote.</li>
+          <li><strong style="color:#c8ffd4">Requirements &amp; revisions:</strong> You provide accurate requirements, content, approvals and access. Changes may affect price and timeline.</li>
+          <li><strong style="color:#c8ffd4">Pricing &amp; payment:</strong> Shop prices may be estimates or starting prices. Final pricing and payment terms are confirmed in the applicable quotation or invoice.</li>
+          <li><strong style="color:#c8ffd4">Delivery:</strong> Timelines are estimates and depend on scope, feedback, approvals and third-party services.</li>
+          <li><strong style="color:#c8ffd4">Third-party services:</strong> Domains, hosting, APIs, AI providers and subscriptions may carry separate fees and terms.</li>
+          <li><strong style="color:#c8ffd4">Ownership &amp; licenses:</strong> After agreed payments are completed, deliverables are provided as specified in the quotation; third-party components remain subject to their licenses.</li>
+          <li><strong style="color:#c8ffd4">Security:</strong> Cybersecurity work is performed only within authorized scope and permission.</li>
+          <li><strong style="color:#c8ffd4">Cancellation &amp; refunds:</strong> These depend on project stage and the applicable quotation or invoice; completed work and non-refundable third-party costs may not be refundable.</li>
+          <li><strong style="color:#c8ffd4">Support:</strong> Post-delivery support is included only when stated in the quotation. Additional work is separate.</li>
+          <li><strong style="color:#c8ffd4">Confidentiality:</strong> Both parties should protect non-public business, technical and project information, subject to legal requirements and necessary service providers.</li>
+          <li><strong style="color:#c8ffd4">Acceptance:</strong> Submission confirms review of these terms. A request is not itself final acceptance of a quotation or a guarantee that the project will be accepted.</li>
+        </ol>
+        <p style="color:#4a7a52;font-size:11px;margin:12px 0 0">Agreement accepted: ${esc(agreementDate)} · Version 1.0</p>
+      </div>`;
     const rows=safeItems.map(x=>'<tr><td style="padding:8px 0;color:#c8ffd4">'+esc(x.name)+'</td><td style="padding:8px 0;color:#7fa389;text-align:right">× '+esc(x.qty)+'</td></tr>').join('');
-    const html=`<div style="background:#030a03;padding:32px 16px;font-family:Arial,Helvetica,sans-serif"><div style="max-width:520px;margin:auto;background:#060f06;border:1px solid rgba(0,255,65,.25);border-radius:10px;padding:32px"><p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">OVESH MALPURA CYBER LABS</p><h1 style="color:#39ff14;font-size:23px;margin:0 0 16px">Service request received</h1><p style="color:#c8ffd4;font-size:15px;line-height:1.6">Hello ${esc(fullName)||'there'}, we've received your request and will review the requirements.</p><div style="border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:14px;margin:18px 0"><p style="color:#7fa389;margin:0 0 8px;font-size:12px">REFERENCE</p><strong style="color:#39ff14">${esc(orderId)}</strong><table style="width:100%;margin-top:12px">${rows}</table><p style="color:#c8ffd4;border-top:1px solid rgba(0,255,65,.12);padding-top:12px;margin-bottom:0"><strong>Estimated total: ${money(total)}</strong></p></div><a href="${siteUrl}/dashboard.html" style="display:inline-block;background:#00cc33;color:#021002;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px">Open Client Portal</a><p style="color:#4a7a52;font-size:12px;line-height:1.5;margin-top:20px">This is a request confirmation, not a payment receipt. Final pricing and next steps are confirmed after review.</p></div></div>`;
-    await getTransporter().sendMail({from:`"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,to:normalizedEmail,subject:`Service Request Received — ${orderId}`,html});
+    const html=`<div style="background:#030a03;padding:32px 16px;font-family:Arial,Helvetica,sans-serif"><div style="max-width:520px;margin:auto;background:#060f06;border:1px solid rgba(0,255,65,.25);border-radius:10px;padding:32px"><p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">OVESH MALPURA CYBER LABS</p><h1 style="color:#39ff14;font-size:23px;margin:0 0 16px">Service request received</h1><p style="color:#c8ffd4;font-size:15px;line-height:1.6">Hello ${esc(fullName)||'there'}, we've received your request and will review the requirements.</p><div style="border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:14px;margin:18px 0"><p style="color:#7fa389;margin:0 0 8px;font-size:12px">REFERENCE</p><strong style="color:#39ff14">${esc(orderId)}</strong><table style="width:100%;margin-top:12px">${rows}</table><p style="color:#c8ffd4;border-top:1px solid rgba(0,255,65,.12);padding-top:12px;margin-bottom:0"><strong>Estimated total: ${money(total)}</strong></p></div><a href="${siteUrl}/dashboard.html" style="display:inline-block;background:#00cc33;color:#021002;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px">Open Client Portal</a><p style="color:#4a7a52;font-size:12px;line-height:1.5;margin-top:20px">This is a request confirmation, not a payment receipt. Final pricing and next steps are confirmed after review.</p>${agreementHtml}</div></div>`;
+    await getTransporter().sendMail({from:`"OveshMalpura Cyber Labs" <${process.env.ZOHO_USER}>`,to:normalizedEmail,subject:`Service Request + Client Agreement — ${orderId}`,html});
     return res.status(200).json({ok:true});
   }catch(err){
     console.error('SHOP CONFIRMATION EMAIL FAILED:',err.code||err.message);
