@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop | Ovesh Malpura Cyber Labs</title>
+<meta name="description" content="Explore AI, web development, cybersecurity, and automation services from Ovesh Malpura Cyber Labs.">
+<link rel="stylesheet" href="shop.css">
+</head>
+<body>
+<nav class="shop-nav">
+  <a class="brand" href="index.html">OVESH <span>MALPURA CYBER LABS</span></a>
+  <div class="nav-actions">
+    <a href="index.html">Site</a>
+    <a href="login.html">Client Login</a>
+    <button id="cartBtn">Cart <b id="cartCount">0</b></button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div>
+    <div class="eyebrow">CYBER LABS SHOP</div>
+    <h1>Build. Automate. Secure.</h1>
+    <p>Professional digital services for businesses, creators and growing teams.</p>
+  </div>
+</header>
+
+<main>
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="Search services, AI, websites, cybersecurity…">
+    <div id="categories" class="categories"></div>
+  </section>
+  <section id="products" class="product-grid"></section>
+</main>
+
+<aside id="cartDrawer" class="drawer" aria-hidden="true">
+  <div class="drawer-head"><h2>Your Cart</h2><button id="closeCart">×</button></div>
+  <div id="cartItems"></div>
+  <div class="cart-total"><span>Estimated total</span><strong id="cartTotal">₹0</strong></div>
+  <button id="checkoutBtn" class="primary full">Request / Checkout</button>
+  <p class="note">Custom services are confirmed after requirements review. No payment is taken on this page.</p>
+</aside>
+<div id="overlay" class="overlay"></div>
+
+<div id="checkoutModal" class="modal">
+  <div class="modal-box">
+    <button class="modal-x" data-close>×</button>
+    <div class="eyebrow">CHECKOUT</div>
+    <h2>Send your project request</h2>
+    <p class="muted">We'll receive your details and the exact services you selected.</p>
+    <form id="checkoutForm">
+      <div class="grid2">
+        <label>Full name<input name="fullName" required autocomplete="name"></label>
+        <label>Email<input name="email" type="email" required autocomplete="email"></label>
+      </div>
+      <label>Phone <span class="muted">(optional)</span><input name="phone" autocomplete="tel"></label>
+      <label>Requirements / message<textarea name="message" required rows="5" placeholder="Tell us what you want built, automated or secured…"></textarea></label>
+      <div id="checkoutSummary" class="summary"></div>
+      <button class="primary full" type="submit">Submit Request</button>
+      <div id="checkoutStatus" class="status"></div>
+    </form>
+  </div>
+</div>
+
+<section id="account" class="account">
+  <div class="account-inner">
+    <div><div class="eyebrow">CLIENT AREA</div><h2>Already a client?</h2><p>Sign in to your existing Client Portal to continue your projects.</p></div>
+    <a class="primary" href="login.html">Client Login</a>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="shop.js"></script>
+</body>
+</html>
