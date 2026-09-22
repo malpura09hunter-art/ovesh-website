@@ -201,3 +201,25 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   #checkoutBtn{width:calc(100% - 36px)!important;margin-left:18px!important;margin-right:18px!important}
   .drawer .note{padding-left:18px!important;padding-right:18px!important}
 }
+
+
+/* MOTION V3 — premium micro-interactions */
+@keyframes shopDrawerIn{0%{transform:translateX(104%);opacity:.65}100%{transform:translateX(0);opacity:1}}
+@keyframes shopOverlayIn{0%{opacity:0}100%{opacity:1}}
+@keyframes cartIconPop{0%{transform:scale(1) rotate(0)}28%{transform:scale(1.16) rotate(-5deg)}55%{transform:scale(.94) rotate(4deg)}78%{transform:scale(1.06) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes cartBadgePop{0%{transform:scale(.65);opacity:.55}45%{transform:scale(1.25);opacity:1}72%{transform:scale(.92)}100%{transform:scale(1);opacity:1}}
+@keyframes cartLineIn{0%{opacity:0;transform:translateX(18px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes cartLineOut{0%{opacity:1;transform:translateX(0);max-height:120px}100%{opacity:0;transform:translateX(24px);max-height:0;padding-top:0;padding-bottom:0;border-color:transparent}}
+@keyframes qtyPulse{0%{transform:scale(1)}45%{transform:scale(.88)}100%{transform:scale(1)}}
+@keyframes checkoutGlow{0%,100%{box-shadow:0 7px 20px rgba(57,255,20,.07)}50%{box-shadow:0 10px 30px rgba(57,255,20,.16)}}
+.drawer.open{animation:shopDrawerIn .42s cubic-bezier(.16,1,.3,1)}
+.overlay.open{animation:shopOverlayIn .28s ease-out}
+.cart-button.cart-bump .cart-icon{animation:cartIconPop .58s cubic-bezier(.2,.8,.2,1)}
+.nav-actions .cart-button.cart-bump b{animation:cartBadgePop .55s cubic-bezier(.2,.8,.2,1)}
+.cart-line{animation:cartLineIn .36s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--cart-index,0) * 55ms)}
+.cart-line.cart-line-out{animation:cartLineOut .22s ease-in forwards;overflow:hidden;pointer-events:none}
+.qty button.qty-pulse{animation:qtyPulse .22s ease-out}
+#checkoutBtn:not(:disabled){animation:checkoutGlow 2.8s ease-in-out infinite}
+.drawer-head button{transition:transform .18s ease,background .18s ease,border-color .18s ease}
+.drawer-head button:active{transform:scale(.92)}
+@media(prefers-reduced-motion:reduce){.drawer.open,.overlay.open,.cart-button.cart-bump .cart-icon,.nav-actions .cart-button.cart-bump b,.cart-line,.cart-line.cart-line-out,#checkoutBtn:not(:disabled),.qty button.qty-pulse{animation:none!important}}
