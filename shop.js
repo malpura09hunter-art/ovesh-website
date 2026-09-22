@@ -6,11 +6,12 @@ const fallback=[
 {id:'security-review',name:'Website Security Review',category:'Cybersecurity',icon:'⌁',price:7500,description:'A structured review of common web security risks and hardening opportunities.',features:['Security review','Findings report','Hardening guidance'],quote:true},
 {id:'automation-system',name:'Business Automation System',category:'Automation',icon:'↗',price:25000,description:'Connect forms, notifications, data and workflows into one operating system.',features:['Workflow mapping','Integrations','Testing'],quote:true}
 ];
-let products=[...fallback],cart=JSON.parse(localStorage.getItem('oveshShopCart')||'[]'),category='All';
+let products=[...fallback],cart=[],category='All';
+try{const saved=localStorage.getItem('oveshShopCart');const parsed=saved?JSON.parse(saved):[];cart=Array.isArray(parsed)?parsed:[]}catch(e){console.warn('Shop cart storage reset.');cart=[];}
 const $=id=>document.getElementById(id),money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
-function save(){localStorage.setItem('oveshShopCart',JSON.stringify(cart));renderCart()}
+function save(){try{localStorage.setItem('oveshShopCart',JSON.stringify(cart))}catch(e){console.warn('Could not save shop cart.')}renderCart()}
 function bumpCart(){const btn=$('cartBtn');if(!btn)return;btn.classList.remove('cart-bump');void btn.offsetWidth;btn.classList.add('cart-bump');setTimeout(()=>btn.classList.remove('cart-bump'),650)}
-async function load(){try{const s=await db.collection('shop_products').where('status','==','Published').get();if(!s.empty)products=s.docs.map(d=>({id:d.id,...d.data()}));}catch(e){console.info('Shop catalog fallback active.');}renderCategories();renderProducts()}
+async function load(){try{if(typeof db!=='undefined'){const s=await db.collection('shop_products').where('status','==','Published').get();if(!s.empty)products=s.docs.map(d=>({id:d.id,...d.data()}));}}catch(e){console.info('Shop catalog fallback active.')}renderCategories();renderProducts()}
 function renderCategories(){const cats=['All',...new Set(products.map(p=>p.category).filter(Boolean))];$('categories').innerHTML=cats.map(c=>'<button class="'+(c===category?'active':'')+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>').join('');document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;renderCategories();renderProducts()})}
 function ensureDetailModal(){if($('shopDetailModal'))return;const m=document.createElement('div');m.id='shopDetailModal';m.className='shop-detail-modal';m.innerHTML='<div class="shop-detail-box" role="dialog" aria-modal="true" aria-labelledby="shopDetailTitle"><button class="detail-close" type="button" aria-label="Close details">×</button><div class="eyebrow" id="shopDetailCategory"></div><h2 id="shopDetailTitle"></h2><p id="shopDetailDescription"></p><div id="shopDetailFeatures" class="detail-features"></div><div id="shopDetailPrice" class="detail-price"></div><div class="detail-actions"><button class="details-btn" type="button" id="shopDetailClose">Close</button><button class="primary" type="button" id="shopDetailAdd">Add to Cart</button></div></div>';document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.detail-close')||e.target.id==='shopDetailClose')m.classList.remove('open')})}
 window.viewService=id=>{const p=products.find(x=>x.id===id);if(!p)return;ensureDetailModal();$('shopDetailCategory').textContent=String(p.category||'SERVICE').toUpperCase();$('shopDetailTitle').textContent=p.name;$('shopDetailDescription').textContent=p.description||'Professional service delivered according to the approved project scope.';$('shopDetailFeatures').innerHTML=(p.features||[]).map(x=>'<div class="detail-feature">✓ '+esc(x)+'</div>').join('');$('shopDetailPrice').textContent=p.price?'From '+money(p.price):'Request quote';$('shopDetailAdd').onclick=()=>{addToCart(p.id);$('shopDetailModal').classList.remove('open')};$('shopDetailModal').classList.add('open')};
@@ -20,7 +21,7 @@ function renderCart(){const total=cart.reduce((a,x)=>a+x.qty,0);$('cartCount').t
 window.removeCart=id=>{const row=[...document.querySelectorAll('.cart-line')].find(el=>el.dataset.cartId===id);if(row){row.classList.add('cart-line-out');setTimeout(()=>{cart=cart.filter(x=>x.id!==id);save()},220)}else{cart=cart.filter(x=>x.id!==id);save()}};window.changeQty=(id,n)=>{const x=cart.find(x=>x.id===id);if(!x)return;const row=[...document.querySelectorAll('.cart-line')].find(el=>el.dataset.cartId===id);const button=row?.querySelector(n>0?'button[aria-label="Increase quantity"]':'button[aria-label="Decrease quantity"]');if(button){button.classList.remove('qty-pulse');void button.offsetWidth;button.classList.add('qty-pulse');setTimeout(()=>button.classList.remove('qty-pulse'),240)}x.qty+=n;if(x.qty<1){if(row){row.classList.add('cart-line-out');setTimeout(()=>{cart=cart.filter(y=>y.id!==id);save()},220);return}cart=cart.filter(y=>y.id!==id)}save()};
 function openCart(){$('cartDrawer').classList.add('open');$('overlay').classList.add('open')};function closeCart(){$('cartDrawer').classList.remove('open');$('overlay').classList.remove('open')}
 $('cartBtn').onclick=openCart;$('closeCart').onclick=closeCart;$('overlay').onclick=closeCart;$('search').oninput=renderProducts;
-function waitForAuth(){return new Promise(resolve=>{if(auth.currentUser)return resolve(auth.currentUser);const unsub=auth.onAuthStateChanged(user=>{unsub();resolve(user||null);});});}
+function waitForAuth(){return new Promise(resolve=>{if(typeof auth==='undefined')return resolve(null);if(auth.currentUser)return resolve(auth.currentUser);const unsub=auth.onAuthStateChanged(user=>{unsub();resolve(user||null);});});}
 function serviceAgreementText(items){
   const names=(items||[]).map(x=>String(x.name||'')).filter(Boolean);
   const lower=names.join(' ').toLowerCase();
@@ -169,5 +170,6 @@ $('checkoutForm').onsubmit=async e=>{
   }
 };
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-auth.onAuthStateChanged(renderAccount);load();renderCart();
+if(typeof auth!=='undefined'&&auth.onAuthStateChanged)auth.onAuthStateChanged(renderAccount);else renderAccount(null);
+load();renderCart();
 })();
