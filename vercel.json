@@ -20,6 +20,7 @@
     { "source": "/birthday-edition/", "destination": "/birthday-edition/index.html" },
     { "source": "/ovesh/compiler", "destination": "/compiler.html" },
     { "source": "/ovesh/compiler/", "destination": "/compiler.html" },
+    { "source": "/ovesh/compiler/compiler.html", "destination": "/compiler.html" },
     { "source": "/ovesh/compiler.html", "destination": "/compiler.html" },
     { "source": "/compiler", "destination": "/compiler.html" },
     { "source": "/ovesh/college", "destination": "/oveshcloud/index.html" },
