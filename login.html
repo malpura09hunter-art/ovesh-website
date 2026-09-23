@@ -210,6 +210,37 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
   .overlay-title { font-size: clamp(18px, 6vw, 26px); letter-spacing: 2px; }
   .overlay-welcome { font-size: 17px; }
 }
+/* ==================== NEXT-GEN CLIENT GATEWAY ==================== */
+body{padding:0;min-height:100svh;background:#020604}
+body:after{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 35%,rgba(38,255,130,.09),transparent 28%),linear-gradient(90deg,transparent 49.95%,rgba(85,255,145,.025) 50%,transparent 50.05%);z-index:0}
+.logo-link{top:26px;left:30px;z-index:5}
+.gateway-shell{max-width:1120px;display:grid;grid-template-columns:1fr 480px;gap:80px;align-items:center;padding:90px 32px;min-height:100svh}
+.gateway-status{justify-content:flex-start;margin:0 0 20px}
+.gateway-shell:before{content:'OVESH\A MALPURA\A CYBER LABS';white-space:pre;display:block;position:absolute;left:7vw;top:50%;transform:translateY(-50%);font:900 clamp(54px,7vw,108px)/.88 Orbitron,sans-serif;letter-spacing:-5px;color:rgba(150,255,190,.035);pointer-events:none}
+.gateway-shell>.card{grid-column:2;grid-row:1;width:100%;max-width:480px}
+.gateway-shell>.gateway-status{grid-column:1;grid-row:1;align-self:start;margin-top:2px}
+.gateway-shell:after{content:'CLIENT PORTAL\A PRIVATE WORKSPACE · PROJECTS · SERVICES';white-space:pre;grid-column:1;grid-row:1;align-self:center;color:#789482;font:600 13px/2 Rajdhani,sans-serif;letter-spacing:3px;text-transform:uppercase;max-width:360px;margin-top:165px}
+.card{padding:38px;border-radius:28px;background:linear-gradient(145deg,rgba(8,22,13,.94),rgba(2,8,5,.97));border:1px solid rgba(109,246,209,.2);box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 80px rgba(52,255,133,.09),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(30px)}
+.card:before{height:2px;background:linear-gradient(90deg,transparent,#55ff91,#6df6d1,transparent);box-shadow:0 0 18px rgba(85,255,145,.5)}
+.card-topline{margin-bottom:22px}
+.gateway-mark{width:42px;height:42px;border-radius:13px;font-size:17px;position:relative}
+.gateway-mark:after{content:'';position:absolute;inset:-6px;border:1px solid rgba(85,255,145,.08);border-radius:17px;animation:orbitPulse 3s ease-in-out infinite}
+.gateway-code{font-size:8px}
+.card h1{font-size:32px;margin-bottom:7px}
+.gateway-intro{font-size:15px;color:#86a991;margin-bottom:25px}
+.tabs{padding:5px;margin-bottom:22px;border-radius:13px}
+.tab-btn{padding:11px}
+.field label{font-size:10px;letter-spacing:1.7px}
+.field input{height:50px;border-radius:13px;font-size:16px}
+.password-toggle{top:8px;right:8px;height:34px}
+.btn-primary{height:52px;border-radius:13px;font-size:11px;letter-spacing:2px}
+.divider-row{margin:20px 0}
+.btn-google{height:49px;border-radius:13px}
+.security-strip{margin-top:20px;border-radius:13px;padding:13px}
+.route-overlay{backdrop-filter:blur(25px)}
+@keyframes orbitPulse{0%,100%{transform:scale(.96);opacity:.45}50%{transform:scale(1.06);opacity:1}}
+@media(max-width:850px){.gateway-shell{display:flex;flex-direction:column;gap:15px;padding:95px 20px 35px;justify-content:center}.gateway-shell:before{left:50%;top:18%;transform:translate(-50%,-50%);font-size:48px;text-align:center}.gateway-shell>.gateway-status{order:0;align-self:stretch;justify-content:center}.gateway-shell>.card{order:1;max-width:500px}.gateway-shell:after{order:2;margin:0;text-align:center;max-width:500px}.logo-link{font-size:11px;top:20px;left:20px}}
+
 /* ==================== Premium Secure Gateway ==================== */
 .gateway-shell{width:100%;max-width:520px;position:relative;z-index:2}
 .gateway-status{display:flex;align-items:center;justify-content:center;gap:9px;margin:0 auto 13px;color:#6e9b78;font:10px 'Share Tech Mono',monospace;letter-spacing:1.8px;text-transform:uppercase}
