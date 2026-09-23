@@ -419,7 +419,10 @@ document.getElementById('overlayForgotPw').addEventListener('click', () => {
 let pendingRouteUser=null;
 function getReturnTarget(){
   const params=new URLSearchParams(window.location.search);
-  return params.get('return')==='shop'||localStorage.getItem('oveshShopReturn')==='1'?'shop':'portal';
+  // An explicit route always wins. Client Portal must never inherit a stale Shop route.
+  if(params.get('return')==='shop') return 'shop';
+  if(params.get('return')==='portal') return 'portal';
+  return 'portal';
 }
 function routeAfterAuth(user){
   const target=getReturnTarget();
