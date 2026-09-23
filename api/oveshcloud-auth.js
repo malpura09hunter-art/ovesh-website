@@ -1,6 +1,29 @@
 import crypto from 'crypto';
+const admin=require('firebase-admin');
+const {S3Client,GetObjectCommand}=require('@aws-sdk/client-s3');
 const { sendLoginAlerts } = require('../lib/oveshcloud-alerts.js');
-const { getAdminDb } = require('./shop-agreement.js');
+let adminDb=null;
+function getAdminDb(){
+  if(adminDb)return adminDb;
+  if(!admin.apps.length){
+    let serviceAccount=null;
+    const raw=process.env.FIREBASE_SERVICE_ACCOUNT_JSON||process.env.FIREBASE_ADMIN_CREDENTIALS||process.env.FIREBASE_SERVICE_ACCOUNT;
+    if(raw){try{serviceAccount=JSON.parse(raw);}catch(e){throw new Error('Invalid Firebase service account configuration');}}
+    else if(process.env.FIREBASE_CLIENT_EMAIL&&process.env.FIREBASE_PRIVATE_KEY){
+      serviceAccount={
+        project_id:process.env.FIREBASE_PROJECT_ID||'ovesh-malpura-cyber-lab',
+        client_email:process.env.FIREBASE_CLIENT_EMAIL,
+        private_key:String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\\\n/g,'\\n')
+      };
+    }else throw new Error('Firebase Admin credentials are not configured');
+    admin.initializeApp({
+      credential:admin.credential.cert(serviceAccount),
+      projectId:process.env.FIREBASE_PROJECT_ID||serviceAccount.project_id||'ovesh-malpura-cyber-lab'
+    });
+  }
+  adminDb=admin.firestore();
+  return adminDb;
+}
 function detectOS(ua=''){if(/Windows NT 10\.0/i.test(ua))return'Windows 10/11';if(/Mac OS X/i.test(ua))return'macOS';if(/Android/i.test(ua))return'Android';if(/iPhone|iPad|iPod/i.test(ua))return'iOS/iPadOS';if(/Linux/i.test(ua))return'Linux';return'Not available'}
 function detectBrowser(ua=''){if(/Edg\//i.test(ua))return'Microsoft Edge';if(/OPR\//i.test(ua))return'Opera';if(/Chrome\//i.test(ua))return'Google Chrome';if(/Firefox\//i.test(ua))return'Mozilla Firefox';if(/Safari\//i.test(ua))return'Safari';return'Not available'}
 function detectDevice(ua=''){return/Mobi|Android|iPhone|iPad|iPod/i.test(ua)?'Mobile / Tablet':'Desktop / Laptop'}
