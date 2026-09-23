@@ -159,10 +159,75 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; 
         <div class="stat-card"><div class="num" id="statVerified">—</div><div class="label">Email Status</div></div>
       </div>
 
+      <div class="panel action-panel">
+        <h2>Needs Your Action</h2>
+        <div id="actionItems"><div class="loading">Checking your requests…</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Client Workspace</h2>
+        <div class="portal-actions">
+          <a class="portal-card" href="#projects" onclick="goPortal('projects-section')"><div class="icon">◈</div><strong>Projects</strong><span>Track active and completed project work.</span></a>
+          <a class="portal-card" href="shop.html"><div class="icon">⌁</div><strong>Shop</strong><span>Browse services, build a cart and submit a request.</span></a>
+          <a class="portal-card" href="#agreements" onclick="goPortal('agreements-section')"><div class="icon">✓</div><strong>Agreements &amp; Signatures</strong><span>Review, sign and download your agreement records.</span></a>
+          <a class="portal-card" href="#invoices" onclick="goPortal('invoices-section')"><div class="icon">₹</div><strong>Invoices &amp; Payments</strong><span>View payment and quotation information.</span></a>
+          <a class="portal-card" href="#messages" onclick="goPortal('messages-section')"><div class="icon">✉</div><strong>Messages</strong><span>Client communication and project updates.</span></a>
+          <a class="portal-card" href="#files" onclick="goPortal('files-section')"><div class="icon">□</div><strong>Files &amp; Deliverables</strong><span>Access project files when they are available.</span></a>
+        </div>
+      </div>
+
       <div class="panel">
         <h2>Services</h2>
         <div class="services-grid" id="servicesGrid"><div class="loading">Loading services…</div></div>
       </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section" id="projects-section">
+      <div class="eyebrow">Client Portal</div><h1>Projects</h1>
+      <div class="panel">
+        <h2>Your Project Workspace</h2>
+        <p class="empty">Projects will appear here once a service request moves into project delivery.</p>
+        <div id="projectList"></div>
+      </div>
+    </div>
+
+    <!-- SHOP -->
+    <div class="section" id="shop-section">
+      <div class="eyebrow">Client Portal</div><h1>Shop</h1>
+      <div class="panel">
+        <h2>Cyber Labs Shop</h2>
+        <p class="empty">Browse available cybersecurity, web development, AI and automation services.</p>
+        <a class="btn-primary" href="shop.html">OPEN SHOP →</a>
+      </div>
+    </div>
+
+    <!-- AGREEMENTS -->
+    <div class="section" id="agreements-section">
+      <div class="eyebrow">Client Portal</div><h1>Agreements &amp; Signatures</h1>
+      <div class="panel">
+        <h2>Your Agreement Records</h2>
+        <p class="empty">Review and sign Shop agreements. Signed agreements remain available as stored PDF records.</p>
+        <div id="clientAgreements"><div class="loading">Loading agreements…</div></div>
+      </div>
+    </div>
+
+    <!-- INVOICES -->
+    <div class="section" id="invoices-section">
+      <div class="eyebrow">Client Portal</div><h1>Invoices &amp; Payments</h1>
+      <div class="panel"><h2>Payment Center</h2><p class="empty">Quotes, invoices and payment records will appear here as they are issued for your projects.</p></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="section" id="messages-section">
+      <div class="eyebrow">Client Portal</div><h1>Messages</h1>
+      <div class="panel"><h2>Client Communication</h2><p class="empty">Project messages and updates will appear here when messaging is enabled for your account.</p></div>
+    </div>
+
+    <!-- FILES -->
+    <div class="section" id="files-section">
+      <div class="eyebrow">Client Portal</div><h1>Files &amp; Deliverables</h1>
+      <div class="panel"><h2>Your Files</h2><p class="empty">Project deliverables and approved files will appear here when they are uploaded to your account.</p></div>
     </div>
 
     <!-- PROFILE -->
@@ -260,9 +325,16 @@ const DEFAULT_SERVICES = [
 
 function switchSection(sectionId, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(sectionId).classList.add('active');
+  const target=document.getElementById(sectionId);
+  if(target) target.classList.add('active');
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  const activeBtn=btn || document.querySelector('.side-btn[data-section="'+sectionId+'"]');
+  if(activeBtn) activeBtn.classList.add('active');
+  if(sectionId==='agreements-section') renderClientAgreements();
+}
+function goPortal(sectionId){
+  switchSection(sectionId);
+  return false;
 }
 
 requireAuth(async (user) => {
@@ -374,6 +446,8 @@ async function loadMyRequests(uid) {
     document.getElementById('statTotalRequests').textContent = myRequests.length;
     document.getElementById('statPending').textContent = myRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
     document.getElementById('statCompleted').textContent = myRequests.filter(r => r.status === 'Completed').length;
+    renderClientAgreements();
+    renderActionItems();
 
     if (myRequests.length === 0) {
       body.innerHTML = '<tr><td colspan="4" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
@@ -393,6 +467,45 @@ async function loadMyRequests(uid) {
   } catch (e) {
     body.innerHTML = '<tr><td colspan="4" class="empty">Could not load requests: ' + escapeHtml(friendlyError(e)) + '</td></tr>';
   }
+}
+
+// ---- Client Portal: actions, projects and agreements ----
+function renderActionItems(){
+  const el=document.getElementById('actionItems'); if(!el)return;
+  const pending=myRequests.filter(r=>r.agreementAccepted && !r.signature && r.orderId);
+  if(!pending.length){
+    el.innerHTML='<div class="empty">No agreements currently require your signature.</div>';
+    return;
+  }
+  el.innerHTML=pending.map(r=>`<div class="action-row"><div><strong>${escapeHtml(r.selectedService||'Shop service')}</strong><small>Agreement ${escapeHtml(r.orderId)} · Version ${escapeHtml(r.agreementVersion||'1.0')}</small></div><button class="btn-request" onclick="window.location.href='sign-agreement.html?orderId=${encodeURIComponent(r.orderId)}'">REVIEW &amp; SIGN →</button></div>`).join('');
+}
+function renderClientAgreements(){
+  const el=document.getElementById('clientAgreements'); if(!el)return;
+  if(!myRequests.length){el.innerHTML='<div class="empty">No agreements yet.</div>';return;}
+  const list=myRequests.filter(r=>r.orderId || r.agreementAccepted);
+  el.innerHTML=list.length?list.map(r=>{
+    const signed=!!r.signature, accepted=!!r.agreementAccepted, stored=!!r.agreementStorageKey;
+    const action=signed && stored
+      ? `<button class="btn-request" data-client-agreement="${escapeAttr(r.orderId||'')}">DOWNLOAD SIGNED PDF</button>`
+      : accepted && r.orderId
+        ? `<button class="btn-primary" onclick="window.location.href='sign-agreement.html?orderId=${encodeURIComponent(r.orderId)}'">${signed?'REVIEW':'REVIEW &amp; SIGN'} →</button>`
+        : '<span class="agreement-status">Agreement acknowledged at checkout</span>';
+    return `<div class="action-row"><div><strong>${escapeHtml(r.selectedService||'Shop service')}</strong><small>${escapeHtml(r.orderId||'Service request')} · Version ${escapeHtml(r.agreementVersion||'1.0')} · ${signed?'Signed':accepted?'Accepted':'Pending'}</small></div><div>${action}</div></div>`;
+  }).join(''):'<div class="empty">No agreements yet.</div>';
+  document.querySelectorAll('[data-client-agreement]').forEach(btn=>btn.onclick=()=>downloadClientAgreement(btn));
+}
+async function downloadClientAgreement(btn){
+  const id=btn.getAttribute('data-client-agreement'); if(!id)return;
+  btn.disabled=true; btn.textContent='PREPARING…';
+  try{
+    const token=await currentUser.getIdToken();
+    const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(id),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+    if(!r.ok)throw Error('Agreement PDF unavailable');
+    const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='Ovesh-Client-Agreement-'+id+'.pdf';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);btn.textContent='DOWNLOADED ✓';
+  }catch(e){btn.textContent='UNAVAILABLE';setTimeout(()=>btn.textContent='DOWNLOAD SIGNED PDF',1800)}
+  finally{btn.disabled=false}
 }
 
 // ---- Account Settings: update display name ----
