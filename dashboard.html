@@ -530,7 +530,7 @@ function openProjectDetailById(id){
   selectedProject=r;
   const s=projectStage(r),p=projectProgress(r),events=projectEvents(r);
   const signed=!!r.signature,accepted=!!r.agreementAccepted;
-  const signAction=accepted&&!signed&&r.orderId?'<button class="btn-primary" onclick="window.location.href=\\'sign-agreement.html?orderId='+encodeURIComponent(r.orderId)+'\\'">REVIEW &amp; SIGN →</button>':'';
+  const signAction=accepted&&!signed&&r.orderId?"<button class=\"btn-primary\" onclick=\"window.location.href='sign-agreement.html?orderId="+encodeURIComponent(r.orderId)+"'\">REVIEW &amp; SIGN →</button>":"";
   const agreementAction=r.agreementStorageKey?'<button class="btn-request" onclick="downloadClientAgreementById('+JSON.stringify(r.orderId)+')">DOWNLOAD AGREEMENT</button>':'';
   document.getElementById('projectDetail').innerHTML=
     '<div class="detail-header"><div><div class="eyebrow">PROJECT COMMAND CENTER</div><h3>'+escapeHtml(r.selectedService||'Client Project')+'</h3><div class="project-id">'+escapeHtml(r.orderId||'Service request')+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div>'+
