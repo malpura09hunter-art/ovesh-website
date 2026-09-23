@@ -129,6 +129,7 @@ async function sendTermsPolicyToLoggedInUsers(firebase, siteUrl) {
   });
 
   let sent = 0, failed = 0;
+  const sentRecipients = [];
   const failures = [];
   const transport = getTransporter();
 
@@ -145,18 +146,18 @@ async function sendTermsPolicyToLoggedInUsers(firebase, siteUrl) {
           html: termsHtml(recipient.name, siteUrl),
           headers: { 'X-Auto-Response-Suppress': 'All' }
         });
-        return { ok: true };
+        return { ok: true, email: recipient.email, name: recipient.name };
       } catch (error) {
         console.error('POLICY EMAIL FAILED:', recipient.email, error.code || error.message);
         return { ok: false, email: recipient.email, error: error.code || error.message };
       }
     }));
     for (const result of results) {
-      if (result.ok) sent++;
+      if (result.ok) { sent++; sentRecipients.push({ email: result.email, name: result.name }); }
       else { failed++; failures.push({ email: result.email, error: result.error }); }
     }
   }
-  return { attempted: recipients.length, sent, failed, failures };
+  return { attempted: recipients.length, sent, failed, sentRecipients, failures };
 }
 
 module.exports = async (req, res) => {
