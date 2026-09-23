@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/api/sign-shop-agreement", "destination": "/api/shop-agreement" },
     { "source": "/api/shop-agreement-pdf", "destination": "/api/shop-agreement" },
+    { "source": "/api/store-shop-agreement", "destination": "/api/shop-agreement" },
     { "source": "/shop", "destination": "/shop.html" },
     { "source": "/shop/", "destination": "/shop.html" },
     { "source": "/styles.css", "destination": "/vitamin-serum/styles.css" },
