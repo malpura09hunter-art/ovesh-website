@@ -283,3 +283,35 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 @media(prefers-reduced-motion:reduce){
  .hero,.toolbar input,.categories button,.product,.product:after,.product .icon,.details-btn,.product .primary,.shop-detail-modal,.shop-detail-box{animation:none!important;transition:none!important}
 }
+
+
+/* CART ICON V5 — premium animated control */
+.cart-button{isolation:isolate;overflow:visible!important}
+.cart-button::before{content:"";position:absolute;inset:4px;border-radius:11px;background:radial-gradient(circle at 50% 42%,rgba(57,255,20,.13),transparent 68%);opacity:.65;z-index:-1;transition:opacity .25s ease,transform .25s ease}
+.cart-button::after{content:"";position:absolute;inset:-1px;border-radius:15px;border:1px solid rgba(57,255,20,.08);box-shadow:0 0 0 0 rgba(57,255,20,0);transition:box-shadow .3s ease,border-color .3s ease;pointer-events:none}
+.cart-button:hover::before{opacity:1;transform:scale(1.08)}
+.cart-button:hover::after{border-color:rgba(57,255,20,.22);box-shadow:0 0 24px rgba(57,255,20,.10)}
+.cart-icon{position:relative!important;width:25px!important;height:25px!important;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.cart-icon svg{width:25px!important;height:25px!important;overflow:visible;filter:drop-shadow(0 0 6px rgba(57,255,20,.20))}
+.cart-icon .cart-stroke{stroke:#dfffe5;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s ease,stroke-width .2s ease}
+.cart-icon .cart-wheel{fill:#39ff14;stroke:#071107;stroke-width:1;transition:transform .2s ease,fill .2s ease}
+.cart-button:hover .cart-icon{transform:translateY(-1px) scale(1.06)}
+.cart-button:hover .cart-icon .cart-stroke{stroke:#39ff14;stroke-width:1.9}
+.cart-button:hover .cart-icon .cart-wheel{transform:translateY(1px);fill:#b8ffab}
+.cart-button.cart-bump .cart-icon{animation:cartIconPopV5 .62s cubic-bezier(.2,.8,.2,1)}
+@keyframes cartIconPopV5{0%{transform:scale(1) rotate(0)}20%{transform:scale(1.18) rotate(-6deg)}42%{transform:scale(.94) rotate(4deg)}64%{transform:scale(1.08) rotate(-2deg)}82%{transform:scale(.98) rotate(1deg)}100%{transform:scale(1) rotate(0)}}
+.nav-actions .cart-button b{z-index:3;animation:none!important;transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,background .22s ease}
+.nav-actions .cart-button.cart-bump b{animation:cartBadgePopV5 .58s cubic-bezier(.2,.8,.2,1)!important}
+@keyframes cartBadgePopV5{0%{transform:scale(.55);opacity:.3}35%{transform:scale(1.28);opacity:1}62%{transform:scale(.9)}82%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.cart-button:not(:has(#cartCount:not(:empty))) b{box-shadow:0 0 0 rgba(57,255,20,0)}
+@media(max-width:650px){.cart-icon,.cart-icon svg{width:23px!important;height:23px!important}.cart-button::before{inset:3px}}
+@media(prefers-reduced-motion:reduce){.cart-button::before,.cart-button::after,.cart-icon,.cart-button b{transition:none!important;animation:none!important}}
+
+/* PRODUCT MOTION V5 — smoother entrance and interaction */
+@keyframes shopHeroIn{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
+.hero .eyebrow{animation:shopHeroIn .55s ease both}
+.hero h1{animation:shopHeroIn .65s .06s cubic-bezier(.2,.8,.2,1) both}
+.hero p{animation:shopHeroIn .65s .13s cubic-bezier(.2,.8,.2,1) both}
+.product-grid .product{will-change:transform}
+.product .icon{will-change:transform}
+@media(prefers-reduced-motion:reduce){.hero .eyebrow,.hero h1,.hero p{animation:none!important}}
