@@ -160,7 +160,7 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
     <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">Admin Users</button>
     <button class="side-btn" data-pane="pane-profile" onclick="switchPane('pane-profile', this)">Profile</button>
     <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">Service Requests</button>
-    <button class="side-btn" data-pane="pane-terms-email" onclick="switchPane('pane-terms-email', this)">Terms &amp; Policy Email</button>
+    <button class="side-btn" data-pane="pane-terms-email" onclick="switchPane('pane-terms-email', this)">Client Email Center</button>
     <button class="side-btn" data-pane="pane-shop" onclick="switchPane('pane-shop', this)">🛒 SHOP</button>
     <a href="../index.html" class="side-btn" style="margin-top:16px;">← Back to Site</a>
   </div>
@@ -207,15 +207,15 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
 
     <!-- TERMS & POLICY EMAIL -->
     <div class="pane" id="pane-terms-email">
-      <h2>Terms &amp; Policy Email</h2>
-      <div class="pane-sub">Send the current Terms &amp; Conditions and Privacy Policy information to users who have previously logged in.</div>
+      <h2>Client Email Center</h2>
+      <div class="pane-sub">Send important client communications and policy information to registered users.</div>
       <div class="panel">
         <div style="padding:24px;">
-          <h3 style="font-family:'Orbitron',sans-serif;color:var(--text);margin-bottom:10px;">Existing logged-in users</h3>
+          <h3 style="font-family:'Orbitron',sans-serif;color:var(--text);margin-bottom:10px;">Terms &amp; Privacy Information</h3>
           <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px;">
-            This sends one individual email per user found in the <strong>users</strong> collection with a recorded <strong>lastLogin</strong> and a valid email address. Recipient addresses are not exposed to other recipients.
+            This sends one individual email per user with a recorded <strong>lastLogin</strong> and a valid email address. Each recipient is handled separately, and the result below shows exactly who received the message.
           </p>
-          <button type="button" class="btn-sm" id="sendTermsPolicyBtn" style="padding:11px 16px;">Send Terms &amp; Policy Email</button>
+          <button type="button" class="btn-sm" id="sendTermsPolicyBtn" style="padding:11px 16px;">Send Terms &amp; Privacy Information</button>
           <div id="termsPolicyResult" style="margin-top:16px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:12px;"></div>
         </div>
       </div>
@@ -521,7 +521,20 @@ async function sendTermsPolicyEmail() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || 'Could not send emails.');
-    result.textContent = 'Done — attempted ' + (data.attempted || 0) + ', sent ' + (data.sent || 0) + ', failed ' + (data.failed || 0) + '.';
+    const sentRecipients = Array.isArray(data.sentRecipients) ? data.sentRecipients : [];
+    const failures = Array.isArray(data.failures) ? data.failures : [];
+    let html = '<div style="line-height:1.7;">Done — attempted ' + (data.attempted || 0) + ', sent ' + (data.sent || 0) + ', failed ' + (data.failed || 0) + '.</div>';
+    html += '<div style="margin-top:12px;color:var(--text);font-family:\'Rajdhani\',sans-serif;font-size:14px;font-weight:600;">Sent to (' + sentRecipients.length + ')</div>';
+    if (sentRecipients.length) {
+      html += '<div style="margin-top:6px;display:grid;gap:5px;">' + sentRecipients.map(r => '<a href="mailto:' + encodeURIComponent(r.email || '') + '" style="color:var(--neon3);text-decoration:none;">' + escapeHtml(r.email || '') + '</a>').join('') + '</div>';
+    } else {
+      html += '<div style="margin-top:6px;">No successful recipients.</div>';
+    }
+    html += '<div style="margin-top:12px;color:var(--text);font-family:\'Rajdhani\',sans-serif;font-size:14px;font-weight:600;">Failed (' + failures.length + ')</div>';
+    if (failures.length) {
+      html += '<div style="margin-top:6px;display:grid;gap:5px;">' + failures.map(r => '<div><span style="color:var(--error);">' + escapeHtml(r.email || '') + '</span> — ' + escapeHtml(r.error || 'Unknown error') + '</div>').join('') + '</div>';
+    }
+    result.innerHTML = html;
   } catch (e) {
     console.error(e);
     result.textContent = 'Error: ' + (e.message || 'Could not send emails.');
