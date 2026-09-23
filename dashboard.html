@@ -184,7 +184,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; 
       <h1>My Service Requests</h1>
       <div class="panel">
         <table class="requests-table" id="requestsTable">
-          <thead><tr><th>Service</th><th>Submitted</th><th>Status</th></tr></thead>
+          <thead><tr><th>Service</th><th>Submitted</th><th>Status</th><th>Agreement</th></tr></thead>
           <tbody id="requestsBody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
         </table>
       </div>
@@ -376,7 +376,7 @@ async function loadMyRequests(uid) {
     document.getElementById('statCompleted').textContent = myRequests.filter(r => r.status === 'Completed').length;
 
     if (myRequests.length === 0) {
-      body.innerHTML = '<tr><td colspan="3" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
+      body.innerHTML = '<tr><td colspan="4" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
       return;
     }
     body.innerHTML = snap.docs.map(d => {
@@ -386,10 +386,12 @@ async function loadMyRequests(uid) {
         <td>${escapeHtml(r.selectedService)}</td>
         <td>${fmtDate(r.createdAt)}</td>
         <td><span class="status-pill status-${status}">${escapeHtml(status)}</span></td>
+        <td>${r.agreementStorageKey ? '<button class="btn-request" style="padding:7px 10px" data-agreement-id="'+escapeAttr(r.orderId||'')+'">View PDF</button>' : '<span class="muted">Processing</span>'}</td>
       </tr>`;
     }).join('');
+    document.querySelectorAll('[data-agreement-id]').forEach(btn=>btn.addEventListener('click',async()=>{const id=btn.getAttribute('data-agreement-id');if(!id)return;btn.disabled=true;btn.textContent='Preparing…';try{const token=await currentUser.getIdToken();const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(id),{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('Agreement PDF unavailable');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Ovesh-Client-Agreement-'+id+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);btn.textContent='Downloaded';}catch(err){btn.textContent='Unavailable';setTimeout(()=>btn.textContent='View PDF',1600)}finally{btn.disabled=false}}));
   } catch (e) {
-    body.innerHTML = '<tr><td colspan="3" class="empty">Could not load requests: ' + escapeHtml(friendlyError(e)) + '</td></tr>';
+    body.innerHTML = '<tr><td colspan="4" class="empty">Could not load requests: ' + escapeHtml(friendlyError(e)) + '</td></tr>';
   }
 }
 
