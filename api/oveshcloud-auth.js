@@ -26,6 +26,8 @@ const isoDate=v=>{
   if(v instanceof Date)return v.toISOString();
   return null;
 };
+function b2ForAgreements(){const endpoint=String(process.env.B2_ENDPOINT||'').trim().replace(/\/$/,'');const region=String(process.env.B2_REGION||'').trim();const bucket=String(process.env.B2_BUCKET||'').trim();const keyId=String(process.env.B2_KEY_ID||'').trim();const applicationKey=String(process.env.B2_APPLICATION_KEY||'').trim();if(!endpoint||!region||!bucket||!keyId||!applicationKey)throw Error('Agreement storage is not configured');return{bucket,s3:new S3Client({region,endpoint,forcePathStyle:false,credentials:{accessKeyId:keyId,secretAccessKey:applicationKey}})}}
+async function shopAgreementPdf(req,res){if(req.method!=='GET'||!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});const orderId=String(req.query?.orderId||'');if(!/^SHOP-\d{8}$/.test(orderId))return res.status(400).json({ok:false,error:'Invalid request reference'});try{const snap=await getAdminDb().collection('service_requests').where('orderId','==',orderId).limit(1).get();if(snap.empty)return res.status(404).json({ok:false,error:'Service request not found'});const x=snap.docs[0].data()||{},key=String(x.agreementStorageKey||'');if(!key)return res.status(404).json({ok:false,error:'Agreement PDF has not been stored yet'});if(!key.startsWith('client-agreements/')||key.includes('..'))return res.status(403).json({ok:false,error:'Invalid agreement storage key'});const {bucket,s3}=b2ForAgreements(),out=await s3.send(new GetObjectCommand({Bucket:bucket,Key:key}));const chunks=[];for await(const chunk of out.Body)chunks.push(Buffer.from(chunk));const pdf=Buffer.concat(chunks);res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename="Ovesh-Client-Agreement-'+orderId+'.pdf"');res.setHeader('Content-Length',String(pdf.length));res.setHeader('Cache-Control','private, no-store, max-age=0');return res.status(200).send(pdf)}catch(e){console.error('OVESH SHOP AGREEMENT PDF FAILED:',e.message);return res.status(500).json({ok:false,error:'Unable to retrieve agreement PDF'})}}
 async function shopOrders(req,res){
   if(req.method!=='GET'||!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});
   try{
@@ -40,7 +42,7 @@ async function shopOrders(req,res){
         estimatedTotal:x.estimatedTotal??null,projectDescription:x.projectDescription||'',
         status:x.status||'Pending',paymentStatus:x.paymentStatus||'Quote / payment pending',
         agreementVersion:x.agreementVersion||null,agreementAccepted:x.agreementAccepted===true,
-        agreementAcceptedAt:isoDate(x.agreementAcceptedAt),signature:s?{signedAt:isoDate(s.signedAt),fullName:s.fullName||null,signatureType:s.signatureType||null,agreementVersion:s.agreementVersion||null}:null,
+        agreementAcceptedAt:isoDate(x.agreementAcceptedAt),agreementStorageKey:x.agreementStorageKey||null,agreementStoredAt:isoDate(x.agreementStoredAt),agreementStatus:x.agreementStatus||null,signature:s?{signedAt:isoDate(s.signedAt),fullName:s.fullName||null,signatureType:s.signatureType||null,agreementVersion:s.agreementVersion||null}:null,
         createdAt:isoDate(x.createdAt),updatedAt:isoDate(x.updatedAt)
       };
     }).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
@@ -54,6 +56,7 @@ async function shopOrders(req,res){
 export default async function handler(req,res){
   const action=String(req.query?.action||'');
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
+  if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
