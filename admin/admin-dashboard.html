@@ -160,6 +160,7 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
     <button class="side-btn" data-pane="pane-users" onclick="switchPane('pane-users', this)">Admin Users</button>
     <button class="side-btn" data-pane="pane-profile" onclick="switchPane('pane-profile', this)">Profile</button>
     <button class="side-btn" data-pane="pane-requests" onclick="switchPane('pane-requests', this)">Service Requests</button>
+    <button class="side-btn" data-pane="pane-terms-email" onclick="switchPane('pane-terms-email', this)">Terms &amp; Policy Email</button>
     <button class="side-btn" data-pane="pane-shop" onclick="switchPane('pane-shop', this)">🛒 SHOP</button>
     <a href="../index.html" class="side-btn" style="margin-top:16px;">← Back to Site</a>
   </div>
@@ -201,6 +202,22 @@ td.empty, td.loading { color: var(--muted); text-align: center; padding: 30px; }
           <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Provider</th><th>Joined</th><th>Last Login</th><th></th></tr></thead>
           <tbody id="usersBody"><tr><td class="loading" colspan="7">Loading…</td></tr></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- TERMS & POLICY EMAIL -->
+    <div class="pane" id="pane-terms-email">
+      <h2>Terms &amp; Policy Email</h2>
+      <div class="pane-sub">Send the current Terms &amp; Conditions and Privacy Policy information to users who have previously logged in.</div>
+      <div class="panel">
+        <div style="padding:24px;">
+          <h3 style="font-family:'Orbitron',sans-serif;color:var(--text);margin-bottom:10px;">Existing logged-in users</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px;">
+            This sends one individual email per user found in the <strong>users</strong> collection with a recorded <strong>lastLogin</strong> and a valid email address. Recipient addresses are not exposed to other recipients.
+          </p>
+          <button type="button" class="btn-sm" id="sendTermsPolicyBtn" style="padding:11px 16px;">Send Terms &amp; Policy Email</button>
+          <div id="termsPolicyResult" style="margin-top:16px;color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:12px;"></div>
+        </div>
       </div>
     </div>
 
@@ -384,6 +401,8 @@ requireAdmin(
   }
 );
 
+document.getElementById('sendTermsPolicyBtn')?.addEventListener('click', sendTermsPolicyEmail);
+
 document.getElementById('logoutBtn').addEventListener('click', () => {
   auth.signOut().then(() => window.location.href = 'login.html');
 });
@@ -483,6 +502,34 @@ async function toggleAdmin(uid, currentlyAdmin) {
 }
 
 // ---- Service Requests ----
+async function sendTermsPolicyEmail() {
+  const btn = document.getElementById('sendTermsPolicyBtn');
+  const result = document.getElementById('termsPolicyResult');
+  if (!btn || !result) return;
+  if (!confirm('Send the Terms & Policy email to every user with a recorded login?')) return;
+  btn.disabled = true;
+  result.textContent = 'Sending…';
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error('Admin session expired. Please sign in again.');
+    const token = await user.getIdToken(true);
+    const response = await fetch('../api/send-terms-policy', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: '{}'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Could not send emails.');
+    result.textContent = 'Done — attempted ' + (data.attempted || 0) + ', sent ' + (data.sent || 0) + ', failed ' + (data.failed || 0) + '.';
+  } catch (e) {
+    console.error(e);
+    result.textContent = 'Error: ' + (e.message || 'Could not send emails.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function loadRequests() {
   try {
     const snap = await db.collection('service_requests').orderBy('createdAt', 'desc').get();
