@@ -66,6 +66,30 @@ h2 { font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--neon3); 
 .verify-badge.yes { background: rgba(0,255,65,0.08); color: var(--neon3); }
 .verify-badge.no { background: rgba(255,170,0,0.1); color: #ffaa00; cursor: pointer; }
 
+/* Project Command Center */
+.project-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.project-search{flex:1;min-width:220px;background:rgba(0,255,65,.03);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;outline:none}
+.project-search:focus{border-color:var(--neon2)}
+.project-filter{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.project-card{background:linear-gradient(145deg,rgba(0,255,65,.055),rgba(3,10,3,.65));border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.project-card:hover{transform:translateY(-3px);border-color:rgba(0,255,65,.35);box-shadow:0 12px 35px rgba(0,255,65,.08)}
+.project-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.project-title{font-family:'Orbitron',sans-serif;color:var(--neon3);font-size:15px;line-height:1.35}
+.project-id{font-family:'Share Tech Mono',monospace;color:var(--muted);font-size:11px;margin-top:5px}
+.project-status{font-family:'Share Tech Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--neon3);white-space:nowrap}
+.project-status.pending{color:#00ccff;border-color:rgba(0,204,255,.25);background:rgba(0,204,255,.06)}
+.project-status.review{color:#ffaa00;border-color:rgba(255,170,0,.25);background:rgba(255,170,0,.06)}
+.project-status.completed{color:var(--neon3)}
+.progress-wrap{margin:18px 0 8px}.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}.progress-track{height:7px;background:rgba(0,255,65,.07);border-radius:99px;overflow:hidden}.progress-bar{height:100%;background:linear-gradient(90deg,var(--neon2),var(--neon3));border-radius:99px;box-shadow:0 0 12px rgba(0,255,65,.35)}
+.project-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.project-meta div{padding:9px;background:rgba(0,255,65,.025);border:1px solid rgba(0,255,65,.07);border-radius:7px}.project-meta span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:1px}.project-meta strong{display:block;color:var(--text);font-size:13px;margin-top:3px}
+.project-next{font-size:13px;color:#a9c9af;line-height:1.45;min-height:38px;margin-bottom:14px}.project-actions{display:flex;gap:8px;flex-wrap:wrap}
+.timeline{position:relative;margin:4px 0 0 5px;padding-left:23px}.timeline:before{content:'';position:absolute;left:5px;top:7px;bottom:7px;width:1px;background:var(--border)}.timeline-item{position:relative;padding:0 0 18px}.timeline-dot{position:absolute;left:-22px;top:4px;width:9px;height:9px;border-radius:50%;background:var(--neon3);box-shadow:0 0 10px rgba(0,255,65,.45)}.timeline-item strong{display:block;color:var(--text);font-size:14px}.timeline-item span{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.45}
+.project-modal{max-width:620px}
+.detail-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}.detail-header h3{margin-bottom:5px}.detail-section{border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
+.action-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid rgba(0,255,65,.07)}.action-row:last-child{border-bottom:0}.action-row strong{display:block;color:var(--text);font-size:14px}.action-row small{display:block;color:var(--muted);margin-top:3px;font-size:12px}
+.portal-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.portal-card{display:flex;flex-direction:column;gap:5px;text-decoration:none;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;transition:transform .2s ease,border-color .2s ease,background .2s ease}.portal-card:hover{transform:translateY(-2px);border-color:rgba(0,255,65,.35);background:rgba(0,255,65,.055)}.portal-card .icon{color:var(--neon3);font-size:22px}.portal-card strong{font-family:'Orbitron',sans-serif;font-size:12px}.portal-card span{font-size:12px;color:var(--muted);line-height:1.4}
+
 /* Services + requests */
 .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 .service-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; }
@@ -186,8 +210,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; 
     <div class="section" id="projects-section">
       <div class="eyebrow">Client Portal</div><h1>Projects</h1>
       <div class="panel">
-        <h2>Your Project Workspace</h2>
-        <p class="empty">Projects will appear here once a service request moves into project delivery.</p>
+        <h2>Project Command Center</h2>
+        <p class="empty">Your service requests become trackable workspaces here. Monitor status, progress, agreements, payments and the next client action from one place.</p>
+        <div class="project-toolbar">
+          <input id="projectSearch" class="project-search" type="search" placeholder="Search projects or services…">
+          <select id="projectFilter" class="project-filter" aria-label="Filter projects">
+            <option value="all">All Projects</option><option value="pending">Pending</option><option value="active">Active</option><option value="review">Review</option><option value="completed">Completed</option>
+          </select>
+        </div>
         <div id="projectList"></div>
       </div>
     </div>
@@ -288,6 +318,14 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; 
   </div>
 </div>
 
+<!-- Project Detail Modal -->
+<div class="modal-overlay" id="projectDetailModal">
+  <div class="modal project-modal">
+    <div id="projectDetail"></div>
+    <div class="modal-actions"><button type="button" class="btn-cancel" onclick="closeProjectDetail()">Close</button></div>
+  </div>
+</div>
+
 <!-- Service Request Modal -->
 <div class="modal-overlay" id="requestModal">
   <div class="modal">
@@ -313,6 +351,9 @@ hr.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; 
 <script>
 let currentUser = null;
 let myRequests = [];
+let projectQuery='';
+let projectFilter='all';
+let selectedProject=null;
 
 const DEFAULT_SERVICES = [
   { title: 'Cybersecurity Consulting', description: 'Strategic guidance to strengthen your organization\'s overall security posture.', features: ['Risk assessment', 'Security roadmap', 'Policy review'] },
@@ -331,9 +372,11 @@ function switchSection(sectionId, btn) {
   const activeBtn=btn || document.querySelector('.side-btn[data-section="'+sectionId+'"]');
   if(activeBtn) activeBtn.classList.add('active');
   if(sectionId==='agreements-section') renderClientAgreements();
+  if(sectionId==='projects-section') renderProjects();
 }
 function goPortal(sectionId){
   switchSection(sectionId);
+  if(sectionId==='projects-section') renderProjects();
   return false;
 }
 
@@ -448,6 +491,7 @@ async function loadMyRequests(uid) {
     document.getElementById('statCompleted').textContent = myRequests.filter(r => r.status === 'Completed').length;
     renderClientAgreements();
     renderActionItems();
+    renderProjects();
 
     if (myRequests.length === 0) {
       body.innerHTML = '<tr><td colspan="4" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
@@ -468,6 +512,61 @@ async function loadMyRequests(uid) {
     body.innerHTML = '<tr><td colspan="4" class="empty">Could not load requests: ' + escapeHtml(friendlyError(e)) + '</td></tr>';
   }
 }
+
+// ---- Project Command Center ----
+function projectStage(r){
+  const raw=String(r.status||'Pending').toLowerCase();
+  if(raw.includes('complete')||raw.includes('delivered')) return {key:'completed',label:'Completed',progress:100,next:'Project completed. Review your final deliverables.'};
+  if(raw.includes('review')||raw.includes('approval')) return {key:'review',label:'Client Review',progress:75,next:'Your review or approval may be required.'};
+  if(raw.includes('active')||raw.includes('progress')||raw.includes('working')) return {key:'active',label:'Active',progress:50,next:'Work is in progress. Keep an eye on updates and requests.'};
+  return {key:'pending',label:'Pending',progress:20,next:r.agreementAccepted?'Request received. Project setup is pending.':'Complete the agreement step when requested.'};
+}
+function projectProgress(r){
+  const s=projectStage(r);
+  let p=s.progress;
+  if(s.key==='pending' && r.agreementAccepted) p=30;
+  if((s.key==='active'||s.key==='review') && r.agreementAccepted) p=Math.min(90,p+10);
+  if(r.signature) p=Math.min(100,p+5);
+  return Math.min(100,p);
+}
+function requestTimestamp(r){return r.createdAt&&r.createdAt.toDate?r.createdAt.toDate():r.createdAt?new Date(r.createdAt):null}
+function projectEvents(r){
+  const d=requestTimestamp(r), events=[{title:'Service request submitted',detail:d?'Request created on '+d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Request received'}];
+  if(r.agreementAccepted) events.push({title:'Agreement acknowledged',detail:r.agreementAcceptedAt?'Accepted on '+new Date(r.agreementAcceptedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Agreement accepted'});
+  if(r.signature) events.push({title:'Agreement signed',detail:r.signedAt?'Signed on '+new Date(r.signedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Signature recorded'});
+  const s=projectStage(r);
+  if(s.key==='active') events.push({title:'Project work active',detail:'Your request is currently being worked on.'});
+  if(s.key==='review') events.push({title:'Client review stage',detail:'Review or approval is the current milestone.'});
+  if(s.key==='completed') events.push({title:'Project completed',detail:'The service request is marked completed.'});
+  return events;
+}
+function renderProjects(){
+  const el=document.getElementById('projectList');if(!el)return;
+  const q=projectQuery.trim().toLowerCase();
+  const list=myRequests.filter(r=>{
+    const hay=(String(r.selectedService||'')+' '+String(r.orderId||'')+' '+String(r.projectDescription||'')).toLowerCase();
+    if(q&&!hay.includes(q))return false;
+    const s=projectStage(r).key;
+    return projectFilter==='all'||s===projectFilter;
+  });
+  if(!myRequests.length){el.innerHTML='<div class="empty">No projects yet. Submit a service request or use the Shop to start one.</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty">No projects match your current search or filter.</div>';return;}
+  el.innerHTML='<div class="project-grid">'+list.map((r,i)=>{
+    const s=projectStage(r),p=projectProgress(r),id=r.orderId||('REQUEST-'+(i+1));
+    return '<article class="project-card"><div class="project-top"><div><div class="project-title">'+escapeHtml(r.selectedService||'Client Project')+'</div><div class="project-id">'+escapeHtml(id)+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div><div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div><div class="project-meta"><div><span>Agreement</span><strong>'+(r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending')+'</strong></div><div><span>Payment</span><strong>'+escapeHtml(r.paymentStatus||'Quote pending')+'</strong></div></div><div class="project-next"><strong>Next:</strong> '+escapeHtml(s.next)+'</div><div class="project-actions"><button class="btn-request" onclick="openProjectDetailById('+JSON.stringify(id)+')">OPEN PROJECT</button>'+(r.orderId&&r.agreementAccepted&&!r.signature?'<button class="btn-primary" onclick="window.location.href=\'sign-agreement.html?orderId='+encodeURIComponent(r.orderId)+'\'">SIGN →</button>':'')+'</div></article>';
+  }).join('')+'</div>';
+}
+function openProjectDetailById(id){
+  const r=myRequests.find(x=>(x.orderId||'')===id);
+  if(!r)return;
+  selectedProject=r;
+  const s=projectStage(r),p=projectProgress(r),events=projectEvents(r);
+  document.getElementById('projectDetail').innerHTML='<div class="detail-header"><div><div class="eyebrow">PROJECT COMMAND CENTER</div><h3>'+escapeHtml(r.selectedService||'Client Project')+'</h3><div class="project-id">'+escapeHtml(r.orderId||'Service request')+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div><div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div><div class="detail-section"><h2>Project Details</h2><div class="project-meta"><div><span>Submitted</span><strong>'+escapeHtml(fmtDate(r.createdAt))+'</strong></div><div><span>Payment</span><strong>'+escapeHtml(r.paymentStatus||'Quote pending')+'</strong></div><div><span>Agreement</span><strong>'+escapeHtml(r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending')+'</strong></div><div><span>Request Status</span><strong>'+escapeHtml(r.status||'Pending')+'</strong></div></div><p class="muted">'+escapeHtml(r.projectDescription||'No project description was provided.')+'</p></div><div class="detail-section"><h2>Project Timeline</h2><div class="timeline">'+events.map(e=>'<div class="timeline-item"><span class="timeline-dot"></span><strong>'+escapeHtml(e.title)+'</strong><span>'+escapeHtml(e.detail)+'</span></div>').join('')+'</div></div><div class="detail-section"><h2>Next Client Action</h2><p class="muted">'+escapeHtml(s.next)+'</p></div>';
+  document.getElementById('projectDetailModal').classList.add('open');
+}
+function closeProjectDetail(){document.getElementById('projectDetailModal').classList.remove('open');selectedProject=null}
+document.getElementById('projectSearch')?.addEventListener('input',e=>{projectQuery=e.target.value;renderProjects()});
+document.getElementById('projectFilter')?.addEventListener('change',e=>{projectFilter=e.target.value;renderProjects()});
 
 // ---- Client Portal: actions, projects and agreements ----
 function renderActionItems(){
