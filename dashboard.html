@@ -37,6 +37,20 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 @media(max-width:800px){nav{padding:14px 17px}.nav-logo{font-size:11px}.nav-right{gap:9px}.nav-right a{display:none}.layout{display:block}.sidebar{position:sticky;top:58px;height:auto;min-height:auto;display:flex;gap:5px;overflow-x:auto;padding:9px;border-right:0;border-bottom:1px solid var(--border);z-index:90}.side-btn{width:auto;margin:0;padding:10px 13px;font-size:12px}.side-btn.active{box-shadow:inset 0 -2px 0 var(--green)}.content{padding:27px 15px 60px}h1{font-size:24px;margin-bottom:22px}.panel{padding:18px;border-radius:15px}.portal-actions{grid-template-columns:1fr 1fr}.stats-grid{gap:9px}.stat-card{padding:15px}.stat-card .num{font-size:22px}}
 @media(max-width:520px){.portal-actions,.stats-grid{grid-template-columns:1fr 1fr}.project-grid{grid-template-columns:1fr}.project-meta{gap:7px}.project-card{padding:17px}.content{padding-left:12px;padding-right:12px}h1{font-size:21px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* ---- Project Command Center V2 ---- */
+.project-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:18px;padding:25px;border:1px solid var(--border);border-radius:20px;background:radial-gradient(circle at 85% 10%,rgba(109,246,209,.08),transparent 35%),linear-gradient(145deg,rgba(13,34,20,.82),rgba(3,9,5,.84));box-shadow:0 18px 55px rgba(0,0,0,.22);overflow:hidden;position:relative}
+.project-hero:before{content:"";position:absolute;inset:auto -80px -110px auto;width:260px;height:260px;border-radius:50%;border:1px solid rgba(85,255,145,.12);box-shadow:0 0 0 34px rgba(85,255,145,.018),0 0 0 68px rgba(85,255,145,.012);pointer-events:none}
+.project-hero h2{font-size:20px;margin-bottom:7px}.project-hero p{max-width:680px;color:var(--muted);font-size:13px;line-height:1.55}
+.project-hero-badge{display:inline-flex;align-items:center;gap:7px;font-family:'Share Tech Mono';font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--green);border:1px solid var(--border2);background:rgba(85,255,145,.05);padding:8px 11px;border-radius:999px;margin-bottom:11px}
+.project-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.project-summary-card{padding:15px 16px;border:1px solid var(--border);border-radius:14px;background:rgba(5,14,8,.66)}.project-summary-card b{display:block;font-family:Orbitron;color:var(--text);font-size:20px}.project-summary-card span{display:block;margin-top:5px;color:var(--muted);font-family:'Share Tech Mono';font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.project-toolbar-v2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}.project-toolbar-v2 .project-search{min-width:230px}.project-view{display:flex;gap:4px;margin-left:auto;padding:4px;border:1px solid var(--border);background:rgba(0,0,0,.16);border-radius:11px}.project-view button,.project-quick-filter{border:1px solid transparent;background:transparent;color:var(--muted);padding:8px 10px;border-radius:8px;font:700 11px Rajdhani;cursor:pointer}.project-view button.active,.project-view button:hover,.project-quick-filter:hover{color:var(--green);background:rgba(85,255,145,.07);border-color:rgba(85,255,145,.13)}
+.project-quick-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}.project-quick-filter.active{color:var(--green);border-color:var(--border2);background:rgba(85,255,145,.06)}
+.project-card .project-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.project-card .project-title{max-width:72%}.project-stage-line{display:flex;align-items:center;gap:7px;color:#8cae98;font-size:11px;margin-top:8px}.project-stage-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px rgba(85,255,145,.45)}
+.project-card .project-next{padding:11px 12px;border:1px solid rgba(130,255,175,.07);background:rgba(255,255,255,.014);border-radius:11px}.project-card .btn-request{flex:1}.project-card .btn-primary{padding:9px 13px}
+.project-list-view .project-grid{display:block}.project-list-view .project-card{display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(180px,1fr) auto;align-items:center;gap:18px;margin-bottom:10px}.project-list-view .project-card .progress-wrap{margin:0}.project-list-view .project-card .project-meta{margin:0}.project-list-view .project-card .project-next{display:none}.project-list-view .project-card .project-actions{justify-content:flex-end}
+.detail-modal-wide{max-width:820px}.detail-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.detail-header h3{font-family:Orbitron;color:var(--text);font-size:22px;margin-bottom:7px}.detail-section{margin-top:22px;padding-top:20px;border-top:1px solid rgba(130,255,175,.08)}.detail-section h2{margin-bottom:12px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.workspace-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.workspace-tile{padding:14px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.014)}.workspace-tile strong{display:block;color:var(--text);font-size:12px}.workspace-tile span{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.45}
+@media(max-width:800px){.project-hero{grid-template-columns:1fr}.project-summary{grid-template-columns:repeat(2,1fr)}.project-view{margin-left:0}.project-list-view .project-card{display:block}.project-list-view .project-card .progress-wrap{margin:18px 0 9px}.project-list-view .project-card .project-meta{margin:14px 0}.project-list-view .project-card .project-actions{justify-content:flex-start}.workspace-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -96,16 +110,48 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 
     <!-- PROJECTS -->
     <div class="section" id="projects-section">
-      <div class="eyebrow">Client Portal</div><h1>Projects</h1>
-      <div class="panel">
-        <h2>Project Command Center</h2>
-        <p class="empty">Your service requests become trackable workspaces here. Monitor status, progress, agreements, payments and the next client action from one place.</p>
-        <div class="project-toolbar">
-          <input id="projectSearch" class="project-search" type="search" placeholder="Search projects or services…">
-          <select id="projectFilter" class="project-filter" aria-label="Filter projects">
-            <option value="all">All Projects</option><option value="pending">Pending</option><option value="active">Active</option><option value="review">Review</option><option value="completed">Completed</option>
-          </select>
+      <div class="eyebrow">Client Workspace</div>
+      <h1>Projects</h1>
+
+      <div class="project-hero">
+        <div>
+          <div class="project-hero-badge">● Live Project Command Center</div>
+          <h2>Your work. One workspace.</h2>
+          <p>Track every service request from the first request to final delivery. See progress, agreements, payments, required actions, files and the next milestone without leaving your client portal.</p>
         </div>
+        <button class="btn-primary" onclick="window.location.href='shop.html'">＋ START NEW PROJECT</button>
+      </div>
+
+      <div class="project-summary" id="projectSummary">
+        <div class="project-summary-card"><b id="projectCountAll">0</b><span>All Projects</span></div>
+        <div class="project-summary-card"><b id="projectCountActive">0</b><span>In Progress</span></div>
+        <div class="project-summary-card"><b id="projectCountAction">0</b><span>Needs Action</span></div>
+        <div class="project-summary-card"><b id="projectCountDone">0</b><span>Completed</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="project-toolbar-v2">
+          <input id="projectSearch" class="project-search" type="search" placeholder="Search projects, services or IDs…">
+          <select id="projectFilter" class="project-filter" aria-label="Filter projects">
+            <option value="all">All Projects</option>
+            <option value="pending">Pending</option>
+            <option value="active">Active</option>
+            <option value="review">Review</option>
+            <option value="completed">Completed</option>
+          </select>
+          <div class="project-view">
+            <button id="projectGridBtn" class="active" type="button" onclick="setProjectView('grid')">▦ Cards</button>
+            <button id="projectListBtn" type="button" onclick="setProjectView('list')">☷ List</button>
+          </div>
+        </div>
+
+        <div class="project-quick-filters">
+          <button class="project-quick-filter active" data-project-quick="all" onclick="setProjectQuickFilter('all',this)">All</button>
+          <button class="project-quick-filter" data-project-quick="active" onclick="setProjectQuickFilter('active',this)">In Progress</button>
+          <button class="project-quick-filter" data-project-quick="action" onclick="setProjectQuickFilter('action',this)">Needs Action</button>
+          <button class="project-quick-filter" data-project-quick="completed" onclick="setProjectQuickFilter('completed',this)">Completed</button>
+        </div>
+
         <div id="projectList"></div>
       </div>
     </div>
@@ -216,7 +262,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 
 <!-- Service Request Modal -->
 <div class="modal-overlay" id="requestModal">
-  <div class="modal">
+  <div class="modal detail-modal-wide">
     <h3>Request a Service</h3>
     <div class="msg" id="requestMsg"></div>
     <form id="requestForm">
@@ -431,26 +477,91 @@ function projectEvents(r){
 function renderProjects(){
   const el=document.getElementById('projectList');if(!el)return;
   const q=projectQuery.trim().toLowerCase();
-  const list=myRequests.filter(r=>{
+  const source=myRequests||[];
+
+  const allCount=source.length;
+  const activeCount=source.filter(r=>projectStage(r).key==='active'||projectStage(r).key==='review').length;
+  const actionCount=source.filter(r=>r.agreementAccepted&&!r.signature&&r.orderId).length;
+  const doneCount=source.filter(r=>projectStage(r).key==='completed').length;
+  const setText=(id,v)=>{const x=document.getElementById(id);if(x)x.textContent=v;};
+  setText('projectCountAll',allCount);setText('projectCountActive',activeCount);setText('projectCountAction',actionCount);setText('projectCountDone',doneCount);
+
+  const list=source.filter(r=>{
     const hay=(String(r.selectedService||'')+' '+String(r.orderId||'')+' '+String(r.projectDescription||'')).toLowerCase();
     if(q&&!hay.includes(q))return false;
     const s=projectStage(r).key;
-    return projectFilter==='all'||s===projectFilter;
+    if(projectQuickFilter==='action') return r.agreementAccepted&&!r.signature&&r.orderId;
+    return projectQuickFilter==='all' ? (projectFilter==='all'||s===projectFilter) : s===projectQuickFilter;
   });
-  if(!myRequests.length){el.innerHTML='<div class="empty">No projects yet. Submit a service request or use the Shop to start one.</div>';return;}
-  if(!list.length){el.innerHTML='<div class="empty">No projects match your current search or filter.</div>';return;}
+
+  if(!source.length){el.innerHTML='<div class="empty">No projects yet. Submit a service request or use the Shop to start one.</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty">No projects match this view. Try another filter or search.</div>';return;}
+
+  el.className=projectView==='list'?'project-list-view':'';
   el.innerHTML='<div class="project-grid">'+list.map((r,i)=>{
     const s=projectStage(r),p=projectProgress(r),id=r.orderId||('REQUEST-'+(i+1));
-    return '<article class="project-card"><div class="project-top"><div><div class="project-title">'+escapeHtml(r.selectedService||'Client Project')+'</div><div class="project-id">'+escapeHtml(id)+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div><div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div><div class="project-meta"><div><span>Agreement</span><strong>'+(r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending')+'</strong></div><div><span>Payment</span><strong>'+escapeHtml(r.paymentStatus||'Quote pending')+'</strong></div></div><div class="project-next"><strong>Next:</strong> '+escapeHtml(s.next)+'</div><div class="project-actions"><button class="btn-request" onclick="openProjectDetailById('+JSON.stringify(id)+')">OPEN PROJECT</button>'+(r.orderId&&r.agreementAccepted&&!r.signature?'<button class="btn-primary" onclick="window.location.href=\'sign-agreement.html?orderId='+encodeURIComponent(r.orderId)+'\'">SIGN →</button>':'')+'</div></article>';
+    const agreement=r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending';
+    const action=r.agreementAccepted&&!r.signature&&r.orderId;
+    return '<article class="project-card">'+
+      '<div><div class="project-top"><div><div class="project-title">'+escapeHtml(r.selectedService||'Client Project')+'</div><div class="project-id">'+escapeHtml(id)+'</div><div class="project-stage-line"><span class="project-stage-dot"></span>'+escapeHtml(s.next)+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div></div>'+
+      '<div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div>'+
+      '<div class="project-meta"><div><span>Agreement</span><strong>'+escapeHtml(agreement)+'</strong></div><div><span>Payment</span><strong>'+escapeHtml(r.paymentStatus||'Quote pending')+'</strong></div></div>'+
+      '<div class="project-next"><strong>Next milestone:</strong> '+escapeHtml(s.next)+'</div>'+
+      '<div class="project-actions"><button class="btn-request" onclick="openProjectDetailById('+JSON.stringify(id)+')">OPEN WORKSPACE →</button>'+(action?'<button class="btn-primary" onclick="window.location.href=\'sign-agreement.html?orderId='+encodeURIComponent(r.orderId)+'\'">SIGN →</button>':'')+'</div>'+
+      '</article>';
   }).join('')+'</div>';
 }
+function setProjectView(view){
+  projectView=view;
+  const gb=document.getElementById('projectGridBtn'),lb=document.getElementById('projectListBtn');
+  if(gb)gb.classList.toggle('active',view==='grid');if(lb)lb.classList.toggle('active',view==='list');
+  renderProjects();
+}
+function setProjectQuickFilter(filter,btn){
+  projectQuickFilter=filter;
+  document.querySelectorAll('[data-project-quick]').forEach(x=>x.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const select=document.getElementById('projectFilter');
+  if(select)select.value=filter==='action'?'all':filter;
+  renderProjects();
+}
 function openProjectDetailById(id){
-  const r=myRequests.find(x=>(x.orderId||'')===id);
-  if(!r)return;
+  const r=myRequests.find(x=>(x.orderId||'')===id);if(!r)return;
   selectedProject=r;
   const s=projectStage(r),p=projectProgress(r),events=projectEvents(r);
-  document.getElementById('projectDetail').innerHTML='<div class="detail-header"><div><div class="eyebrow">PROJECT COMMAND CENTER</div><h3>'+escapeHtml(r.selectedService||'Client Project')+'</h3><div class="project-id">'+escapeHtml(r.orderId||'Service request')+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div><div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div><div class="detail-section"><h2>Project Details</h2><div class="project-meta"><div><span>Submitted</span><strong>'+escapeHtml(fmtDate(r.createdAt))+'</strong></div><div><span>Payment</span><strong>'+escapeHtml(r.paymentStatus||'Quote pending')+'</strong></div><div><span>Agreement</span><strong>'+escapeHtml(r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending')+'</strong></div><div><span>Request Status</span><strong>'+escapeHtml(r.status||'Pending')+'</strong></div></div><p class="muted">'+escapeHtml(r.projectDescription||'No project description was provided.')+'</p></div><div class="detail-section"><h2>Project Timeline</h2><div class="timeline">'+events.map(e=>'<div class="timeline-item"><span class="timeline-dot"></span><strong>'+escapeHtml(e.title)+'</strong><span>'+escapeHtml(e.detail)+'</span></div>').join('')+'</div></div><div class="detail-section"><h2>Next Client Action</h2><p class="muted">'+escapeHtml(s.next)+'</p></div>';
+  const signed=!!r.signature,accepted=!!r.agreementAccepted;
+  const signAction=accepted&&!signed&&r.orderId?'<button class="btn-primary" onclick="window.location.href=\\'sign-agreement.html?orderId='+encodeURIComponent(r.orderId)+'\\'">REVIEW &amp; SIGN →</button>':'';
+  const agreementAction=r.agreementStorageKey?'<button class="btn-request" onclick="downloadClientAgreementById('+JSON.stringify(r.orderId)+')">DOWNLOAD AGREEMENT</button>':'';
+  document.getElementById('projectDetail').innerHTML=
+    '<div class="detail-header"><div><div class="eyebrow">PROJECT COMMAND CENTER</div><h3>'+escapeHtml(r.selectedService||'Client Project')+'</h3><div class="project-id">'+escapeHtml(r.orderId||'Service request')+'</div></div><span class="project-status '+s.key+'">'+s.label+'</span></div>'+
+    '<div class="progress-wrap"><div class="progress-meta"><span>PROJECT PROGRESS</span><strong>'+p+'%</strong></div><div class="progress-track"><div class="progress-bar" style="width:'+p+'%"></div></div></div>'+
+    '<div class="detail-actions">'+signAction+agreementAction+'<button class="btn-request" onclick="closeProjectDetail()">CLOSE</button></div>'+
+    '<div class="detail-section"><h2>Project Overview</h2><p class="muted">'+escapeHtml(r.projectDescription||'No project description was provided.')+'</p><div class="workspace-grid" style="margin-top:12px">'+
+      '<div class="workspace-tile"><strong>Current stage</strong><span>'+escapeHtml(s.label)+'</span></div>'+
+      '<div class="workspace-tile"><strong>Next milestone</strong><span>'+escapeHtml(s.next)+'</span></div>'+
+      '<div class="workspace-tile"><strong>Agreement</strong><span>'+escapeHtml(signed?'Signed':accepted?'Accepted':'Pending')+'</span></div>'+
+      '<div class="workspace-tile"><strong>Payment</strong><span>'+escapeHtml(r.paymentStatus||'Quote / payment pending')+'</span></div>'+
+    '</div></div>'+
+    '<div class="detail-section"><h2>Project Timeline</h2><div class="timeline">'+events.map(e=>'<div class="timeline-item"><span class="timeline-dot"></span><strong>'+escapeHtml(e.title)+'</strong><span>'+escapeHtml(e.detail)+'</span></div>').join('')+'</div></div>'+
+    '<div class="detail-section"><h2>Client Workspace</h2><div class="workspace-grid">'+
+      '<div class="workspace-tile"><strong>Requirements</strong><span>'+escapeHtml(r.projectDescription?'Project brief received':'No additional requirements recorded yet.')+'</span></div>'+
+      '<div class="workspace-tile"><strong>Files &amp; Deliverables</strong><span>Project files will appear here as they are delivered.</span></div>'+
+      '<div class="workspace-tile"><strong>Messages</strong><span>Project communication can be connected to this workspace.</span></div>'+
+      '<div class="workspace-tile"><strong>Billing</strong><span>'+escapeHtml(r.paymentStatus||'Payment status pending')+'</span></div>'+
+    '</div></div>'+
+    '<div class="detail-section"><h2>Next Client Action</h2><p class="muted">'+escapeHtml(s.next)+'</p></div>';
   document.getElementById('projectDetailModal').classList.add('open');
+}
+async function downloadClientAgreementById(id){
+  if(!id||!currentUser)return;
+  try{
+    const token=await currentUser.getIdToken();
+    const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(id),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+    if(!r.ok)throw Error('Agreement PDF unavailable');
+    const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='Ovesh-Client-Agreement-'+id+'.pdf';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(e){alert('Agreement PDF is currently unavailable.');}
 }
 function closeProjectDetail(){document.getElementById('projectDetailModal').classList.remove('open');selectedProject=null}
 document.getElementById('projectSearch')?.addEventListener('input',e=>{projectQuery=e.target.value;renderProjects()});
