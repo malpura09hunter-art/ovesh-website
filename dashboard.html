@@ -67,6 +67,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
   <div class="sidebar">
     <button class="side-btn active" data-section="overview-section" onclick="switchSection('overview-section', this)">Overview</button>
     <button class="side-btn" data-section="profile-section" onclick="switchSection('profile-section', this)">Profile</button>
+    <button class="side-btn" data-section="shop-section" onclick="switchSection('shop-section', this)">Shop</button>
     <button class="side-btn" data-section="requests-section" onclick="switchSection('requests-section', this)">Service Requests</button>
     <button class="side-btn" data-section="settings-section" onclick="switchSection('settings-section', this)">Account Settings</button>
   </div>
@@ -158,11 +159,22 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 
     <!-- SHOP -->
     <div class="section" id="shop-section">
-      <div class="eyebrow">Client Portal</div><h1>Shop</h1>
+      <div class="eyebrow">Client Portal · Services</div><h1>Shop</h1>
       <div class="panel">
         <h2>Cyber Labs Shop</h2>
-        <p class="empty">Browse available cybersecurity, web development, AI and automation services.</p>
-        <a class="btn-primary" href="shop.html">OPEN SHOP →</a>
+        <p class="empty">Need something new? Browse cybersecurity, web development, AI and automation services, add services to your cart, and submit a project request.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+          <a class="btn-primary" href="shop.html">BROWSE SERVICES →</a>
+          <button class="btn-request" type="button" onclick="switchSection('projects-section')">VIEW MY PROJECTS</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Start Something New</h2>
+        <div class="portal-actions">
+          <a class="portal-card" href="shop.html"><div class="icon">⌁</div><strong>Browse Services</strong><span>Explore available services and pricing.</span></a>
+          <a class="portal-card" href="shop.html"><div class="icon">＋</div><strong>Build a Request</strong><span>Select services, add them to your cart and submit your requirements.</span></a>
+          <a class="portal-card" href="#projects" onclick="goPortal('projects-section')"><div class="icon">◈</div><strong>Existing Projects</strong><span>Return to your current project workspace.</span></a>
+        </div>
       </div>
     </div>
 
