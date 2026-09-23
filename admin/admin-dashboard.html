@@ -513,11 +513,11 @@ async function sendTermsPolicyEmail() {
     const user = auth.currentUser;
     if (!user) throw new Error('Admin session expired. Please sign in again.');
     const token = await user.getIdToken(true);
-    const response = await fetch('../api/send-terms-policy', {
+    const response = await fetch('../api/send-welcome', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       cache: 'no-store',
-      body: '{}'
+      body: JSON.stringify({ mode: 'terms-policy' })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || 'Could not send emails.');
