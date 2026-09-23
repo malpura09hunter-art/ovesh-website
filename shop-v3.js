@@ -108,6 +108,11 @@ $('checkoutForm').onsubmit=async e=>{
   try{
     await db.collection('service_requests').add(payload);
 
+    try{
+      const storageResponse=await fetch('/api/store-shop-agreement',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await user.getIdToken())},body:JSON.stringify({orderId})});
+      if(!storageResponse.ok){console.warn('Shop agreement storage failed:',await storageResponse.text().catch(()=>''));}
+    }catch(storageError){console.error('Shop agreement storage request failed:',storageError);}
+
     let emailSent=false;
     try{
       const emailResponse=await fetch('/api/send-shop-confirmation',{
