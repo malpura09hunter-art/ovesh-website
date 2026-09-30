@@ -167,7 +167,7 @@ $('checkoutForm').onsubmit=async e=>{
         downloadBtn.disabled=true;
         downloadBtn.textContent='Preparing PDF…';
         const token=await user.getIdToken();
-        const r=await fetch('/api/shop-agreement-pdf?orderId='+encodeURIComponent(orderId),{
+        const r=await fetch('/api/shop-agreement?orderId='+encodeURIComponent(orderId),{
           headers:{Authorization:'Bearer '+token}
         });
         if(!r.ok)throw new Error('Could not generate agreement PDF');
