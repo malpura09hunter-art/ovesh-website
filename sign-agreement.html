@@ -88,7 +88,7 @@ auth.onAuthStateChanged(user=>{
      const r=await fetch('/api/sign-shop-agreement',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({orderId,fullName:name,signatureType:mode,signature})});
      const data=await r.json().catch(()=>({}));
      if(!r.ok)throw new Error(data.error||'Could not record signature');
-     $('signCard').classList.add('signed');$('signCard').innerHTML='<div class="signed-note"><strong>✓ Agreement signed successfully.</strong><br>Request: '+orderId+'<br>Agreement version: 1.0<br>Signed as: '+name+'<br><br>Your signature and acceptance timestamp have been securely recorded with this service request.'+(data.warning?'<br><br><span style="color:#ffd58a">Note: '+data.warning+' You can still download the agreement PDF from this page.</span>':'')+'</div>';
+     $('signCard').classList.add('signed');$('signCard').innerHTML='<div class="signed-note"><strong>✓ Agreement signed successfully.</strong><br>Request: '+orderId+'<br>Agreement version: 1.0<br>Signed as: '+name+'<br><br>Your signature and acceptance timestamp have been securely recorded with this service request.'+(data.emailSent?'<br><br><span style="color:#39ff14">✓ A signed PDF copy has been emailed to your account email.</span>':'<br><br><span style="color:#ffd58a">Email note: '+(data.emailWarning||'The signed-agreement email could not be sent right now.')+'</span>')+(data.warning?'<br><br><span style="color:#ffd58a">Storage note: '+data.warning+' The PDF can still be downloaded from this page.</span>':'')+'</div>';
    }catch(e){setStatus(e.message||'Could not record signature.','error');$('signBtn').disabled=false}
  };
 });
