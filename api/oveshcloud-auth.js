@@ -54,10 +54,23 @@ async function shopOrders(req,res){
   }
 }
 
+function readCloudSessionData(req){
+  const raw=String(req.headers.cookie||'');
+  const item=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith('ovesh_cloud_session='));
+  if(!item)return null;
+  const token=decodeURIComponent(item.slice('ovesh_cloud_session='.length)),parts=token.split('.');
+  const secret=process.env.OVESH_CLOUD_SESSION_SECRET||process.env.OVESH_CLOUD_PASSWORD;
+  if(!secret||parts.length!==2)return null;
+  const expected=crypto.createHmac('sha256',secret).update(parts[0]).digest('base64url');
+  const a=Buffer.from(parts[1]),b=Buffer.from(expected);
+  if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null;
+  try{const data=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));return data.u===(process.env.OVESH_CLOUD_USERNAME||'OVESH')&&Number(data.exp)>Date.now()?data:null}catch{return null}
+}
 export default async function handler(req,res){
   const action=String(req.query?.action||'');
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
+  if(req.method==='GET'&&action==='session'){const session=readCloudSessionData(req);if(!session)return res.status(401).json({ok:false,authenticated:false,error:'OVESH CLOUD session required'});return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
