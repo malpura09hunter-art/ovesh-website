@@ -2,7 +2,7 @@ const crypto=require('crypto');
 const {S3Client,GetObjectCommand}=require('@aws-sdk/client-s3');
 const {getSignedUrl}=require('@aws-sdk/s3-request-presigner');
 
-function parseCookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1)]}));}
+function parseCookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
 function session(req){
   const token=parseCookies(req).ovesh_cloud_session||String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
   const [payload,sig]=String(token).split('.');
@@ -23,8 +23,6 @@ function b2(){
 function safeName(n){return String(n||'file').split(/[\\/]/).pop().replace(/[^a-zA-Z0-9._ -]/g,'_').slice(0,180)||'file';}
 function owned(uid,key){return key.startsWith(`users/${uid}/`)&&!key.includes('..');}
 async function mfCall(action,params,session){
-  const appId=String(process.env.MEDIAFIRE_APP_ID||'').trim();
-  const apiKey=String(process.env.MEDIAFIRE_API_KEY||'').trim();
   const secretKey=String(session.secret_key||'').trim();
   const time=String(Math.floor(Date.now()/1000));
   const uri=`/api/1.5/${action}.php`;
@@ -58,10 +56,9 @@ module.exports=async(req,res)=>{
     const added=await mfCall('upload/add_web_upload',{url:b2Url,filename:name},mf);
     const uploadKey=added.upload_key;
     if(!uploadKey)throw new Error('MediaFire did not return an upload key.');
-    let status=null;
     for(let i=0;i<30;i++){
       await new Promise(r=>setTimeout(r,1000));
-      status=await mfCall('upload/get_web_uploads',{key:uploadKey},mf);
+      const status=await mfCall('upload/get_web_uploads',{key:uploadKey},mf);
       const item=(status.uploads||status.upload||[])[0]||status;
       const state=String(item.status||item.state||'').toLowerCase();
       if(state==='complete'||state==='completed'||item.quickkey||item.quick_key){
