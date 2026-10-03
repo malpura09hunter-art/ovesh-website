@@ -108,6 +108,29 @@ let q=$('#collegeSearch');if(q)q.oninput=()=>filterCollege(q.value);let sf=$('#s
 function filterCollege(q){let s=(q||'').toLowerCase(),st=($('#statusFilter')?.value||'').toLowerCase();$$('[data-searchable]').forEach(x=>{let ok=x.dataset.searchable.toLowerCase().includes(s)&&(!st||x.dataset.status.toLowerCase()===st);x.style.display=ok?'':'none'})}
 async function upload(){let input=$('#fileInput'),status=$('#uploadStatus');if(!input.files.length)return showToast('Choose files first.');try{for(let i=0;i<input.files.length;i++){let f=input.files[i],path=`ovesh-cloud/${uid()}/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`,ref=firebase.storage().ref(path),task=ref.put(f,{contentType:f.type||'application/octet-stream'});await new Promise((res,rej)=>task.on('state_changed',s=>status.textContent=`Uploading ${i+1}/${input.files.length} · ${Math.round(s.bytesTransferred/s.totalBytes*100)}%`,rej,res));let url=await ref.getDownloadURL();await firebase.firestore().collection('oveshCloudFiles').add({name:f.name,size:f.size,contentType:f.type||'application/octet-stream',storagePath:path,url,uploadedBy:uid(),createdAt:now()})}await loadFiles();showToast('Upload complete.');render('storage')}catch(e){console.error(e);status.textContent=e.code||e.message;showToast('Upload failed — check Firebase Storage rules.')}}
 function showToast(t){let x=$('#toast');x.textContent=t;x.classList.remove('hidden');setTimeout(()=>x.classList.add('hidden'),2800)}
-$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();let b=$('#loginBtn'),err=$('#loginError'),password=$('#password');b.disabled=true;err.textContent='';err.classList.remove('login-error-denied');password.classList.remove('login-password-denied');try{let x=await auth($('#username').value.trim(),$('#password').value);showSecurity(x);$('#loginIP').textContent=x.security?.ip||'Unavailable'}catch(x){const wrong=x.message==='WRONG PASSWORD';if(wrong)oveshWrongPasswordAttempts++;const attempt=oveshWrongPasswordAttempts;if(wrong){err.innerHTML=attempt>=2?'<span class="login-warning-icon">⚠</span><span><strong>SECURITY WARNING</strong><b>REPEATED AUTHENTICATION FAILURE</b><small>Incorrect password detected · Access remains blocked</small></span>':'<span class="login-warning-icon">!</span><span><strong>ACCESS DENIED</strong><b>INVALID PASSWORD DETECTED</b><small>Authentication failed · Credentials not recognized</small></span>';}else err.textContent=x.message;err.classList.toggle('login-error-denied',wrong);password.classList.toggle('login-password-denied',wrong);if(wrong){err.setAttribute('aria-live','assertive');err.scrollIntoView({block:'nearest',behavior:'smooth'});speakLoginDenied(attempt);}b.disabled=false}});
+function showLoginSecurityWarning(attempt=1){
+  let x=$('#loginSecurityWarning');
+  if(!x){
+    x=document.createElement('div');
+    x.id='loginSecurityWarning';
+    x.className='login-security-warning hidden';
+    x.setAttribute('role','alert');
+    x.setAttribute('aria-live','assertive');
+    x.innerHTML='<div class="login-security-warning-card"><div class="login-security-warning-icon">⚠</div><div class="login-security-warning-copy"><strong></strong><b></b><small></small></div></div>';
+    document.body.appendChild(x);
+  }
+  const repeated=attempt>=2;
+  x.querySelector('strong').textContent=repeated?'SECURITY WARNING':'ACCESS DENIED';
+  x.querySelector('b').textContent=repeated?'REPEATED AUTHENTICATION FAILURE':'INVALID PASSWORD DETECTED';
+  x.querySelector('small').textContent=repeated?'Incorrect password detected · Access remains blocked':'Authentication failed · Credentials not recognized';
+  clearTimeout(window.loginSecurityWarningTimer);
+  x.classList.remove('hidden');
+  requestAnimationFrame(()=>x.classList.add('show'));
+  window.loginSecurityWarningTimer=setTimeout(()=>{
+    x.classList.remove('show');
+    setTimeout(()=>x.classList.add('hidden'),220);
+  },2000);
+}
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();let b=$('#loginBtn'),err=$('#loginError'),password=$('#password');b.disabled=true;err.textContent='';err.classList.remove('login-error-denied');password.classList.remove('login-password-denied');try{let x=await auth($('#username').value.trim(),$('#password').value);showSecurity(x);$('#loginIP').textContent=x.security?.ip||'Unavailable'}catch(x){const wrong=x.message==='WRONG PASSWORD';if(wrong)oveshWrongPasswordAttempts++;const attempt=oveshWrongPasswordAttempts;if(wrong){err.innerHTML=attempt>=2?'<span class="login-warning-icon">⚠</span><span><strong>SECURITY WARNING</strong><b>REPEATED AUTHENTICATION FAILURE</b><small>Incorrect password detected · Access remains blocked</small></span>':'<span class="login-warning-icon">!</span><span><strong>ACCESS DENIED</strong><b>INVALID PASSWORD DETECTED</b><small>Authentication failed · Credentials not recognized</small></span>';showLoginSecurityWarning(attempt);}else err.textContent=x.message;err.classList.toggle('login-error-denied',wrong);password.classList.toggle('login-password-denied',wrong);if(wrong){err.setAttribute('aria-live','assertive');err.scrollIntoView({block:'nearest',behavior:'smooth'});speakLoginDenied(attempt);}b.disabled=false}});
 $('#continueBtn').onclick=async()=>{if(await verifyCloudSession())welcome();else{showToast('Authentication required.');$('#securityView').classList.add('hidden');$('#loginView').classList.remove('hidden')}};$('#enterBtn').onclick=openApp;let replay=$('#replayWelcome');if(replay)replay.onclick=()=>sayOnce(true);$('#logoutBtn').onclick=()=>{sessionStorage.clear();location.reload()};verifyCloudSession();detectLogin();
 })();
