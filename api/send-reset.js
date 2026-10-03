@@ -158,6 +158,42 @@ module.exports = async (req, res) => {
     });
   }
 
+
+  // Verification mode keeps /api/verify-reset-token working without a
+  // separate Vercel Function, which is important for Hobby's function cap.
+  if (req.body?.mode === 'verify') {
+    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
+    if (!token) return res.status(400).json({ valid: false, reason: 'invalid' });
+
+    try {
+      const firebase = getAdmin();
+      const tokenHash = hashToken(token);
+      const doc = await firebase.firestore().collection('passwordResetTokens').doc(tokenHash).get();
+
+      if (!doc.exists) {
+        console.log('VERIFY RESET TOKEN: not found');
+        return res.status(200).json({ valid: false, reason: 'invalid' });
+      }
+
+      const data = doc.data();
+      if (data.used) {
+        console.log('VERIFY RESET TOKEN: already used');
+        return res.status(200).json({ valid: false, reason: 'used' });
+      }
+
+      if (Date.now() > data.expiresAt) {
+        console.log('VERIFY RESET TOKEN: expired');
+        return res.status(200).json({ valid: false, reason: 'expired' });
+      }
+
+      console.log('VERIFY RESET TOKEN: valid');
+      return res.status(200).json({ valid: true });
+    } catch (error) {
+      console.error('VERIFY RESET TOKEN FAILED:', error.code || error.message);
+      return res.status(500).json({ valid: false, reason: 'error' });
+    }
+  }
+
   const rawEmail = req.body?.email;
 
   const email =

@@ -1,62 +1,268 @@
 {
   "rewrites": [
-    { "source": "/api/sign-shop-agreement", "destination": "/api/shop-agreement" },
-    { "source": "/api/shop-agreement-pdf", "destination": "/api/shop-agreement" },
-    { "source": "/api/store-shop-agreement", "destination": "/api/shop-agreement" },
-    { "source": "/shop", "destination": "/shop.html" },
-    { "source": "/shop/", "destination": "/shop.html" },
-    { "source": "/styles.css", "destination": "/vitamin-serum/styles.css" },
-    { "source": "/vitaminserum", "destination": "/vitamin-serum/index.html" },
-    { "source": "/vitaminserum/", "destination": "/vitamin-serum/index.html" },
-    { "source": "/vitaminserum/index.html", "destination": "/vitamin-serum/index.html" },
-    { "source": "/vitaminserum/(.*)", "destination": "/vitamin-serum/$1" },
-    { "source": "/formula.html", "destination": "/vitamin-serum/formula.html" },
-    { "source": "/product.html", "destination": "/vitamin-serum/product.html" },
-    { "source": "/science.html", "destination": "/vitamin-serum/science.html" },
-    { "source": "/ingredients.html", "destination": "/vitamin-serum/ingredients.html" },
-    { "source": "/ingredient.html", "destination": "/vitamin-serum/ingredient.html" },
-    { "source": "/routine.html", "destination": "/vitamin-serum/routine.html" },
-    { "source": "/how-it-works.html", "destination": "/vitamin-serum/routine.html" },
-    { "source": "/birthday-edition", "destination": "/birthday-edition/index.html" },
-    { "source": "/birthday-edition/", "destination": "/birthday-edition/index.html" },
-    { "source": "/ovesh/compiler", "destination": "/compiler.html" },
-    { "source": "/ovesh/compiler/", "destination": "/compiler.html" },
-    { "source": "/ovesh/compiler/compiler.html", "destination": "/compiler.html" },
-    { "source": "/ovesh/compiler.html", "destination": "/compiler.html" },
-    { "source": "/compiler", "destination": "/compiler.html" },
-    { "source": "/ovesh/college", "destination": "/oveshcloud/index.html" },
-    { "source": "/ovesh/college/(.*)", "destination": "/oveshcloud/index.html" },
-    { "source": "/ovesh/share", "destination": "/oveshcloud/share.html" },
-    { "source": "/ovesh/share/", "destination": "/oveshcloud/share.html" },
-    { "source": "/ovesh", "destination": "/oveshcloud/public.html" },
-    { "source": "/ovesh/", "destination": "/oveshcloud/public.html" },
-    { "source": "/ovesh/login", "destination": "/oveshcloud/index.html" },
-    { "source": "/ovesh/login/", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/dashboard", "destination": "/oveshcloud/workspace.html" },
-    { "source": "/oveshcloud/workspace", "destination": "/oveshcloud/workspace.html" },
-    { "source": "/oveshcloud/college", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/college/projects", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/college/presentations", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/college/websites", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/college/files", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/projects", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/web-projects", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/files", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/clients", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/catalogs", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/presentations", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/security", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/activity", "destination": "/oveshcloud/index.html" },
-    { "source": "/oveshcloud/trash", "destination": "/oveshcloud/index.html" }
+    {
+      "source": "/api/verify-reset-token",
+      "destination": "/api/send-reset"
+    },
+    {
+      "source": "/api/send-login-alert",
+      "destination": "/api/send-welcome"
+    },
+    {
+      "source": "/api/sign-shop-agreement",
+      "destination": "/api/shop-agreement"
+    },
+    {
+      "source": "/api/shop-agreement-pdf",
+      "destination": "/api/shop-agreement"
+    },
+    {
+      "source": "/api/store-shop-agreement",
+      "destination": "/api/shop-agreement"
+    },
+    {
+      "source": "/shop",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/shop/",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/styles.css",
+      "destination": "/vitamin-serum/styles.css"
+    },
+    {
+      "source": "/vitaminserum",
+      "destination": "/vitamin-serum/index.html"
+    },
+    {
+      "source": "/vitaminserum/",
+      "destination": "/vitamin-serum/index.html"
+    },
+    {
+      "source": "/vitaminserum/index.html",
+      "destination": "/vitamin-serum/index.html"
+    },
+    {
+      "source": "/vitaminserum/(.*)",
+      "destination": "/vitamin-serum/$1"
+    },
+    {
+      "source": "/formula.html",
+      "destination": "/vitamin-serum/formula.html"
+    },
+    {
+      "source": "/product.html",
+      "destination": "/vitamin-serum/product.html"
+    },
+    {
+      "source": "/science.html",
+      "destination": "/vitamin-serum/science.html"
+    },
+    {
+      "source": "/ingredients.html",
+      "destination": "/vitamin-serum/ingredients.html"
+    },
+    {
+      "source": "/ingredient.html",
+      "destination": "/vitamin-serum/ingredient.html"
+    },
+    {
+      "source": "/routine.html",
+      "destination": "/vitamin-serum/routine.html"
+    },
+    {
+      "source": "/how-it-works.html",
+      "destination": "/vitamin-serum/routine.html"
+    },
+    {
+      "source": "/birthday-edition",
+      "destination": "/birthday-edition/index.html"
+    },
+    {
+      "source": "/birthday-edition/",
+      "destination": "/birthday-edition/index.html"
+    },
+    {
+      "source": "/ovesh/compiler",
+      "destination": "/compiler.html"
+    },
+    {
+      "source": "/ovesh/compiler/",
+      "destination": "/compiler.html"
+    },
+    {
+      "source": "/ovesh/compiler/compiler.html",
+      "destination": "/compiler.html"
+    },
+    {
+      "source": "/ovesh/compiler.html",
+      "destination": "/compiler.html"
+    },
+    {
+      "source": "/compiler",
+      "destination": "/compiler.html"
+    },
+    {
+      "source": "/ovesh/college",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/ovesh/college/(.*)",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/ovesh/share",
+      "destination": "/oveshcloud/share.html"
+    },
+    {
+      "source": "/ovesh/share/",
+      "destination": "/oveshcloud/share.html"
+    },
+    {
+      "source": "/ovesh",
+      "destination": "/oveshcloud/public.html"
+    },
+    {
+      "source": "/ovesh/",
+      "destination": "/oveshcloud/public.html"
+    },
+    {
+      "source": "/ovesh/login",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/ovesh/login/",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/dashboard",
+      "destination": "/oveshcloud/workspace.html"
+    },
+    {
+      "source": "/oveshcloud/workspace",
+      "destination": "/oveshcloud/workspace.html"
+    },
+    {
+      "source": "/oveshcloud/college",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/college/projects",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/college/presentations",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/college/websites",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/college/files",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/projects",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/web-projects",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/files",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/clients",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/catalogs",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/presentations",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/security",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/activity",
+      "destination": "/oveshcloud/index.html"
+    },
+    {
+      "source": "/oveshcloud/trash",
+      "destination": "/oveshcloud/index.html"
+    }
   ],
   "headers": [
-    { "source": "/vitaminserum", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
-    { "source": "/vitaminserum/", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
-    { "source": "/vitaminserum/(.*).html", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
-    { "source": "/oveshcloud/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
-    { "source": "/compiler.html", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }] },
-    { "source": "/api/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+    {
+      "source": "/vitaminserum",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/vitaminserum/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/vitaminserum/(.*).html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/oveshcloud/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/compiler.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
   ]
 }
