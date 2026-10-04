@@ -32,7 +32,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 .empty,.muted{color:var(--muted);font-size:13px;line-height:1.6}.loading{color:var(--muted);font-size:13px}
 .field{margin-bottom:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field textarea,.field select{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:Rajdhani;font-size:14px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--border2);box-shadow:0 0 0 4px rgba(85,255,145,.04)}.field textarea{resize:vertical;min-height:95px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(12px);align-items:center;justify-content:center;z-index:500;padding:20px}.modal-overlay.open{display:flex}.modal{background:linear-gradient(145deg,#0a170e,#030805);border:1px solid var(--border2);border-radius:20px;padding:27px;max-width:520px;width:100%;box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 45px rgba(85,255,145,.06);max-height:90vh;overflow-y:auto}.modal h3{font-family:Orbitron;color:var(--green);margin-bottom:18px;font-size:17px}.modal-actions{display:flex;gap:10px;margin-top:16px}.btn-cancel{background:rgba(255,255,255,.02);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:11px 18px;cursor:pointer;font-family:Rajdhani}.btn-cancel:hover{color:var(--text);border-color:var(--border2)}
-.msg{padding:11px 13px;border-radius:10px;font-size:13px;margin-bottom:14px}.msg.success{background:rgba(85,255,145,.06);border:1px solid var(--border2);color:var(--green)}.msg.error{background:rgba(255,68,85,.07);border:1px solid rgba(255,68,85,.25);color:#ff8291}
+.next-action{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:16px;border:1px solid rgba(85,255,145,.16);border-radius:14px;background:linear-gradient(135deg,rgba(85,255,145,.055),rgba(255,255,255,.012));margin-top:12px}.next-action-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(85,255,145,.08);border:1px solid rgba(85,255,145,.18);color:var(--green);font-family:Orbitron;font-weight:900}.next-action-copy strong{display:block;color:var(--text);font-family:Orbitron;font-size:12px}.next-action-copy span{display:block;color:var(--muted);font-size:12px;line-height:1.45;margin-top:4px}.next-action-meta{font-family:'Share Tech Mono';font-size:9px;color:var(--green);letter-spacing:1px;text-transform:uppercase}.file-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.file-card{display:flex;align-items:center;gap:13px;padding:15px;border:1px solid var(--border);border-radius:14px;background:rgba(5,14,8,.68);transition:.2s}.file-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 12px 30px rgba(0,0,0,.2)}.file-icon{width:40px;height:44px;border-radius:9px;display:grid;place-items:center;background:rgba(85,255,145,.06);border:1px solid rgba(85,255,145,.12);color:var(--green);font-family:Orbitron;font-size:13px}.file-info{min-width:0;flex:1}.file-info strong{display:block;color:var(--text);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.file-info span{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.4}.file-card .btn-request{white-space:nowrap}.request-ref{font-family:'Share Tech Mono';font-size:9px;color:#587363;margin-top:4px}@media(max-width:520px){.next-action{grid-template-columns:auto 1fr}.next-action .btn-primary{grid-column:1/-1;width:100%}}.msg{padding:11px 13px;border-radius:10px;font-size:13px;margin-bottom:14px}.msg.success{background:rgba(85,255,145,.06);border:1px solid var(--border2);color:var(--green)}.msg.error{background:rgba(255,68,85,.07);border:1px solid rgba(255,68,85,.25);color:#ff8291}
 @media(max-width:1050px){.stats-grid{grid-template-columns:repeat(2,1fr)}.portal-actions{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:800px){nav{padding:14px 17px}.nav-logo{font-size:11px}.nav-right{gap:9px}.nav-right a{display:none}.layout{display:block}.sidebar{position:sticky;top:58px;height:auto;min-height:auto;display:flex;gap:5px;overflow-x:auto;padding:9px;border-right:0;border-bottom:1px solid var(--border);z-index:90}.side-btn{width:auto;margin:0;padding:10px 13px;font-size:12px}.side-btn.active{box-shadow:inset 0 -2px 0 var(--green)}.content{padding:27px 15px 60px}h1{font-size:24px;margin-bottom:22px}.panel{padding:18px;border-radius:15px}.portal-actions{grid-template-columns:1fr 1fr}.stats-grid{gap:9px}.stat-card{padding:15px}.stat-card .num{font-size:22px}}
 @media(max-width:520px){.portal-actions,.stats-grid{grid-template-columns:1fr 1fr}.project-grid{grid-template-columns:1fr}.project-meta{gap:7px}.project-card{padding:17px}.content{padding-left:12px;padding-right:12px}h1{font-size:21px}}
@@ -66,9 +66,14 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 <div class="layout">
   <div class="sidebar">
     <button class="side-btn active" data-section="overview-section" onclick="switchSection('overview-section', this)">Overview</button>
+    <button class="side-btn" data-section="projects-section" onclick="switchSection('projects-section', this)">Projects</button>
+    <button class="side-btn" data-section="requests-section" onclick="switchSection('requests-section', this)">Service Requests</button>
+    <button class="side-btn" data-section="agreements-section" onclick="switchSection('agreements-section', this)">Agreements</button>
+    <button class="side-btn" data-section="files-section" onclick="switchSection('files-section', this)">Files</button>
+    <button class="side-btn" data-section="invoices-section" onclick="switchSection('invoices-section', this)">Invoices</button>
+    <button class="side-btn" data-section="messages-section" onclick="switchSection('messages-section', this)">Messages</button>
     <button class="side-btn" data-section="profile-section" onclick="switchSection('profile-section', this)">Profile</button>
     <button class="side-btn" data-section="shop-section" onclick="switchSection('shop-section', this)">Shop</button>
-    <button class="side-btn" data-section="requests-section" onclick="switchSection('requests-section', this)">Service Requests</button>
     <button class="side-btn" data-section="settings-section" onclick="switchSection('settings-section', this)">Account Settings</button>
   </div>
 
@@ -87,7 +92,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
       </div>
 
       <div class="panel action-panel">
-        <h2>Needs Your Action</h2>
+        <h2>Next Action</h2>
         <div id="actionItems"><div class="loading">Checking your requests…</div></div>
       </div>
 
@@ -202,8 +207,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 
     <!-- FILES -->
     <div class="section" id="files-section">
-      <div class="eyebrow">Client Portal</div><h1>Files &amp; Deliverables</h1>
-      <div class="panel"><h2>Your Files</h2><p class="empty">Project deliverables and approved files will appear here when they are uploaded to your account.</p></div>
+      <div class="eyebrow">Client Workspace</div><h1>Files &amp; Deliverables</h1>
+      <div class="panel">
+        <h2>Your Files</h2>
+        <p class="empty">Agreements and project deliverables available to your account are listed here.</p>
+        <div id="clientFiles"><div class="loading">Loading files…</div></div>
+      </div>
     </div>
 
     <!-- PROFILE -->
@@ -320,6 +329,7 @@ function switchSection(sectionId, btn) {
   const activeBtn=btn || document.querySelector('.side-btn[data-section="'+sectionId+'"]');
   if(activeBtn) activeBtn.classList.add('active');
   if(sectionId==='agreements-section') renderClientAgreements();
+  if(sectionId==='files-section') renderClientFiles();
   if(sectionId==='projects-section') renderProjects();
 }
 function goPortal(sectionId){
@@ -438,6 +448,7 @@ async function loadMyRequests(uid) {
     document.getElementById('statPending').textContent = myRequests.filter(r => (r.status || 'Pending') === 'Pending').length;
     document.getElementById('statCompleted').textContent = myRequests.filter(r => r.status === 'Completed').length;
     renderClientAgreements();
+    renderClientFiles();
     renderActionItems();
     renderProjects();
 
@@ -480,6 +491,7 @@ function projectProgress(r){
 function requestTimestamp(r){return r.createdAt&&r.createdAt.toDate?r.createdAt.toDate():r.createdAt?new Date(r.createdAt):null}
 function projectEvents(r){
   const d=requestTimestamp(r), events=[{title:'Service request submitted',detail:d?'Request created on '+d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Request received'}];
+  if(r.confirmationEmailStatus==='SENT') events.push({title:'Confirmation email sent',detail:'Request confirmation was sent to your account email.'});
   if(r.agreementAccepted) events.push({title:'Agreement acknowledged',detail:r.agreementAcceptedAt?'Accepted on '+new Date(r.agreementAcceptedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Agreement accepted'});
   if(r.signature) events.push({title:'Agreement signed',detail:r.signedAt?'Signed on '+new Date(r.signedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Signature recorded'});
   const s=projectStage(r);
@@ -586,10 +598,16 @@ function renderActionItems(){
   const el=document.getElementById('actionItems'); if(!el)return;
   const pending=myRequests.filter(r=>r.agreementAccepted && !r.signature && r.orderId);
   if(!pending.length){
-    el.innerHTML='<div class="empty">No agreements currently require your signature.</div>';
+    const latest=myRequests[0];
+    if(latest){
+      const s=projectStage(latest);
+      el.innerHTML='<div class="next-action"><div class="next-action-icon">✓</div><div class="next-action-copy"><strong>'+escapeHtml(s.next)+'</strong><span>'+escapeHtml(latest.selectedService||'Your latest request')+' · '+escapeHtml(latest.orderId||'Request')+'</span></div><div class="next-action-meta">'+escapeHtml(s.label)+'</div></div>';
+    }else{
+      el.innerHTML='<div class="next-action"><div class="next-action-icon">＋</div><div class="next-action-copy"><strong>Start your first project</strong><span>Browse services and submit a request to create your client workspace.</span></div><a class="btn-primary" href="shop.html">BROWSE SERVICES</a></div>';
+    }
     return;
   }
-  el.innerHTML=pending.map(r=>`<div class="action-row"><div><strong>${escapeHtml(r.selectedService||'Shop service')}</strong><small>Agreement ${escapeHtml(r.orderId)} · Version ${escapeHtml(r.agreementVersion||'1.0')}</small></div><button class="btn-request" onclick="window.location.href='sign-agreement.html?orderId=${encodeURIComponent(r.orderId)}'">REVIEW &amp; SIGN →</button></div>`).join('');
+  el.innerHTML=pending.map(r=>`<div class="next-action"><div class="next-action-icon">!</div><div class="next-action-copy"><strong>Agreement ready for your signature</strong><span>${escapeHtml(r.selectedService||'Shop service')} · ${escapeHtml(r.orderId)} · Version ${escapeHtml(r.agreementVersion||'1.0')}</span></div><button class="btn-primary" onclick="window.location.href='sign-agreement.html?orderId=${encodeURIComponent(r.orderId)}'">REVIEW &amp; SIGN</button></div>`).join('');
 }
 function renderClientAgreements(){
   const el=document.getElementById('clientAgreements'); if(!el)return;
@@ -618,6 +636,23 @@ async function downloadClientAgreement(btn){
     setTimeout(()=>URL.revokeObjectURL(url),60000);btn.textContent='DOWNLOADED ✓';
   }catch(e){btn.textContent='UNAVAILABLE';setTimeout(()=>btn.textContent='DOWNLOAD SIGNED PDF',1800)}
   finally{btn.disabled=false}
+}
+
+// ---- Client Files ----
+function renderClientFiles(){
+  const el=document.getElementById('clientFiles'); if(!el)return;
+  const files=[];
+  myRequests.forEach(r=>{
+    if(r.orderId && (r.agreementStorageKey || r.agreementAccepted || r.signature)){
+      files.push({type:'PDF',name:(r.signature?'Signed Client Agreement':'Client Service Agreement'),meta:(r.orderId||'Request')+' · Version '+(r.agreementVersion||'1.0')+(r.signature?' · Signed':' · '+(r.agreementAccepted?'Accepted':'Pending')),id:r.orderId});
+    }
+  });
+  if(!files.length){
+    el.innerHTML='<div class="empty">No files are available yet. Your agreement and future project deliverables will appear here.</div>';
+    return;
+  }
+  el.innerHTML='<div class="file-grid">'+files.map(f=>'<div class="file-card"><div class="file-icon">'+escapeHtml(f.type)+'</div><div class="file-info"><strong>'+escapeHtml(f.name)+'</strong><span>'+escapeHtml(f.meta)+'</span></div><button class="btn-request" data-file-id="'+escapeAttr(f.id)+'">OPEN</button></div>').join('')+'</div>';
+  el.querySelectorAll('[data-file-id]').forEach(btn=>btn.addEventListener('click',()=>downloadClientAgreementById(btn.getAttribute('data-file-id'))));
 }
 
 // ---- Account Settings: update display name ----
