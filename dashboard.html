@@ -240,7 +240,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
               <button class="btn-cancel" id="removeAvatarBtn" type="button" onclick="removeProfilePhoto()">Remove Photo</button>
             </div>
             <input class="avatar-file" id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="handleProfilePhoto(this)">
-            <div class="avatar-help">JPG, PNG or WebP · max 5 MB · your image is securely resized before it is stored.</div>
+            <div class="avatar-help">JPG, PNG or WebP · up to 20 MB · high-quality optimization keeps your profile picture sharp and fast.</div>
             <div class="msg" id="avatarMsg"></div>
           </div>
         </div>
@@ -402,11 +402,25 @@ function resizeProfileImage(file){
       const img=new Image();
       img.onerror=()=>reject(new Error('Invalid image file.'));
       img.onload=()=>{
-        const size=256, scale=Math.min(size/img.width,size/img.height,1);
+        // Keep the source upload generous (20 MB), but store a sharp, web-ready avatar
+        // that remains safely below Firestore's document-size limit.
+        const size=512, scale=Math.min(size/img.width,size/img.height,1);
         const w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
         const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
-        const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
-        resolve(canvas.toDataURL('image/jpeg',0.78));
+        const ctx=canvas.getContext('2d',{alpha:false});
+        ctx.imageSmoothingEnabled=true;
+        ctx.imageSmoothingQuality='high';
+        ctx.drawImage(img,0,0,w,h);
+
+        // Prefer high quality; only reduce it if the encoded avatar gets too large.
+        let quality=0.92;
+        let dataUrl=canvas.toDataURL('image/jpeg',quality);
+        while(dataUrl.length>900000 && quality>0.62){
+          quality-=0.05;
+          dataUrl=canvas.toDataURL('image/jpeg',quality);
+        }
+        if(dataUrl.length>950000) throw new Error('The image could not be optimized to a safe profile-picture size.');
+        resolve(dataUrl);
       };
       img.src=reader.result;
     };
@@ -418,9 +432,9 @@ async function handleProfilePhoto(input){
   input.value='';
   const msg=document.getElementById('avatarMsg');
   if(!file)return;
-  if(file.size>5*1024*1024){msg.className='msg error';msg.textContent='Image is too large. Please choose a file under 5 MB.';return;}
+  if(file.size>20*1024*1024){msg.className='msg error';msg.textContent='Image is too large. Please choose a file under 20 MB.';return;}
   if(!/^image\/(jpeg|png|webp)$/.test(file.type)){msg.className='msg error';msg.textContent='Please choose a JPG, PNG or WebP image.';return;}
-  msg.className='msg';msg.textContent='Processing secure profile picture…';
+  msg.className='msg';msg.textContent='Processing high-quality profile picture…';
   try{
     const dataUrl=await resizeProfileImage(file);
     await db.collection('users').doc(currentUser.uid).set({
