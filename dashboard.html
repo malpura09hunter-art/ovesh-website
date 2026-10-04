@@ -333,6 +333,8 @@ function switchSection(sectionId, btn) {
   if(sectionId==='agreements-section') renderClientAgreements();
   if(sectionId==='files-section') renderClientFiles();
   if(sectionId==='projects-section') renderProjects();
+  if(sectionId==='invoices-section') renderClientInvoices();
+  if(sectionId==='messages-section') loadClientMessages();
 }
 function goPortal(sectionId){
   switchSection(sectionId);
@@ -453,6 +455,7 @@ async function loadMyRequests(uid) {
     renderClientFiles();
     renderActionItems();
     renderProjects();
+    renderClientInvoices();
 
     if (myRequests.length === 0) {
       body.innerHTML = '<tr><td colspan="4" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
