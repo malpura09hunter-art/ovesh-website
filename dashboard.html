@@ -822,7 +822,9 @@ document.getElementById('nameForm').addEventListener('submit', async (e) => {
   const msgEl = document.getElementById('nameMsg');
   const newName = document.getElementById('settingsName').value.trim();
   try {
-    await currentUser.updateProfile({ displayName: newName });\n    document.getElementById('profileDisplayName').textContent = newName;\n    await loadProfilePhoto(currentUser);
+    await currentUser.updateProfile({ displayName: newName });
+    document.getElementById('profileDisplayName').textContent = newName;
+    await loadProfilePhoto(currentUser);
     await db.collection('users').doc(currentUser.uid).set({ fullName: newName }, { merge: true });
     msgEl.className = 'msg success';
     msgEl.textContent = 'Name updated.';
