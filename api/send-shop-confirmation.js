@@ -1,4 +1,18 @@
+const nodemailer=require('nodemailer');
 const {getAdminDb,buildAgreementPdf}=require('./shop-agreement');
+let transporter;
+function getTransporter(){
+  if(!transporter) transporter=nodemailer.createTransport({
+    host:process.env.ZOHO_SMTP_HOST||'smtp.zoho.in',
+    port:Number(process.env.ZOHO_SMTP_PORT||465),
+    secure:true,
+    auth:{user:process.env.ZOHO_USER,pass:process.env.ZOHO_APP_PASSWORD},
+    connectionTimeout:10000,
+    greetingTimeout:10000,
+    socketTimeout:10000
+  });
+  return transporter;
+}
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function money(n){return '₹'+Number(n||0).toLocaleString('en-IN');}
 async function authenticate(req){
@@ -32,9 +46,9 @@ module.exports=async(req,res)=>{
     const rows=safeItems.map(x=>'<tr><td style="padding:8px 0;color:#c8ffd4">'+esc(x.name)+'</td><td style="padding:8px 0;color:#7fa389;text-align:right">× '+esc(x.qty)+'</td></tr>').join('');
     const greeting=esc(fullName||'there');
     const html='<div style="background:#030a03;padding:32px 16px;font-family:Arial,Helvetica,sans-serif"><div style="max-width:520px;margin:auto;background:#060f06;border:1px solid rgba(0,255,65,.25);border-radius:10px;padding:32px"><p style="color:#00aa22;letter-spacing:2px;font-size:11px;margin:0 0 8px">OVESH MALPURA CYBER LABS</p><h1 style="color:#39ff14;font-size:23px;margin:0 0 16px">Service request received</h1><p style="color:#c8ffd4;font-size:15px;line-height:1.6">Hello '+greeting+', we have received your request and will review the requirements.</p><div style="border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:14px;margin:18px 0"><p style="color:#7fa389;margin:0 0 8px;font-size:12px">REFERENCE</p><strong style="color:#39ff14">'+esc(orderId)+'</strong><table style="width:100%;margin-top:12px">'+rows+'</table><p style="color:#c8ffd4;border-top:1px solid rgba(0,255,65,.12);padding-top:12px;margin-bottom:0"><strong>Estimated total: '+money(total)+'</strong></p></div><a href="'+siteUrl+'/dashboard.html" style="display:inline-block;background:#00cc33;color:#021002;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px">Open Client Portal</a><div style="height:10px"></div><a href="'+siteUrl+'/sign-agreement.html?orderId='+encodeURIComponent(orderId)+'" style="display:inline-block;background:#39ff14;color:#021002;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px">Review &amp; Sign Agreement</a><p style="color:#a9c9af;font-size:12px;line-height:1.5;margin-top:14px"><strong style="color:#c8ffd4">Agreement copy:</strong> Your Version 1.0 Client Service Agreement is stored with your request and is available through the Client Portal.</p><p style="color:#4a7a52;font-size:12px;line-height:1.5;margin-top:20px">This is a request confirmation, not a payment receipt. Final pricing and next steps are confirmed after review.</p><div style="border-top:1px solid rgba(0,255,65,.12);margin-top:24px;padding-top:20px"><p style="color:#00aa22;letter-spacing:2px;font-size:11px">CLIENT SERVICE AGREEMENT · VERSION 1.0</p><p style="color:#a9c9af;font-size:12px;line-height:1.6">Services covered: '+esc(serviceText)+'. The accepted terms cover scope, requirements and revisions, pricing and payment, delivery, third-party services, ownership and licenses, authorized security work, cancellation and refunds, support, confidentiality, and acceptance. Service-specific terms are available in the checkout agreement and private Client Portal.</p><p style="color:#4a7a52;font-size:11px">Agreement accepted: '+esc(agreementAcceptedAt||'')+'</p></div></div></div>';
-    if(!process.env.RESEND_API_KEY) throw Object.assign(new Error('Resend API key is not configured'),{code:'EMAIL_NOT_CONFIGURED'});
-    const from=String(process.env.RESEND_FROM_EMAIL||'').trim();
-    if(!from) throw Object.assign(new Error('Resend sender is not configured'),{code:'EMAIL_NOT_CONFIGURED'});
+    const zohoUser=String(process.env.ZOHO_USER||'').trim();
+    const zohoAppPassword=String(process.env.ZOHO_APP_PASSWORD||'').trim();
+    if(!zohoUser||!zohoAppPassword) throw Object.assign(new Error('Zoho SMTP is not configured'),{code:'EMAIL_NOT_CONFIGURED'});
     const pdf=await buildAgreementPdf({
       orderId,
       fullName:fullName||'Client',
@@ -42,33 +56,21 @@ module.exports=async(req,res)=>{
       total:Number(total||0),
       acceptedAt:agreementAcceptedAt
     });
-    const response=await fetch('https://api.resend.com/emails',{
-      method:'POST',
-      headers:{
-        'Authorization':'Bearer '+process.env.RESEND_API_KEY,
-        'Content-Type':'application/json',
-        'Idempotency-Key':'shop-confirmation-'+orderId
-      },
-      body:JSON.stringify({
-        from,
-        to:[accountEmail],
-        subject:'Service Request Received — '+orderId,
-        html,
-        attachments:[{
-          filename:'Ovesh-Client-Agreement-'+orderId+'.pdf',
-          content:pdf.toString('base64')
-        }]
-      })
+    const info=await getTransporter().sendMail({
+      from:'"Ovesh Malpura Cyber Labs" <'+zohoUser+'>',
+      to:accountEmail,
+      subject:'Service Request Received — '+orderId,
+      html,
+      attachments:[{
+        filename:'Ovesh-Client-Agreement-'+orderId+'.pdf',
+        content:pdf
+      }],
+      headers:{'X-Ovesh-Request-ID':String(orderId)}
     });
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok) {
-      const err=Object.assign(new Error(result.message||'Resend could not send the confirmation email'),{code:result.name||'RESEND_ERROR',resendStatus:response.status});
-      throw err;
-    }
-    const emailId=String(result.id||'');
+    const emailId=String(info.messageId||'');
     try{
       const snap=await getAdminDb().collection('service_requests').where('orderId','==',String(orderId)).limit(1).get();
-      if(!snap.empty) await snap.docs[0].ref.update({confirmationEmailStatus:'SENT',confirmationEmailSentAt:new Date(),confirmationEmailError:null,confirmationEmailId:emailId||null,confirmationEmailProvider:'resend'});
+      if(!snap.empty) await snap.docs[0].ref.update({confirmationEmailStatus:'SENT',confirmationEmailSentAt:new Date(),confirmationEmailError:null,confirmationEmailId:emailId||null,confirmationEmailProvider:'zoho-smtp'});
     }catch(statusError){console.error('Could not record confirmation email status:',statusError.message)}
     return res.status(200).json({ok:true,emailId});
   }catch(err){
@@ -80,6 +82,6 @@ module.exports=async(req,res)=>{
         if(!snap.empty) await snap.docs[0].ref.update({confirmationEmailStatus:'FAILED',confirmationEmailFailedAt:new Date(),confirmationEmailError:String(err.code||err.message).slice(0,500)});
       }
     }catch(statusError){console.error('Could not record confirmation email failure:',statusError.message)}
-    return res.status(err.statusCode||500).json({error:err.statusCode===401?'Authentication required':err.code==='EMAIL_NOT_CONFIGURED'?'Email service is not configured':err.resendStatus===401||err.resendStatus===403?'Email provider authentication failed':err.resendStatus===422?'Email provider rejected the request':'Could not send confirmation email'});
+    return res.status(err.statusCode||500).json({error:err.statusCode===401?'Authentication required':err.code==='EMAIL_NOT_CONFIGURED'?'Email service is not configured':err.code==='EAUTH'?'Zoho Mail authentication failed — use a Zoho App Password':err.code==='ECONNECTION'||err.code==='ETIMEDOUT'?'Could not connect to Zoho Mail SMTP':'Could not send confirmation email'});
   }
 };
