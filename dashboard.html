@@ -236,8 +236,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
       <h1>My Service Requests</h1>
       <div class="panel">
         <table class="requests-table" id="requestsTable">
-          <thead><tr><th>Service</th><th>Submitted</th><th>Status</th><th>Agreement</th></tr></thead>
-          <tbody id="requestsBody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+          <thead><tr><th>Service</th><th>Submitted</th><th>Status</th><th>Agreement</th><th>Details</th></tr></thead>
+          <tbody id="requestsBody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -442,7 +442,7 @@ async function loadMyRequests(uid) {
   const body = document.getElementById('requestsBody');
   try {
     const snap = await db.collection('service_requests').where('uid', '==', uid).get();
-    myRequests = snap.docs.map(d => d.data()).sort((a, b) => {
+    myRequests = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a, b) => {
       const at = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
       const bt = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
       return bt - at;
@@ -458,7 +458,7 @@ async function loadMyRequests(uid) {
     renderClientInvoices();
 
     if (myRequests.length === 0) {
-      body.innerHTML = '<tr><td colspan="4" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="empty">No service requests yet. Browse services on the Overview tab to get started.</td></tr>';
       return;
     }
     body.innerHTML = snap.docs.map(d => {
@@ -469,6 +469,7 @@ async function loadMyRequests(uid) {
         <td>${fmtDate(r.createdAt)}</td>
         <td><span class="status-pill status-${status}">${escapeHtml(status)}</span></td>
         <td>${r.agreementStorageKey ? '<button class="btn-request" style="padding:7px 10px" data-agreement-id="'+escapeAttr(r.orderId||'')+'">View PDF</button>' : '<span class="muted">Processing</span>'}</td>
+        <td><button class="btn-request" style="padding:7px 10px" onclick='openRequestDetail(${JSON.stringify(d.id)})'>VIEW →</button></td>
       </tr>`;
     }).join('');
     document.querySelectorAll('[data-agreement-id]').forEach(btn=>btn.addEventListener('click',async()=>{const id=btn.getAttribute('data-agreement-id');if(!id)return;btn.disabled=true;btn.textContent='Preparing…';try{const token=await currentUser.getIdToken();const r=await fetch('/api/shop-agreement?orderId='+encodeURIComponent(id),{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('Agreement PDF unavailable');const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Ovesh-Client-Agreement-'+id+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);btn.textContent='Downloaded';}catch(err){btn.textContent='Unavailable';setTimeout(()=>btn.textContent='View PDF',1600)}finally{btn.disabled=false}}));
@@ -555,6 +556,14 @@ function setProjectQuickFilter(filter,btn){
   const select=document.getElementById('projectFilter');
   if(select)select.value=filter==='action'?'all':filter;
   renderProjects();
+}
+function openRequestDetail(id){
+  const r=(myRequests||[]).find(x=>x.id===id); if(!r)return;
+  const s=projectStage(r),events=projectEvents(r),created=r.createdAt&&r.createdAt.toDate?r.createdAt.toDate():null;
+  const safeDate=created?created.toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}):'Not available';
+  const agreement=r.signature?'Signed':r.agreementAccepted?'Accepted':'Pending';
+  document.getElementById('projectDetail').innerHTML='<div class="detail-header"><div><div class="eyebrow">REQUEST DETAILS</div><h3>'+escapeHtml(r.selectedService||'Service Request')+'</h3><div class="project-id">'+escapeHtml(r.orderId||r.id||'Request')+'</div></div><span class="project-status '+s.key+'">'+escapeHtml(s.label)+'</span></div><div class="detail-actions"><button class="btn-request" onclick="closeProjectDetail()">CLOSE</button></div><div class="detail-section"><h2>Request Summary</h2><div class="workspace-grid"><div class="workspace-tile"><strong>Submitted</strong><span>'+escapeHtml(safeDate)+'</span></div><div class="workspace-tile"><strong>Status</strong><span>'+escapeHtml(r.status||'Pending')+'</span></div><div class="workspace-tile"><strong>Service</strong><span>'+escapeHtml(r.selectedService||'Service request')+'</span></div><div class="workspace-tile"><strong>Project stage</strong><span>'+escapeHtml(s.next)+'</span></div><div class="workspace-tile"><strong>Agreement</strong><span>'+escapeHtml(agreement)+'</span></div><div class="workspace-tile"><strong>Payment</strong><span>'+escapeHtml(r.paymentStatus||'Quote / payment pending')+'</span></div></div></div><div class="detail-section"><h2>Project Brief</h2><p class="muted">'+escapeHtml(r.projectDescription||'No project description was provided with this request.')+'</p></div><div class="detail-section"><h2>Activity Timeline</h2><div class="timeline">'+events.map(e=>'<div class="timeline-item"><span class="timeline-dot"></span><strong>'+escapeHtml(e.title)+'</strong><span>'+escapeHtml(e.detail)+'</span></div>').join('')+'</div></div><div class="detail-section"><h2>What Happens Next</h2><p class="muted">'+escapeHtml(s.next)+'. You can return here anytime to follow the request progress.</p></div>';
+  document.getElementById('projectDetailModal').classList.add('open');
 }
 function openProjectDetailById(id){
   const r=myRequests.find(x=>(x.orderId||'')===id);if(!r)return;
