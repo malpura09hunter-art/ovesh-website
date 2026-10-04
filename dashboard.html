@@ -51,6 +51,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
 .project-list-view .project-grid{display:block}.project-list-view .project-card{display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(180px,1fr) auto;align-items:center;gap:18px;margin-bottom:10px}.project-list-view .project-card .progress-wrap{margin:0}.project-list-view .project-card .project-meta{margin:0}.project-list-view .project-card .project-next{display:none}.project-list-view .project-card .project-actions{justify-content:flex-end}
 .detail-modal-wide{max-width:820px}.detail-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.detail-header h3{font-family:Orbitron;color:var(--text);font-size:22px;margin-bottom:7px}.detail-section{margin-top:22px;padding-top:20px;border-top:1px solid rgba(130,255,175,.08)}.detail-section h2{margin-bottom:12px}.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.workspace-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.workspace-tile{padding:14px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.014)}.workspace-tile strong{display:block;color:var(--text);font-size:12px}.workspace-tile span{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.45}
 @media(max-width:800px){.project-hero{grid-template-columns:1fr}.project-summary{grid-template-columns:repeat(2,1fr)}.project-view{margin-left:0}.project-list-view .project-card{display:block}.project-list-view .project-card .progress-wrap{margin:18px 0 9px}.project-list-view .project-card .project-meta{margin:14px 0}.project-list-view .project-card .project-actions{justify-content:flex-start}.workspace-grid{grid-template-columns:1fr}}
+
+/* ---- Phase 5: Files & Deliverables Center ---- */
+.files-hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding:22px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(145deg,rgba(13,34,20,.78),rgba(3,9,5,.82));margin-bottom:16px}.files-hero h2{font-size:18px;margin:6px 0}.files-hero p{color:var(--muted);font-size:12px;line-height:1.5;max-width:650px}.files-shield{width:52px;height:52px;border:1px solid var(--border2);border-radius:15px;display:grid;place-items:center;color:var(--green);font-family:Orbitron;background:rgba(85,255,145,.05)}.files-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}.files-filter{background:rgba(0,0,0,.2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-family:Rajdhani;font-size:12px}.files-count{font-family:'Share Tech Mono';font-size:9px;color:var(--muted);letter-spacing:1px;padding:10px 2px}.deliverable-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:13px;align-items:center;padding:16px;border:1px solid var(--border);border-radius:15px;background:rgba(5,14,8,.68);transition:.2s}.deliverable-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 12px 30px rgba(0,0,0,.2)}.deliverable-icon{width:44px;height:48px;border-radius:10px;display:grid;place-items:center;background:rgba(85,255,145,.06);border:1px solid rgba(85,255,145,.13);color:var(--green);font-family:Orbitron;font-size:11px}.deliverable-info{min-width:0}.deliverable-info strong{display:block;color:var(--text);font-size:13px}.deliverable-info span{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.45}.deliverable-badge{display:inline-block;margin-top:7px;font-family:'Share Tech Mono';font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:4px 7px;border-radius:999px;color:var(--green);border:1px solid var(--border2);background:rgba(85,255,145,.04)}.deliverable-actions{display:flex;gap:7px;align-items:center}.file-note{margin-top:13px;color:#789482;font-size:10px;line-height:1.5}@media(max-width:650px){.files-hero{display:block}.files-shield{margin-top:14px}.deliverable-card{grid-template-columns:auto 1fr}.deliverable-actions{grid-column:1/-1}.deliverable-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -210,9 +213,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:17px 3
     <!-- FILES -->
     <div class="section" id="files-section">
       <div class="eyebrow">Client Workspace</div><h1>Files &amp; Deliverables</h1>
+      <div class="files-hero"><div><div class="files-count">SECURE CLIENT DOCUMENT CENTER</div><h2>Your project files, agreements &amp; deliverables</h2><p>Access documents that are actually associated with your account. Signed agreements are available immediately; future project deliverables can appear here as they are issued.</p></div><div class="files-shield">PDF</div></div>
       <div class="panel">
-        <h2>Your Files</h2>
-        <p class="empty">Agreements and project deliverables available to your account are listed here.</p>
+        <div class="panel-head"><div><h2>Your Files</h2><div class="file-note">Only files linked to your authenticated client account are shown.</div></div><button class="btn-request" type="button" onclick="renderClientFiles()">REFRESH</button></div>
+        <div class="files-toolbar"><select id="fileTypeFilter" class="files-filter" onchange="renderClientFiles()"><option value="all">ALL FILES</option><option value="agreement">AGREEMENTS</option><option value="deliverable">DELIVERABLES</option></select><span id="fileCount" class="files-count"></span></div>
         <div id="clientFiles"><div class="loading">Loading files…</div></div>
       </div>
     </div>
@@ -652,21 +656,30 @@ async function downloadClientAgreement(btn){
   finally{btn.disabled=false}
 }
 
-// ---- Client Files ----
+// ---- Phase 5: Files & Deliverables Center ----
 function renderClientFiles(){
   const el=document.getElementById('clientFiles'); if(!el)return;
+  const filter=(document.getElementById('fileTypeFilter')||{}).value||'all';
   const files=[];
-  myRequests.forEach(r=>{
+  (myRequests||[]).forEach(r=>{
     if(r.orderId && (r.agreementStorageKey || r.agreementAccepted || r.signature)){
-      files.push({type:'PDF',name:(r.signature?'Signed Client Agreement':'Client Service Agreement'),meta:(r.orderId||'Request')+' · Version '+(r.agreementVersion||'1.0')+(r.signature?' · Signed':' · '+(r.agreementAccepted?'Accepted':'Pending')),id:r.orderId});
+      files.push({type:'agreement',ext:'PDF',name:r.signature?'Signed Client Agreement':'Client Service Agreement',meta:(r.orderId||'Request')+' · Version '+(r.agreementVersion||'1.0'),status:r.signature?'SIGNED':r.agreementAccepted?'ACCEPTED':'PENDING',id:r.orderId});
     }
+    const deliverables=Array.isArray(r.deliverables)?r.deliverables:(Array.isArray(r.files)?r.files:[]);
+    deliverables.forEach((f,i)=>{
+      if(!f)return;
+      const id=f.id||f.key||f.path||f.url||('deliverable-'+i);
+      files.push({type:'deliverable',ext:String(f.type||f.extension||'FILE').replace('.','').slice(0,6).toUpperCase(),name:f.name||f.fileName||'Project Deliverable',meta:(r.orderId||'Project')+(f.version?' · Version '+f.version:''),status:f.status||'AVAILABLE',url:f.url||f.downloadUrl||'',id});
+    });
   });
-  if(!files.length){
-    el.innerHTML='<div class="empty">No files are available yet. Your agreement and future project deliverables will appear here.</div>';
-    return;
-  }
-  el.innerHTML='<div class="file-grid">'+files.map(f=>'<div class="file-card"><div class="file-icon">'+escapeHtml(f.type)+'</div><div class="file-info"><strong>'+escapeHtml(f.name)+'</strong><span>'+escapeHtml(f.meta)+'</span></div><button class="btn-request" data-file-id="'+escapeAttr(f.id)+'">OPEN</button></div>').join('')+'</div>';
-  el.querySelectorAll('[data-file-id]').forEach(btn=>btn.addEventListener('click',()=>downloadClientAgreementById(btn.getAttribute('data-file-id'))));
+  const shown=files.filter(f=>filter==='all'||f.type===filter);
+  const count=document.getElementById('fileCount'); if(count)count.textContent=shown.length+' FILE'+(shown.length===1?'':'S')+' AVAILABLE';
+  if(!shown.length){el.innerHTML='<div class="empty">'+(filter==='deliverable'?'No project deliverables have been issued yet.':'No files are available for this view yet.')+'</div>';return;}
+  el.innerHTML='<div class="file-grid">'+shown.map(f=>{
+    const action=f.type==='agreement'?'<button class="btn-request" data-file-agreement="'+escapeAttr(f.id)+'">OPEN</button>':(f.url?'<a class="btn-request" href="'+escapeAttr(f.url)+'" target="_blank" rel="noopener">OPEN</a>':'<span class="muted">LINK PENDING</span>');
+    return '<div class="deliverable-card"><div class="deliverable-icon">'+escapeHtml(f.ext)+'</div><div class="deliverable-info"><strong>'+escapeHtml(f.name)+'</strong><span>'+escapeHtml(f.meta)+'</span><span class="deliverable-badge">'+escapeHtml(f.status)+'</span></div><div class="deliverable-actions">'+action+'</div></div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-file-agreement]').forEach(btn=>btn.addEventListener('click',()=>downloadClientAgreementById(btn.getAttribute('data-file-agreement'))));
 }
 
 // ---- Phase 2: Billing + Client Messages ----
