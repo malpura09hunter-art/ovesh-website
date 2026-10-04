@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>OVESH MAIL — Secure Client Mail</title>
+<style>
+:root{--bg:#050806;--panel:rgba(13,20,16,.82);--panel2:rgba(18,29,22,.72);--line:rgba(153,255,190,.12);--line2:rgba(91,255,143,.3);--green:#62ff9b;--cyan:#73f7d6;--text:#effff3;--muted:#8ca696;--danger:#ff6e80}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 0,rgba(98,255,155,.09),transparent 28%),radial-gradient(circle at 90% 15%,rgba(115,247,214,.06),transparent 25%),#030504;color:var(--text);font:14px Inter,system-ui,sans-serif;min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}
+.app{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.side{border-right:1px solid var(--line);background:rgba(4,10,7,.84);backdrop-filter:blur(24px);padding:24px 16px;display:flex;flex-direction:column}.brand{font-weight:900;letter-spacing:2px;color:var(--green);font-size:15px;margin:4px 8px 25px}.secure{padding:13px;border:1px solid var(--line);border-radius:14px;background:rgba(98,255,155,.04);margin-bottom:18px}.secure b{display:block;font-size:11px;letter-spacing:1px}.secure span{font-size:11px;color:var(--muted);display:block;margin-top:5px;line-height:1.4}.compose{width:100%;border:0;border-radius:13px;padding:13px;background:linear-gradient(135deg,#7dffae,#38df7a);color:#021107;font-weight:900;margin-bottom:18px}.nav button{width:100%;border:1px solid transparent;background:transparent;color:var(--muted);padding:11px 12px;text-align:left;border-radius:11px;margin:2px 0}.nav button:hover,.nav button.active{background:rgba(98,255,155,.07);border-color:var(--line);color:var(--text)}.count{float:right;color:var(--green);font-size:11px}.account{margin-top:auto;border-top:1px solid var(--line);padding-top:15px;display:flex;gap:10px;align-items:center}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,rgba(98,255,155,.15),rgba(115,247,214,.08));border:1px solid var(--line2);color:var(--green);font-weight:900;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.account small{display:block;color:var(--muted);margin-top:3px}
+.main{min-width:0}.top{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 28px;background:rgba(4,9,6,.66);backdrop-filter:blur(20px)}.top h1{font-size:18px;margin:0}.search{margin-left:auto;width:min(430px,45vw);background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:11px;padding:11px 13px;color:var(--text);outline:0}.search:focus{border-color:var(--line2)}.content{padding:26px;max-width:1250px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:18px}.eyebrow{font:10px monospace;letter-spacing:2px;color:var(--green);margin-bottom:7px}.hero h2{margin:0;font-size:25px}.hero p{color:var(--muted);margin:7px 0 0}.status{font:10px monospace;color:var(--green);border:1px solid var(--line2);padding:8px 10px;border-radius:999px;background:rgba(98,255,155,.04)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:17px}.panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(15,25,18,.78),rgba(5,10,7,.84));border-radius:17px;overflow:hidden;box-shadow:0 20px 55px rgba(0,0,0,.2)}.toolbar{display:flex;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line)}.toolbar button{border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--muted);padding:8px 11px;border-radius:9px}.toolbar button:hover{color:var(--text);border-color:var(--line2)}.mail{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;padding:16px;border-bottom:1px solid rgba(153,255,190,.07);align-items:center}.mail:hover{background:rgba(98,255,155,.035)}.mail.unread{background:rgba(98,255,155,.025)}.sender{font-weight:800}.subject{font-size:13px;margin-top:4px}.preview{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}.date{font-size:10px;color:var(--muted)}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px rgba(98,255,155,.5);margin:auto}.sidepanel{padding:18px}.sidepanel h3{margin:0 0 13px;font-size:13px}.identity{display:flex;gap:11px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02)}.identity .avatar{width:45px;height:45px}.identity b{font-size:12px}.identity span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.tile{padding:13px;border:1px solid var(--line);border-radius:12px;margin-top:9px;background:rgba(255,255,255,.015)}.tile b{font-size:11px}.tile span{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.45}.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(13px);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.overlay.open{display:flex}.modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:#08100b;border:1px solid var(--line2);border-radius:20px;padding:22px;box-shadow:0 30px 100px rgba(0,0,0,.65)}.modal h2{margin:0 0 18px}.field{margin-bottom:13px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field textarea{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px;outline:0}.field textarea{min-height:180px;resize:vertical}.actions{display:flex;gap:9px;justify-content:flex-end}.primary,.ghost{border-radius:10px;padding:10px 14px;font-weight:800}.primary{border:0;background:linear-gradient(135deg,#7dffae,#38df7a);color:#021107}.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}.notice{font:10px monospace;color:var(--muted);padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:10px}.notice strong{color:var(--green)}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.layout{grid-template-columns:1fr}.content{padding:16px}.top{padding:0 16px}.search{width:45%}.sidepanel{display:none}}@media(max-width:560px){.hero{display:block}.status{display:inline-block;margin-top:14px}.search{width:48%}.mail{grid-template-columns:30px minmax(0,1fr) auto;padding:14px 11px}.preview{max-width:100%}.top h1{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+<div class="brand">OVESH MAIL</div>
+<div class="secure"><b>● SECURE MAILSPACE</b><span>Internal prototype · access-controlled architecture</span></div>
+<button class="compose" id="composeBtn">＋ COMPOSE</button>
+<div class="nav">
+<button class="active" data-folder="inbox">▣ Inbox <span class="count" id="inboxCount">3</span></button>
+<button data-folder="starred">☆ Starred</button>
+<button data-folder="sent">↗ Sent</button>
+<button data-folder="drafts">◫ Drafts</button>
+<button data-folder="archive">▤ Archive</button>
+<button data-folder="trash">⌫ Trash</button>
+</div>
+<div class="account"><div class="avatar" id="accountAvatar">OM</div><div><b>Ovesh Malpura</b><small>Cyber Labs Admin</small></div></div>
+</aside>
+<main class="main">
+<header class="top"><h1>Secure Client Mail</h1><input class="search" id="search" placeholder="Search mail…"></header>
+<div class="content">
+<div class="hero"><div><div class="eyebrow">OVESH MAIL / PRIVATE WORKSPACE</div><h2>Good evening, Ovesh.</h2><p>One place for secure client communication.</p></div><div class="status">● SESSION PROTECTED</div></div>
+<div class="layout">
+<section class="panel"><div class="toolbar"><button id="refresh">↻ Refresh</button><button id="mark">Mark read</button><button id="delete">Delete</button></div><div id="mailList"></div></section>
+<aside class="panel sidepanel">
+<h3>MAIL IDENTITY</h3>
+<div class="identity"><div class="avatar">OM</div><div><b>Ovesh Malpura</b><span>Ovesh Malpura Cyber Labs</span></div></div>
+<div class="tile"><b>Current address</b><span>Internal identity · external delivery will be connected in Phase 3.</span></div>
+<div class="tile"><b>Security model</b><span>Authentication + authorization + server-side validation. Messages are never trusted just because the UI says so.</span></div>
+<div class="tile"><b>Phase 1 status</b><span>Functional webmail prototype with local test data. No real Internet mail is sent yet.</span></div>
+</aside>
+</div>
+</div>
+</main>
+</div>
+<div class="overlay" id="compose">
+<div class="modal">
+<h2>New secure message</h2>
+<div class="field"><label>TO</label><input id="to" placeholder="client@example.com"></div>
+<div class="field"><label>SUBJECT</label><input id="subject" placeholder="Subject"></div>
+<div class="field"><label>MESSAGE</label><textarea id="body" placeholder="Write your message…"></textarea></div>
+<div class="notice"><strong>SECURITY:</strong> This Phase 1 message is stored only in this browser as test data. Internet delivery is intentionally disabled until the mail backend is connected.</div>
+<div class="actions"><button class="ghost" id="close">Cancel</button><button class="primary" id="send">Save to Sent</button></div>
+</div>
+</div>
+<script>
+const seed=[
+{id:1,folder:'inbox',from:'Aarav Sharma',email:'aarav.client@example.com',subject:'Project requirements',preview:'I have uploaded the latest requirements for the project.',date:'Today · 5:42 PM',unread:true,star:false},
+{id:2,folder:'inbox',from:'Priya Mehta',email:'priya.client@example.com',subject:'Security assessment update',preview:'Can we review the assessment timeline tomorrow?',date:'Today · 3:18 PM',unread:true,star:true},
+{id:3,folder:'inbox',from:'Ovesh Malpura Cyber Labs',email:'team@ovesh-mail.internal',subject:'Welcome to OVESH MAIL',preview:'Your secure client communication workspace is ready.',date:'Today · 11:06 AM',unread:true,star:false},
+{id:4,folder:'sent',from:'You',email:'you',subject:'Re: Project requirements',preview:'Thanks. I will review the requirements and update the workspace.',date:'Yesterday · 7:20 PM',unread:false,star:false},
+{id:5,folder:'archive',from:'Rahul Verma',email:'rahul.client@example.com',subject:'Previous project handover',preview:'The handover notes are attached for reference.',date:'Sep 28 · 4:02 PM',unread:false,star:true}
+];
+let mails=JSON.parse(localStorage.getItem('oveshMailMails')||'null')||seed;
+let folder='inbox', selected=new Set();
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(){const q=document.getElementById('search').value.toLowerCase();let rows=mails.filter(m=>(folder==='starred'?m.star:m.folder===folder)&&(!q||(m.subject+m.from+m.preview+m.email).toLowerCase().includes(q)));document.getElementById('mailList').innerHTML=rows.length?rows.map(m=>'<article class="mail '+(m.unread?'unread':'')+'" data-id="'+m.id+'"><input type="checkbox" '+(selected.has(m.id)?'checked':'')+' aria-label="Select message"><div><div class="sender">'+esc(m.from)+'</div><div class="subject">'+esc(m.subject)+'</div><div class="preview">'+esc(m.preview)+'</div></div><div><div class="date">'+esc(m.date)+'</div><div class="dot" style="'+(m.unread?'':'visibility:hidden')+'"></div></div></article>').join(''):'<div class="empty">No messages in this folder.</div>';document.getElementById('inboxCount').textContent=mails.filter(m=>m.folder==='inbox'&&m.unread).length;document.querySelectorAll('.mail input').forEach(x=>x.onchange=()=>{const id=Number(x.closest('.mail').dataset.id);x.checked?selected.add(id):selected.delete(id)});}
+document.querySelectorAll('[data-folder]').forEach(b=>b.onclick=()=>{folder=b.dataset.folder;selected.clear();document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()});
+document.getElementById('search').oninput=render;document.getElementById('refresh').onclick=()=>{render();alert('Mailbox refreshed. Phase 1 test data loaded.')};
+document.getElementById('mark').onclick=()=>{mails.forEach(m=>{if(selected.has(m.id))m.unread=false});localStorage.setItem('oveshMailMails',JSON.stringify(mails));selected.clear();render()};
+document.getElementById('delete').onclick=()=>{mails.forEach(m=>{if(selected.has(m.id))m.folder='trash'});localStorage.setItem('oveshMailMails',JSON.stringify(mails));selected.clear();render()};
+const overlay=document.getElementById('compose');document.getElementById('composeBtn').onclick=()=>overlay.classList.add('open');document.getElementById('close').onclick=()=>overlay.classList.remove('open');
+document.getElementById('send').onclick=()=>{const to=document.getElementById('to').value.trim(),subject=document.getElementById('subject').value.trim(),body=document.getElementById('body').value.trim();if(!to||!subject||!body){alert('Complete recipient, subject and message.');return}mails.unshift({id:Date.now(),folder:'sent',from:'You',email:to,subject,preview:body,date:'Just now',unread:false,star:false});localStorage.setItem('oveshMailMails',JSON.stringify(mails));document.getElementById('to').value='';document.getElementById('subject').value='';document.getElementById('body').value='';overlay.classList.remove('open');folder='sent';document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.folder==='sent'));render()};
+render();
+</script>
+</body>
+</html>
