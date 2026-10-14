@@ -34,7 +34,7 @@ module.exports=async(req,res)=>{
       return json(res,200,{links});
     }
     if(action==='projects-save'){
-      const project=String(req.body?.project||''),url=String(req.body?.url||'').trim();if(!['canada','demo'].includes(project))return json(res,400,{error:'Unknown PortSugar project.'});if(url&&!/^https?:\\/\\//i.test(url))return json(res,400,{error:'Website links must start with https:// or http://.'});if(url.length>2048)return json(res,400,{error:'Website URL is too long.'});
+      const project=String(req.body?.project||''),url=String(req.body?.url||'').trim();if(!['canada','demo'].includes(project))return json(res,400,{error:'Unknown PortSugar project.'});if(url&&!/^https?:\/\//i.test(url))return json(res,400,{error:'Website links must start with https:// or http://.'});if(url.length>2048)return json(res,400,{error:'Website URL is too long.'});
       let links={canada:'',demo:''};try{const o=await s3.send(new GetObjectCommand({Bucket:BUCKET,Key:`${prefix}.oveshcloud-projects/portsugar.json`}));const chunks=[];for await(const chunk of o.Body)chunks.push(chunk);links={...links,...JSON.parse(Buffer.concat(chunks).toString('utf8'))}}catch(e){if(e.name!=='NoSuchKey'&&e.$metadata?.httpStatusCode!==404)throw e}links[project]=url;
       await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:`${prefix}.oveshcloud-projects/portsugar.json`,Body:JSON.stringify(links),ContentType:'application/json',CacheControl:'no-store'}));return json(res,200,{ok:true,links});
     }
