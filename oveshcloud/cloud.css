@@ -8,3 +8,10 @@
 .portsugar-files>.muted{font-size:10px;line-height:1.6}
 .portsugar-files .continue{gap:10px}
 @media(max-width:760px){.portsugar-detail .modal-actions{flex-wrap:wrap}.portsugar-detail .modal-actions .btn{flex:1}}
+
+/* PortSugar project details: scoped styles only. */
+.portsugar-preview{display:flex;align-items:center;gap:12px;padding:13px;margin:14px 0 18px;border:1px solid var(--line);border-radius:14px;background:rgba(91,214,255,.035)}
+.portsugar-preview-icon{min-width:58px;height:46px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(135deg,rgba(39,125,255,.2),rgba(91,214,255,.08));border:1px solid var(--line2);font-size:9px;letter-spacing:.7px;font-weight:800;color:var(--blue)}
+.portsugar-preview strong,.portsugar-preview small{display:block}.portsugar-preview strong{font-size:11px;color:#e8f2ff}.portsugar-preview small{font-size:9px;color:#8192a8;margin-top:4px;line-height:1.5}
+.portsugar-files-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.portsugar-files-head .btn{flex-shrink:0}.portsugar-file-info{min-width:0;flex:1}.portsugar-file-info b{display:block;overflow-wrap:anywhere}.portsugar-files .continue{min-width:0}.portsugar-empty{padding:30px 12px}.portsugar-empty p{line-height:1.6}.portsugar-detail .form input{min-width:0}
+@media(max-width:540px){.portsugar-files-head{align-items:flex-start;flex-direction:column}.portsugar-files-head .btn{width:100%}.portsugar-detail .continue{flex-wrap:wrap}.portsugar-detail .continue .mini-btn{margin-left:auto}}
