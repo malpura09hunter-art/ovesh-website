@@ -23,14 +23,26 @@ module.exports=async(req,res)=>{
   try{
     const s3=client(),action=String(req.query?.action||'list'),ws=workspace(req.query?.workspace||req.body?.workspace),prefix=`workspaces/${ws}/`;
     if(action==='list'){
-      const items=await list(s3,prefix);const used=items.filter(x=>x.type!=='folder').reduce((a,x)=>a+x.size,0);
+      const items=(await list(s3,prefix)).filter(x=>x.key!==`${prefix}.oveshcloud-projects/portsugar.json`);const used=items.filter(x=>x.type!=='folder').reduce((a,x)=>a+x.size,0);
       return json(res,200,{items,used,quota:MAX_WORKSPACE_BYTES});
+    }
+    if(action==='projects-get'){
+      const folderA=`${prefix}Client Projects/PortSugar Canada/`,folderB=`${prefix}Client Projects/PortSugar Demo/`;
+      await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:folderA,Body:'',ContentType:'application/x-directory'}));
+      await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:folderB,Body:'',ContentType:'application/x-directory'}));
+      let links={canada:'',demo:''};try{const o=await s3.send(new GetObjectCommand({Bucket:BUCKET,Key:`${prefix}.oveshcloud-projects/portsugar.json`}));const chunks=[];for await(const chunk of o.Body)chunks.push(chunk);links={...links,...JSON.parse(Buffer.concat(chunks).toString('utf8'))}}catch(e){if(e.name!=='NoSuchKey'&&e.$metadata?.httpStatusCode!==404)throw e}
+      return json(res,200,{links});
+    }
+    if(action==='projects-save'){
+      const project=String(req.body?.project||''),url=String(req.body?.url||'').trim();if(!['canada','demo'].includes(project))return json(res,400,{error:'Unknown PortSugar project.'});if(url&&!/^https?:\/\//i.test(url))return json(res,400,{error:'Website links must start with https:// or http://.'});if(url.length>2048)return json(res,400,{error:'Website URL is too long.'});
+      let links={canada:'',demo:''};try{const o=await s3.send(new GetObjectCommand({Bucket:BUCKET,Key:`${prefix}.oveshcloud-projects/portsugar.json`}));const chunks=[];for await(const chunk of o.Body)chunks.push(chunk);links={...links,...JSON.parse(Buffer.concat(chunks).toString('utf8'))}}catch(e){if(e.name!=='NoSuchKey'&&e.$metadata?.httpStatusCode!==404)throw e}links[project]=url;
+      await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:`${prefix}.oveshcloud-projects/portsugar.json`,Body:JSON.stringify(links),ContentType:'application/json',CacheControl:'no-store'}));return json(res,200,{ok:true,links});
     }
     if(action==='presign-upload'){
       const name=safeName(req.query?.name),size=Number(req.query?.size||0),type=String(req.query?.type||contentType(name)).slice(0,120);
       if(!Number.isFinite(size)||size<=0||size>100*1024*1024)return json(res,400,{error:'Files must be between 1 byte and 100 MB.'});
       const items=await list(s3,prefix),used=items.filter(x=>x.type!=='folder').reduce((a,x)=>a+x.size,0);if(used+size>MAX_WORKSPACE_BYTES)return json(res,413,{error:'This workspace has reached its 5 GB limit.'});
-      const key=`${prefix}${Date.now()}-${Math.random().toString(36).slice(2,10)}-${name}`,url=await getSignedUrl(s3,new PutObjectCommand({Bucket:BUCKET,Key:key,ContentType:type}),{expiresIn:900});
+      const folder=String(req.query?.folder||'');const allowedFolders=['Client Projects/PortSugar Canada','Client Projects/PortSugar Demo'];if(folder&&!allowedFolders.includes(folder))return json(res,400,{error:'Invalid project folder.'});const key=`${prefix}${folder?folder+'/':''}${Date.now()}-${Math.random().toString(36).slice(2,10)}-${name}`,url=await getSignedUrl(s3,new PutObjectCommand({Bucket:BUCKET,Key:key,ContentType:type}),{expiresIn:900});
       return json(res,200,{url,key,name,size,type});
     }
     if(action==='presign-download'){
