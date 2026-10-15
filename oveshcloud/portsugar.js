@@ -1,0 +1,11 @@
+(()=>{'use strict';
+const $=s=>document.querySelector(s);
+const login=$('#login'),dashboard=$('#dashboard'),form=$('#loginForm'),button=$('#submit'),error=$('#error');
+async function request(method,body){const r=await fetch('/api/portsugar-portal',{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Unable to connect to the client portal.');return data}
+function render(p){$('#projectName').textContent=p.projectName;$('#summary').textContent=p.summary;$('#status').textContent=p.status;$('#percent').textContent=String(p.progress)+'%';$('#progressBar').style.width=Math.max(0,Math.min(100,Number(p.progress)||0))+'%';$('#clientName').textContent=p.clientName;$('#hosting').textContent=p.hosting;$('#paymentStatus').textContent=p.payment.status;$('#paymentNote').textContent=p.payment.note;$('#agreementStatus').textContent=p.agreement.status;$('#agreementNote').textContent=p.agreement.note;$('#milestones').innerHTML=p.milestones.map(m=>{const done=/completed|tested/i.test(m.status);return '<div class="milestone"><div class="check '+(done?'':'pending')+'">'+(done?'✓':'•')+'</div><div><strong>'+escapeHtml(m.title)+'</strong><small>'+escapeHtml(m.status)+'</small></div></div>'}).join('');login.classList.add('hidden');dashboard.classList.remove('hidden')}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function restore(){try{const x=await request('GET');if(x.authenticated)render(x.project)}catch{}}
+form.addEventListener('submit',async e=>{e.preventDefault();button.disabled=true;error.textContent='';try{const x=await request('POST',{email:$('#email').value,password:$('#password').value});render(x.project)}catch(e){error.textContent=e.message}finally{button.disabled=false}});
+$('#logout').addEventListener('click',async()=>{try{await request('POST',{action:'logout'})}catch{}dashboard.classList.add('hidden');login.classList.remove('hidden');form.reset();error.textContent=''});
+restore();
+})();
