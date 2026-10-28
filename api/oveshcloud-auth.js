@@ -157,23 +157,42 @@ function readCloudSessionData(req){
   if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null;
   try{const data=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));return data.u===(process.env.OVESH_CLOUD_USERNAME||'OVESH')&&Number(data.exp)>Date.now()?data:null}catch{return null}
 }
+async function recordSecurityEvent(event){
+  try{await getAdminDb().collection('oveshCloudSecurityEvents').add({...event,ip:event.ip||null,userAgent:String(event.userAgent||'').slice(0,500),path:String(event.path||'').slice(0,160),createdAt:new Date()})}
+  catch(error){console.error('OVESH security event write failed:',error?.message||error)}
+}
+async function listSecurityEvents(req,res){
+  if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
+  if(!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});
+  try{
+    const snap=await getAdminDb().collection('oveshCloudSecurityEvents').orderBy('createdAt','desc').limit(100).get();
+    const events=snap.docs.map(doc=>{const x=doc.data()||{};return{id:doc.id,eventType:x.eventType||'security_event',severity:x.severity||'info',outcome:x.outcome||'recorded',reason:x.reason||null,ip:x.ip||null,browser:x.browser||null,os:x.os||null,device:x.device||null,method:x.method||null,path:x.path||null,timestamp:x.timestamp||x.createdAt?.toDate?.().toISOString?.()||null,location:x.location||null}});
+    return res.status(200).json({ok:true,count:events.length,events});
+  }catch(error){console.error('OVESH security events read failed:',error?.message||error);return res.status(500).json({ok:false,error:'Unable to load security events. Check Firebase Admin configuration and Firestore access.'})}
+}
 export default async function handler(req,res){
   if(req.method==='GET'&&(String(req.query?.action||'')==='drive-list'||String(req.query?.action||'')==='drive-download')){
     const mapped={...req,query:{...req.query,action:String(req.query.action)==='drive-list'?'list':'download'}};
     return handleGoogleDrive(mapped,res);
   }
   const action=String(req.query?.action||'');
+  if(action==='security-events')return listSecurityEvents(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
   if(req.method==='GET'&&action==='session'){const session=readCloudSessionData(req);if(!session)return res.status(401).json({ok:false,authenticated:false,error:'OVESH CLOUD session required'});return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
-  if(username!==u||password!==p)return res.status(401).json({ok:false,error:username===u?'WRONG PASSWORD':'ACCESS DENIED'});
+  if(username!==u||password!==p){
+    const ip=(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').toString().split(',')[0].trim()||null,ua=String(req.headers['user-agent']||'');
+    await recordSecurityEvent({eventType:'authentication_failure',severity:'high',outcome:'blocked',reason:username===u?'WRONG_PASSWORD':'UNKNOWN_USERNAME',ip,browser:detectBrowser(ua),os:detectOS(ua),device:detectDevice(ua),userAgent:ua,method:req.method,path:'/api/oveshcloud-auth',timestamp:new Date().toISOString()});
+    return res.status(401).json({ok:false,error:username===u?'WRONG PASSWORD':'ACCESS DENIED'});
+  }
   const ip=(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').toString().split(',')[0].trim()||null,ua=req.headers['user-agent']||'',timestamp=new Date().toISOString();
   const secret=process.env.OVESH_CLOUD_SESSION_SECRET||p,payload=Buffer.from(JSON.stringify({u,iat:Date.now(),exp:Date.now()+1000*60*60*12,nonce:crypto.randomBytes(16).toString('hex')})).toString('base64url'),signature=crypto.createHmac('sha256',secret).update(payload).digest('base64url'),token=`${payload}.${signature}`;
   const ipInfo=await lookupIp(ip);const os=detectOS(ua),browser=detectBrowser(ua),device=detectDevice(ua),finalLocation=ipInfo.location||location||null;
   const details={timestamp,ip,isp:ipInfo.isp||'Not available',os,browser,device,userAgent:ua||'Not available',location:finalLocation,time:new Date(timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'})+' IST'};
+  await recordSecurityEvent({eventType:'authentication_success',severity:'info',outcome:'allowed',reason:'VALID_CREDENTIALS',ip,browser,os,device,userAgent:ua,method:req.method,path:'/api/oveshcloud-auth',timestamp,location:finalLocation});
   res.setHeader('Set-Cookie',`ovesh_cloud_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
   // Alerts are deliberately best-effort: a notification outage must never block a valid Cloud login.
   const alerts=await sendLoginAlerts(details).catch(err=>{console.error('OVESH login alert pipeline failed',err);return[]});
