@@ -16,6 +16,7 @@ function json(res,status,body){res.status(status).setHeader('Content-Type','appl
 function workspace(value){const id=String(value||'');if(!/^[a-f0-9-]{16,80}$/i.test(id))throw new Error('Invalid workspace.');return id}
 function safeName(name){const n=String(name||'file').normalize('NFKC').replace(/[^a-zA-Z0-9._()\- ]/g,'_').trim();return(n||'file').slice(0,180)}
 function cleanFolder(name){return safeName(name).replace(/[.]+$/,'').slice(0,80)}
+function cleanFolderPath(value){const raw=String(value||'').replace(/^\/+|\/+$/g,'');if(!raw)return '';const parts=raw.split('/');if(parts.some(part=>!part||part==='.'||part==='..'||cleanFolder(part)!==part))throw new Error('Invalid folder path.');return parts.join('/')+'/';}
 function contentType(name){const ext=String(name).split('.').pop().toLowerCase();const map={pdf:'application/pdf',txt:'text/plain',json:'application/json',html:'text/html',css:'text/css',js:'text/javascript',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',mp3:'audio/mpeg',zip:'application/zip',csv:'text/csv',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',ppt:'application/vnd.ms-powerpoint',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};return map[ext]||'application/octet-stream'}
 async function list(s3,prefix){const out=await s3.send(new ListObjectsV2Command({Bucket:BUCKET,Prefix:prefix,MaxKeys:1000}));return(out.Contents||[]).map(x=>({key:x.Key,size:Number(x.Size||0),updatedAt:x.LastModified||null,type:x.Key.endsWith('/')?'folder':contentType(x.Key)})).filter(x=>x.key!==prefix)}
 module.exports=async(req,res)=>{
@@ -27,10 +28,10 @@ module.exports=async(req,res)=>{
       return json(res,200,{items,used,quota:MAX_WORKSPACE_BYTES});
     }
     if(action==='presign-upload'){
-      const name=safeName(req.query?.name),size=Number(req.query?.size||0),type=String(req.query?.type||contentType(name)).slice(0,120);
+      const name=safeName(req.query?.name),size=Number(req.query?.size||0),type=String(req.query?.type||contentType(name)).slice(0,120),folder=cleanFolderPath(req.query?.path);
       if(!Number.isFinite(size)||size<=0||size>100*1024*1024)return json(res,400,{error:'Files must be between 1 byte and 100 MB.'});
       const items=await list(s3,prefix),used=items.filter(x=>x.type!=='folder').reduce((a,x)=>a+x.size,0);if(used+size>MAX_WORKSPACE_BYTES)return json(res,413,{error:'This workspace has reached its 5 GB limit.'});
-      const key=`${prefix}${Date.now()}-${Math.random().toString(36).slice(2,10)}-${name}`,url=await getSignedUrl(s3,new PutObjectCommand({Bucket:BUCKET,Key:key,ContentType:type}),{expiresIn:900});
+      const key=`${prefix}${folder}${Date.now()}-${Math.random().toString(36).slice(2,10)}-${name}`,url=await getSignedUrl(s3,new PutObjectCommand({Bucket:BUCKET,Key:key,ContentType:type}),{expiresIn:900});
       return json(res,200,{url,key,name,size,type});
     }
     if(action==='presign-download'){
@@ -45,7 +46,7 @@ module.exports=async(req,res)=>{
       await s3.send(new CopyObjectCommand({Bucket:BUCKET,CopySource:`${BUCKET}/${key}`,Key:newKey}));await s3.send(new DeleteObjectCommand({Bucket:BUCKET,Key:key}));return json(res,200,{ok:true,key:newKey,name});
     }
     if(action==='create-folder'){
-      const name=cleanFolder(req.body?.name);if(!name)return json(res,400,{error:'Enter a folder name.'});const key=`${prefix}${name}/`;await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:key,Body:'',ContentType:'application/x-directory'}));return json(res,200,{ok:true,key,name});
+      const name=cleanFolder(req.body?.name),folder=cleanFolderPath(req.body?.path);if(!name)return json(res,400,{error:'Enter a folder name.'});if(name==='.'||name==='..')return json(res,400,{error:'Choose a valid folder name.'});const key=`${prefix}${folder}${name}/`;await s3.send(new PutObjectCommand({Bucket:BUCKET,Key:key,Body:'',ContentType:'application/x-directory'}));return json(res,200,{ok:true,key,name,path:folder});
     }
     if(action==='check'){
       const key=String(req.query?.key||'');if(!key.startsWith(prefix))return json(res,403,{error:'Invalid file.'});const head=await s3.send(new HeadObjectCommand({Bucket:BUCKET,Key:key}));return json(res,200,{ok:true,size:head.ContentLength||0});
