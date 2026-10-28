@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 const {S3Client,GetObjectCommand}=require('@aws-sdk/client-s3');
-const { getDb, sendLoginAlerts } = require('../lib/oveshcloud-alerts.js');
+const { getDb, sendLoginAlerts, sendFailedLoginAlert } = require('../lib/oveshcloud-alerts.js');
 const getAdminDb = getDb;
 function detectOS(ua=''){if(/Windows NT 10\.0/i.test(ua))return'Windows 10/11';if(/Mac OS X/i.test(ua))return'macOS';if(/Android/i.test(ua))return'Android';if(/iPhone|iPad|iPod/i.test(ua))return'iOS/iPadOS';if(/Linux/i.test(ua))return'Linux';return'Not available'}
 function detectBrowser(ua=''){if(/Edg\//i.test(ua))return'Microsoft Edge';if(/OPR\//i.test(ua))return'Opera';if(/Chrome\//i.test(ua))return'Google Chrome';if(/Firefox\//i.test(ua))return'Mozilla Firefox';if(/Safari\//i.test(ua))return'Safari';return'Not available'}
@@ -169,7 +169,16 @@ export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
-  if(username!==u||password!==p)return res.status(401).json({ok:false,error:username===u?'WRONG PASSWORD':'ACCESS DENIED'});
+  if(username!==u||password!==p){
+    // Never include, store, or email the submitted password.
+    const ip=(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').toString().split(',')[0].trim()||null;
+    const ua=req.headers['user-agent']||'',timestamp=new Date().toISOString();
+    const ipInfo=await lookupIp(ip),time=new Date(timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'})+' IST';
+    const details={username:String(username||'Not provided').slice(0,80),timestamp,ip,isp:ipInfo.isp||'Not available',os:detectOS(ua),browser:detectBrowser(ua),device:detectDevice(ua),userAgent:ua||'Not available',location:ipInfo.location||null,time};
+    const alert=await sendFailedLoginAlert(details).catch(err=>{console.error('OVESH failed-login email alert failed',err.message);return{ok:false}});
+    if(!alert?.ok)console.warn('OVESH failed-login email alert not sent',alert?.reason||'email not configured or unavailable');
+    return res.status(401).json({ok:false,error:username===u?'WRONG PASSWORD':'ACCESS DENIED'});
+  }
   const ip=(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').toString().split(',')[0].trim()||null,ua=req.headers['user-agent']||'',timestamp=new Date().toISOString();
   const secret=process.env.OVESH_CLOUD_SESSION_SECRET||p,payload=Buffer.from(JSON.stringify({u,iat:Date.now(),exp:Date.now()+1000*60*60*12,nonce:crypto.randomBytes(16).toString('hex')})).toString('base64url'),signature=crypto.createHmac('sha256',secret).update(payload).digest('base64url'),token=`${payload}.${signature}`;
   const ipInfo=await lookupIp(ip);const os=detectOS(ua),browser=detectBrowser(ua),device=detectDevice(ua),finalLocation=ipInfo.location||location||null;
