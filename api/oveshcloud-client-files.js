@@ -2,12 +2,16 @@ const crypto=require('crypto');
 const {getSignedUrl}=require('@aws-sdk/s3-request-presigner');
 const {requireClient,b2,safeName,mimeForName,jsonError,httpError}=require('../lib/oveshcloud-client-cloud.js');
 const {PutObjectCommand,GetObjectCommand,DeleteObjectCommand,HeadObjectCommand}=require('@aws-sdk/client-s3');
+const clientAdminHandler=require('../lib/oveshcloud-client-admin-handler.js');
 const GB=1024*1024*1024,MAX_FILE=2*GB;
 module.exports=async function handler(req,res){
  res.setHeader('Cache-Control','no-store, private');
  try{
+  const body=req.body||{},action=String(body.action||'');
+  // Owner-only client administration shares this function to stay within Vercel Hobby's function cap.
+  if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files'].includes(action))return clientAdminHandler(req,res);
   if(req.method!=='POST')throw httpError(405,'Method not allowed.');
-  const body=req.body||{},action=String(body.action||''),c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
+  const c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
   if(action==='profile'){return res.status(200).json({ok:true,profile:{name:c.account.name||'',email:c.email,company:c.account.company||'',status:c.account.status||'active'}})}
   if(action==='finish-setup'){
    await accountRef.update({mustChangePassword:false,passwordChangedAt:new Date(),updatedAt:new Date()});
