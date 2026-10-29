@@ -40,15 +40,15 @@
    $('signedInActions').classList.remove('hidden');
    $('emailForm').classList.add('hidden');$('googleBtn').classList.add('hidden');
    try{
-     const snap=await db.collection('client_accounts').doc(user.uid).get();
-     if(snap.exists && snap.data().status==='active'){
-       message('Access approved. Opening your private client cloud…');location.replace('/client-cloud.html');
-     } else {
-       message('Your identity was verified ('+(user.email||'account')+'), but client access has not been approved yet. No private files were opened. Contact the owner to request access.');
-     }
+     const token=await user.getIdToken();
+     const response=await fetch('/api/oveshcloud-client-files',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},credentials:'omit',cache:'no-store',body:JSON.stringify({action:'profile'})});
+     const result=await response.json().catch(()=>({}));
+     if(response.ok&&result.ok){message('Access approved. Opening your private client cloud…');location.replace('/client-cloud.html');}
+     else if(response.status===403){message(result.error||'Your identity was verified, but client access is not active. Contact the owner.',true);}
+     else {throw new Error(result.error||'Client approval check failed.');}
    }catch(e){
      console.error('Client access check failed:',e);
-     message('Sign-in succeeded, but access approval could not be verified. For your security, the client workspace remains locked. Contact the owner.',true);
+     message('Sign-in succeeded, but access approval could not be verified. The private workspace remains locked. Please retry or contact the owner.',true);
    }
  }
  $('googleBtn').addEventListener('click',async()=>{
