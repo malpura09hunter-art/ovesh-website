@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/oveshcloud-client-admin",
+      "destination": "/api/oveshcloud-client-files"
+    },
+    {
+      "source": "/api/ppc-compile",
+      "destination": "/api/ovesh-compiler-execute?mode=ppc"
+    },
+    {
       "source": "/api/verify-reset-token",
       "destination": "/api/send-reset"
     },
