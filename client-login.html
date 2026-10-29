@@ -35,20 +35,20 @@
 (function(){
  const $=id=>document.getElementById(id), status=$('status');
  function message(text,error=false){status.textContent=text;status.classList.add('show');status.classList.toggle('error',error)}
- function friendly(e){const map={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No account exists for this email. Ask the owner for an invitation.','auth/wrong-password':'Email or password is incorrect.','auth/too-many-requests':'Too many attempts. Please wait and try again.','auth/popup-blocked':'The Google sign-in popup was blocked. Allow popups and try again.','auth/unauthorized-domain':'This website domain is not enabled for Google sign-in in Firebase.','auth/network-request-failed':'Network error. Check your connection and try again.','auth/operation-not-allowed':'This sign-in method is not enabled in Firebase yet.'};return map[e.code]||'Sign-in could not be completed. Please try again.'}
+ function friendly(e){const map={'auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'No account exists for this email. Ask the owner for an invitation.','auth/wrong-password':'Email or password is incorrect.','auth/too-many-requests':'Too many attempts. Please wait and try again.','auth/popup-blocked':'The Google sign-in popup was blocked. Allow popups and try again.','auth/unauthorized-domain':'This website domain is not enabled for Google sign-in in Firebase.','auth/network-request-failed':'Network error. Check your connection and try again.','auth/operation-not-allowed':'This sign-in method is not enabled in Firebase yet.','auth/account-exists-with-different-credential':'This account uses email/password first. Sign in with email and password, then link Google from your client workspace.'};return map[e.code]||'Sign-in could not be completed. Please try again.'}
  async function afterSignIn(user){
    $('signedInActions').classList.remove('hidden');
    $('emailForm').classList.add('hidden');$('googleBtn').classList.add('hidden');
    try{
-     const snap=await db.collection('client_accounts').doc(user.uid).get();
-     if(snap.exists && snap.data().status==='active'){
-       message('You are signed in as '+(user.email||'your account')+'. Your client account is approved. The private client workspace must be provisioned before files can be opened here.');
-     } else {
-       message('Your identity was verified ('+(user.email||'account')+'), but client access has not been approved yet. No private files were opened. Contact the owner to request access.');
-     }
+     const token=await user.getIdToken();
+     const response=await fetch('/api/oveshcloud-client-files',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},credentials:'omit',cache:'no-store',body:JSON.stringify({action:'profile'})});
+     const result=await response.json().catch(()=>({}));
+     if(response.ok&&result.ok){message('Access approved. Opening your private client cloud…');location.replace('/client-cloud.html');}
+     else if(response.status===403){message(result.error||'Your identity was verified, but client access is not active. Contact the owner.',true);}
+     else {throw new Error(result.error||'Client approval check failed.');}
    }catch(e){
      console.error('Client access check failed:',e);
-     message('Sign-in succeeded, but access approval could not be verified. For your security, the client workspace remains locked. Contact the owner.',true);
+     message('Sign-in succeeded, but access approval could not be verified. The private workspace remains locked. Please retry or contact the owner.',true);
    }
  }
  $('googleBtn').addEventListener('click',async()=>{

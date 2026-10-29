@@ -1,7 +1,9 @@
-import crypto from 'crypto';
+import ppcCompileHandler from '../lib/ppc-compile-handler.js';
 
 // Public compiler endpoint. Execution remains resource-limited; no compiler password/session is required.
 export default async function handler(req,res){
+  const mode=req.query?.mode || new URL(req.url || '/', 'http://localhost').searchParams.get('mode');
+  if(mode==='ppc')return ppcCompileHandler(req,res);
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const {source_code='',stdin='',filename='main.c'}=req.body||{};
   if(typeof source_code!=='string'||source_code.length>100000)return res.status(413).json({ok:false,error:'Source code is too large.'});
