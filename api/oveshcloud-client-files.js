@@ -14,7 +14,18 @@ module.exports=async function handler(req,res){
   const c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
   if(action==='profile'){return res.status(200).json({ok:true,profile:{name:c.account.name||'',email:c.email,company:c.account.company||'',status:c.account.status||'active'}})}
   if(action==='finish-setup'){
-   await accountRef.update({mustChangePassword:false,passwordChangedAt:new Date(),updatedAt:new Date()});
+   // Never trust the browser to claim password setup is complete. Firebase Admin's
+   // passwordUpdatedAt is set by Firebase only after a successful password change.
+   if(c.account.mustChangePassword===true){
+    const user=await c.auth.getUser(c.uid);
+    const passwordUpdatedAt=Date.parse(user.metadata?.passwordUpdatedAt||'');
+    const createdAtValue=c.account.createdAt?.toDate?c.account.createdAt.toDate():c.account.createdAt;
+    const createdAt=createdAtValue instanceof Date?createdAtValue.getTime():Date.parse(createdAtValue||'');
+    if(!Number.isFinite(passwordUpdatedAt)||!Number.isFinite(createdAt)||passwordUpdatedAt<=createdAt){
+     throw httpError(403,'Finish setting your password using the secure Firebase password-reset link sent by the owner before accessing your workspace.');
+    }
+    await accountRef.update({mustChangePassword:false,passwordChangedAt:new Date(passwordUpdatedAt),updatedAt:new Date()});
+   }
    return res.status(200).json({ok:true});
   }
   if(action==='google-linked'){
