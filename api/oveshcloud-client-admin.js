@@ -27,9 +27,9 @@ module.exports=async function handler(req,res){
    const user=await auth.createUser({email,displayName:name,emailVerified:false,disabled:false});
    const quotaBytes=Math.round(quotaGb*1024*1024*1024);
    try{
-    await db.collection('client_accounts').doc(user.uid).create({uid:user.uid,name,email,company,status:'active',quotaBytes,usedBytes:0,reservedBytes:0,loginMethods:['password','google'],mustChangePassword:true,createdAt:new Date(),updatedAt:new Date(),createdBy:'OVESH_OWNER',storagePrefix:'client-cloud/'+user.uid+'/'});
+    await db.collection('client_accounts').doc(user.uid).create({uid:user.uid,name,email,company,status:'active',quotaBytes,usedBytes:0,reservedBytes:0,loginMethods:['password'],mustChangePassword:true,createdAt:new Date(),updatedAt:new Date(),createdBy:'OVESH_OWNER',storagePrefix:'client-cloud/'+user.uid+'/'});
    }catch(e){await auth.deleteUser(user.uid).catch(()=>{});throw e}
-   const setupLink=await auth.generatePasswordResetLink(email);
+   const setupLink=await auth.generatePasswordResetLink(email,{url:'https://malpuraovesh.vercel.app/client-login.html',handleCodeInApp:false});
    return res.status(201).json({ok:true,client:{uid:user.uid,name,email,company,status:'active',quotaBytes,usedBytes:0,reservedBytes:0,mustChangePassword:true},setupLink,message:'Account created. Share the password-setup link with the client through a secure channel. The client must finish setup before accessing files.'});
   }
   if(req.method==='PATCH'&&action==='status'){
@@ -44,8 +44,8 @@ module.exports=async function handler(req,res){
   if(req.method==='POST'&&action==='reset'){
    const uid=String(body.uid||'');if(!/^[A-Za-z0-9_-]{10,150}$/.test(uid))throw httpError(400,'Invalid client account.');
    const snap=await db.collection('client_accounts').doc(uid).get();if(!snap.exists)throw httpError(404,'Client account not found.');
-   const user=await auth.getUser(uid),setupLink=await auth.generatePasswordResetLink(user.email);
-   await snap.ref.update({mustChangePassword:true,updatedAt:new Date()});
+   const user=await auth.getUser(uid),setupLink=await auth.generatePasswordResetLink(user.email,{url:'https://malpuraovesh.vercel.app/client-login.html',handleCodeInApp:false});
+   await snap.ref.update({passwordResetRequestedAt:new Date(),updatedAt:new Date()});
    return res.status(200).json({ok:true,email:user.email,setupLink,message:'Send the password-setup link to the verified client using a secure channel.'});
   }
   throw httpError(400,'Unknown client management action.');
