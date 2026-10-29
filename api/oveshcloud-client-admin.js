@@ -13,6 +13,12 @@ module.exports=async function handler(req,res){
    return res.status(200).json({ok:true,clients});
   }
   const action=String(body.action||'');
+  if(req.method==='POST'&&action==='files'){
+   const uid=String(body.uid||'');if(!/^[A-Za-z0-9_-]{10,150}$/.test(uid))throw httpError(400,'Invalid client account.');
+   const ref=db.collection('client_accounts').doc(uid),snap=await ref.get();if(!snap.exists)throw httpError(404,'Client account not found.');
+   const fs=await ref.collection('files').orderBy('createdAt','desc').limit(500).get();
+   return res.status(200).json({ok:true,files:fs.docs.map(d=>{const f=d.data()||{};return{id:d.id,name:f.name||'File',size:Number(f.size||0),contentType:f.contentType||'',createdAt:f.createdAt?.toDate?f.createdAt.toDate().toISOString():f.createdAt||null}})});
+  }
   if(req.method==='POST'&&action==='create'){
    const name=String(body.name||'').trim().slice(0,120),email=String(body.email||'').trim().toLowerCase(),company=String(body.company||'').trim().slice(0,160),quotaGb=Number(body.quotaGb||10);
    if(name.length<2||!/^\S+@\S+\.\S+$/.test(email))throw httpError(400,'Enter a client name and valid email address.');
