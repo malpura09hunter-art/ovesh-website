@@ -7,7 +7,7 @@ module.exports=async function handler(req,res){
  res.setHeader('Cache-Control','no-store, private');
  try{
   if(req.method!=='POST')throw httpError(405,'Method not allowed.');
-  const body=req.body||{},action=String(body.action||''),c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'}),accountRef=c.ref,db=c.db;
+  const body=req.body||{},action=String(body.action||''),c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
   if(action==='profile'){return res.status(200).json({ok:true,profile:{name:c.account.name||'',email:c.email,company:c.account.company||'',status:c.account.status||'active'}})}
   if(action==='finish-setup'){
    await accountRef.update({mustChangePassword:false,passwordChangedAt:new Date(),updatedAt:new Date()});
