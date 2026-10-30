@@ -12,22 +12,42 @@ function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textC
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
 function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking','speaking');const u=new SpeechSynthesisUtterance(text),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;if(thenListen&&started&&!manualStop){status('Waiting for “wake up”','listening');listen()}else if(!started)status('Standby')};u.onerror=()=>{speaking=false;if(thenListen&&started&&!manualStop)listen();else status('Standby')};synth.speak(u)}
 function navigate(pageName,label){if(typeof window.render==='function')window.render(pageName);else document.querySelector('[data-page="'+pageName+'"]')?.click();speak('Opening '+label+'. Say “wake up” whenever you need me again.',true)}
-function replyTo(raw){const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
-if(/\b(stop listening|pause listening|go quiet|end conversation)\b/.test(q)){stop('Okay. I have paused the microphone.');return}
-if(/\b(command center|dashboard|home)\b/.test(q)){navigate('command','your command center');return}
-if(/\b(storage|files|file manager|cloud files)\b/.test(q)){navigate('storage','cloud storage');return}
-if(/\b(projects|client work)\b/.test(q)){navigate('projects','client projects');return}
-if(/\b(security|login activity)\b/.test(q)){navigate('security','security');return}
-if(/\b(college|study|subjects|practicals)\b/.test(q)){navigate('college','your college workspace');return}
-if(/\b(client cloud|clients)\b/.test(q)){navigate('client-cloud','client cloud management');return}
-if(/\b(shop|orders)\b/.test(q)){navigate('shop-orders','shop orders');return}
-let answer;if(/\b(hello|hi|hey)\b/.test(q))answer='Hello. I am here. What would you like to do?';
-else if(/\b(how are you|how is it going)\b/.test(q))answer='I am online and ready to help with your OV CLOUD workspace.';
-else if(/\b(who are you|what are you)\b/.test(q))answer='I am ORION, your voice companion inside OV CLOUD.';
-else if(/\b(what can you do|help|commands)\b/.test(q))answer='I can navigate your command center, client projects, cloud storage, security area, college workspace, client cloud and shop orders. Say the section you want to open.';
-else if(/\b(thank you|thanks)\b/.test(q))answer='You are welcome. Say “wake up” whenever you need me.';
-else answer='I heard you. I can currently help with OV CLOUD navigation and a few basic questions. For a wider, genuinely intelligent conversation, I still need a secure AI conversation service connected to this workspace.';
-speak(answer,true)}
+let chatHistory=[];
+async function askAI(raw){
+  const userMessage=String(raw||'').trim();
+  if(!userMessage)return;
+  chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
+  chatHistory=chatHistory.slice(-10);
+  status('Thinking','speaking');
+  transcript('', 'Let me think about that.');
+  try{
+    const response=await fetch('/api/oveshcloud-orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error||'ORION could not get an AI response.');
+    const answer=String(data.reply||'').trim();
+    if(!answer)throw new Error('ORION received an empty response. Please try again.');
+    chatHistory.push({role:'assistant',content:answer});
+    chatHistory=chatHistory.slice(-10);
+    speak(answer,true);
+  }catch(error){
+    chatHistory.pop();
+    const message=error&&error.message?error.message:'The AI service is temporarily unavailable.';
+    speak(message,true);
+  }
+}
+function replyTo(raw){
+ const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
+ if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
+ if(/\b(stop listening|pause listening|go quiet|end conversation)\b/.test(q)){stop('Okay. I have paused the microphone.');return}
+ if(/\b(command center|dashboard|home)\b/.test(q)){navigate('command','your command center');return}
+ if(/\b(storage|files|file manager|cloud files)\b/.test(q)){navigate('storage','cloud storage');return}
+ if(/\b(projects|client work)\b/.test(q)){navigate('projects','client projects');return}
+ if(/\b(security|login activity)\b/.test(q)){navigate('security','security');return}
+ if(/\b(college|study|subjects|practicals)\b/.test(q)){navigate('college','your college workspace');return}
+ if(/\b(client cloud|clients)\b/.test(q)){navigate('client-cloud','client cloud management');return}
+ if(/\b(shop|orders)\b/.test(q)){navigate('shop-orders','shop orders');return}
+ askAI(raw);
+}
 let wakeBuffer='',wakeBufferAt=0;
 function handleSpeech(raw){transcript(raw,'');const clean=raw.trim();if(!clean)return;if(awaitingCommand){awaitingCommand=false;replyTo(clean);return}
 const now=Date.now();if(now-wakeBufferAt>3500)wakeBuffer='';wakeBufferAt=now;
