@@ -191,15 +191,15 @@ async function handleOrion(req,res){
     const high=recent.filter(x=>x.severity==='high'||x.severity==='critical').length;
     const q=message.toLowerCase();
     let answer='';
-    if(/\\b(help|what can you do|commands)\\b/.test(q)){
+    if(/\b(help|what can you do|commands)\b/.test(q)){
       answer='I can give you a cloud briefing, report file metadata counts, summarize recent security events, and report service request totals. Try asking: cloud status, file count, or security status.';
-    }else if(/\\b(security|alert|threat|suspicious|incident)\\b/.test(q)){
+    }else if(/\b(security|alert|threat|suspicious|incident)\b/.test(q)){
       answer=!events?'I could not retrieve the security event summary right now. Your cloud session remains separate and unaffected.':high?'The latest 25 recorded security events include '+high+' high or critical severity event'+(high===1?'':'s')+'. Please open the Security section to inspect the full records. I have not changed any access or files.':'I found no high or critical severity events in the latest '+recent.length+' recorded security events. Please use the Security section for the full event history.';
-    }else if(/\\b(file|files|upload|storage)\\b/.test(q)){
+    }else if(/\b(file|files|upload|storage)\b/.test(q)){
       answer=files===null?'The file metadata count is currently unavailable.':'OV CLOUD currently has '+files+' file metadata record'+(files===1?'':'s')+' in its Firestore file index. This is an index count, not a measurement of Backblaze storage usage.';
-    }else if(/\\b(client|order|request|project)\\b/.test(q)){
+    }else if(/\b(client|order|request|project)\b/.test(q)){
       answer=requests===null?'The service request count is currently unavailable.':'I can see '+requests+' service request record'+(requests===1?'':'s')+' in the workspace request collection.';
-    }else if(/\\b(status|briefing|overview|summary|how are things|good morning|good afternoon|hello|hi)\\b/.test(q)){
+    }else if(/\b(status|briefing|overview|summary|how are things|good morning|good afternoon|hello|hi)\b/.test(q)){
       const fileText=files===null?'file index count unavailable':files+' file metadata records';
       const requestText=requests===null?'service request count unavailable':requests+' service requests';
       const securityText=!events?'security summary temporarily unavailable':high?high+' high or critical events among the latest '+recent.length+' security records':'no high or critical events among the latest '+recent.length+' security records';
