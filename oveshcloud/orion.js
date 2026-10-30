@@ -32,7 +32,7 @@ async function askAI(raw,speakResponse=true){
   }catch(error){
     chatHistory.pop();
     const message=error&&error.message?error.message:'The AI service is temporarily unavailable.';
-    speak(message,true);
+    if(speakResponse){speak(message,true)}else{transcript('',message);status('AI request failed');}
   }
 }
 function replyTo(raw){
