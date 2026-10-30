@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 const {S3Client,GetObjectCommand}=require('@aws-sdk/client-s3');
 const { getDb, sendLoginAlerts } = require('../lib/oveshcloud-alerts.js');
 const getAdminDb = getDb;
@@ -217,7 +217,7 @@ async function handleOrionChat(req,res){
   }
 }
 
-export default async function handler(req,res){
+module.exports = async function handler(req,res){
   if(String(req.query?.action||'')==='orion-chat')return handleOrionChat(req,res);
 
   if(req.method==='GET'&&(String(req.query?.action||'')==='drive-list'||String(req.query?.action||'')==='drive-download')){
