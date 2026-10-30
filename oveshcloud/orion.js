@@ -4,12 +4,72 @@ let recognition=null,listening=false,speaking=false,started=false,manualStop=fal
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 const page=$('#page');
 const panel=()=>`<section class="orion-shell" aria-labelledby="orionTitle">
-<header class="orion-heading"><div><div class="orion-kicker">OWNER VOICE COMPANION · PRIVATE SESSION</div><h1 id="orionTitle">ORION <span>Assistant</span></h1><p>Your workspace companion. Microphone listening starts automatically after owner sign-in when browser permission allows it.</p></div><div class="orion-state"><i id="orionLed"></i><span id="orionStatus">Standby</span></div></header>
+<header class="orion-heading"><div><div class="orion-kicker">OWNER VOICE COMPANION · PRIVATE SESSION</div><h1 id="orionTitle">ORION <span>Assistant</span></h1><p>Your workspace companion. Start once, then speak naturally without pressing the microphone for every message.</p></div><div class="orion-state"><i id="orionLed"></i><span id="orionStatus">Standby</span></div></header>
 <div class="orion-grid"><article class="orion-main-card"><div class="orion-orb-wrap"><div class="orion-orb" id="orionOrb"><span>O</span></div><small id="orionActivity">READY WHEN YOU ARE</small></div><div class="orion-transcript"><small>ORION</small><p id="orionReply" aria-live="polite">Hello. I'm ORION. Start a conversation and speak naturally. You do not need to say a wake word.</p><div class="orion-user-line"><small>YOU</small><p id="orionHeard">Your spoken words will appear here.</p></div></div><div class="orion-controls"><button id="orionTalk" class="orion-primary" type="button">Start conversation <span>→</span></button><button id="orionRecord" class="orion-secondary" type="button">Tap to speak</button><button id="orionStop" class="orion-secondary" type="button" disabled>Pause listening</button></div><form id="orionChatForm" class="orion-chat-form"><label class="orion-chat-label" for="orionTextInput">CHAT WITH ORION</label><div class="orion-chat-row"><textarea id="orionTextInput" rows="2" maxlength="1800" placeholder="Type a question or follow-up…"></textarea><button id="orionSend" class="orion-primary" type="submit">Send →</button></div></form><p class="orion-hint" id="orionHint">Start conversation once, allow microphone access, and speak naturally. ORION listens for each turn and resumes listening after replying. You can interrupt while ORION speaks.</p></article>
-<aside class="orion-side-card"><div class="orion-side-title">TRY SAYING</div><button type="button" data-orion-say="Open my command center">“Open Command Center” <span>↗</span></button><button type="button" data-orion-say="Open cloud storage">“Open Cloud Storage” <span>↗</span></button><button type="button" data-orion-say="Show my client projects">“Show Client Projects” <span>↗</span></button><button type="button" data-orion-say="Open security">“Open Security” <span>↗</span></button><div class="orion-privacy"><strong>VOICE PRIVACY</strong><p>The microphone stays active only while wake-word mode is enabled. Select Pause listening to turn it off. Browser speech recognition may use your browser's speech service.</p></div></aside></div></section>`;
+<aside class="orion-side-card"><div class="orion-side-title">TRY SAYING</div><button type="button" data-orion-say="Open my command center">“Open Command Center” <span>↗</span></button><button type="button" data-orion-say="Open cloud storage">“Open Cloud Storage” <span>↗</span></button><button type="button" data-orion-say="Show my client projects">“Show Client Projects” <span>↗</span></button><button type="button" data-orion-say="Open security">“Open Security” <span>↗</span></button><div class="orion-privacy"><strong>VOICE PRIVACY</strong><p>The microphone stays active only during your owner-started voice session. Audio is sent to the configured transcription service to understand your messages.</p></div></aside></div></section>`;
 function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity');if(led)led.className=mode;if(orb)orb.className='orion-orb '+mode;if(act)act.textContent=s.toUpperCase()}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply}
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
+
+let conversationStream=null,conversationContext=null,conversationAnalyser=null,conversationBuffer=null,conversationFrame=0,conversationRecorder=null,conversationChunks=[],conversationStartedAt=0,conversationLastVoice=0,conversationSpeechFrames=0,conversationUploading=false;
+function stopConversationEngine(){
+ if(conversationFrame)cancelAnimationFrame(conversationFrame);conversationFrame=0;
+ if(conversationRecorder&&conversationRecorder.state==='recording'){try{conversationRecorder.stop()}catch{}}
+ conversationRecorder=null;conversationChunks=[];
+ if(conversationStream){conversationStream.getTracks().forEach(t=>t.stop());conversationStream=null}
+ if(conversationContext){try{conversationContext.close()}catch{}conversationContext=null}
+ conversationAnalyser=null;conversationBuffer=null;conversationUploading=false;
+}
+function startConversationListening(){
+ if(!started||manualStop||speaking||conversationFrame||conversationUploading||!conversationStream||!conversationAnalyser)return;
+ status('Listening · speak naturally','listening');
+ const tick=()=>{
+  if(!started||manualStop||!conversationStream||!conversationAnalyser){conversationFrame=0;return}
+  if(speaking||bargeRecording){conversationFrame=requestAnimationFrame(tick);return}
+  conversationAnalyser.getByteTimeDomainData(conversationBuffer);
+  let sum=0;for(let i=0;i<conversationBuffer.length;i++){const v=(conversationBuffer[i]-128)/128;sum+=v*v}
+  const rms=Math.sqrt(sum/conversationBuffer.length);
+  if(!conversationRecorder){
+   if(rms>0.022)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
+   if(conversationSpeechFrames>=4){
+    try{
+     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
+     conversationRecorder=new MediaRecorder(conversationStream,{mimeType:mime,audioBitsPerSecond:48000});
+     conversationChunks=[];conversationStartedAt=Date.now();conversationLastVoice=Date.now();
+     conversationRecorder.ondataavailable=e=>{if(e.data&&e.data.size)conversationChunks.push(e.data)};
+     conversationRecorder.onstop=()=>{const blob=new Blob(conversationChunks,{type:conversationRecorder?.mimeType||'audio/webm'});conversationRecorder=null;conversationChunks=[];conversationSpeechFrames=0;processConversationAudio(blob)};
+     conversationRecorder.start(250);status('Listening to you…','listening');
+    }catch(error){conversationRecorder=null;status('Microphone recording unavailable');transcript('','I could not start voice capture. Please check your browser microphone settings.')}
+   }
+  }else{
+   if(rms>0.018)conversationLastVoice=Date.now();
+   if(Date.now()-conversationLastVoice>950||Date.now()-conversationStartedAt>9500){
+    const rec=conversationRecorder;conversationRecorder=null;
+    try{if(rec.state==='recording')rec.stop()}catch{}
+   }
+  }
+  conversationFrame=requestAnimationFrame(tick);
+ };
+ conversationFrame=requestAnimationFrame(tick);
+}
+async function processConversationAudio(blob){
+ if(!started||manualStop)return;
+ if(!blob||blob.size<1200){startConversationListening();return}
+ if(blob.size>500000){transcript('','That was a long voice message. Please speak in shorter sentences.');startConversationListening();return}
+ conversationUploading=true;status('Understanding your words…','thinking');
+ try{
+  const reader=new FileReader();
+  const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read microphone audio.'));reader.readAsDataURL(blob)});
+  const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:'audio/webm'})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||'Voice transcription failed.');
+  const words=String(data.text||'').trim();
+  if(words){transcript(words,'');conversationUploading=false;replyTo(words);return}
+  throw new Error('I could not hear clear words.');
+ }catch(error){transcript('','I had trouble understanding that. '+(error.message||'Please try again.'));status('Listening · try again','listening')}
+ finally{conversationUploading=false;if(started&&!manualStop&&!speaking)startConversationListening()}
+}
+
 let bargeStream=null,bargeFrame=0,bargeSince=0,bargeRecording=false;
 function stopBargeWatch(){if(bargeFrame)cancelAnimationFrame(bargeFrame);bargeFrame=0;if(bargeStream){bargeStream.getTracks().forEach(t=>t.stop());bargeStream=null}bargeRecording=false}
 async function startBargeWatch(){
@@ -53,7 +113,7 @@ async function startBargeWatch(){
  }catch(e){stopBargeWatch();/* Keep spoken replies available even if barge-in mic access is unavailable. */}
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
-function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){status('Listening for your next message','listening');listen()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)listen();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
 function navigate(pageName,label){if(typeof window.render==='function')window.render(pageName);else document.querySelector('[data-page="'+pageName+'"]')?.click();speak('Opening '+label+'. What would you like to do next?',true)}
 let chatHistory=[];
 async function askAI(raw,speakResponse=true){
@@ -99,8 +159,32 @@ if(!match){wakeBuffer=/\b(?:wake|hey|okay|ok)\b/i.test(normalized)?normalized.sp
 wakeBuffer='';lastWakeAt=now;openPanel();const command=(match[1]||'').trim();if(command){replyTo(command)}else{awaitingCommand=true;speak('Yes? I am listening.',true);status('Listening for your command','listening')}}
 function listen(){if(!started||manualStop||speaking||listening)return;if(!SpeechRecognition){started=false;status('Speech recognition unavailable');$('#orionTalk').disabled=false;$('#orionStop').disabled=true;$('#orionHint').textContent='Speech recognition is not available here. Try the latest Chrome or Edge.';return}
 try{recognition=new SpeechRecognition();recognition.lang='en-IN';recognition.continuous=true;recognition.interimResults=false;recognition.maxAlternatives=3;recognition.onstart=()=>{listening=true;recognitionFailed=false;restartAttempts=0;status(awaitingCommand?'Listening for your command':'Listening · speak naturally','listening');$('#orionHint').textContent='Conversation mode is active. Speak naturally; no wake word is needed.'};recognition.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)handleSpeech(e.results[i][0].transcript)}};recognition.onerror=e=>{listening=false;const fail=(label,hint)=>{recognitionFailed=true;started=false;manualStop=true;clearTimeout(restartTimer);status(label);$('#orionTalk').disabled=false;$('#orionStop').disabled=true;$('#orionHint').textContent=hint};if(e.error==='not-allowed'||e.error==='service-not-allowed'){fail('Microphone permission needed','Allow microphone access for OV CLOUD in Chrome site settings, then click Retry microphone.')}else if(e.error==='audio-capture'){fail('Microphone unavailable','Chrome cannot access a working microphone. Check Windows Settings → System → Sound → Input and select the correct microphone.')}else if(e.error==='network'){fail('Speech service unavailable','The microphone permission may be fine, but Chrome speech recognition cannot reach its speech service. Check your internet connection, disable VPN/proxy temporarily, and retry.')}else if(e.error==='language-not-supported'){fail('Language unavailable','Chrome speech recognition does not support the selected language. Please retry or use Chrome with English (India) language support.')}};recognition.onend=()=>{listening=false;if(started&&!speaking&&!manualStop&&!recognitionFailed){clearTimeout(restartTimer);restartAttempts++;if(restartAttempts>5){started=false;manualStop=true;status('Microphone stopped · retry needed');$('#orionTalk').disabled=false;$('#orionStop').disabled=true;$('#orionHint').textContent='Chrome repeatedly ended speech recognition. Check your microphone and internet connection, then click Retry microphone.';return}const delay=Math.min(700*Math.pow(1.6,restartAttempts-1),6000);status('Reconnecting microphone · attempt '+restartAttempts,'listening');restartTimer=setTimeout(listen,delay)}else if(!speaking&&started)status('Ready to retry')};recognition.start()}catch(e){listening=false;started=false;manualStop=true;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status('Microphone could not start');$('#orionHint').textContent=e&&e.name==='NotAllowedError'?'The browser blocked microphone access. Allow the microphone for this site, then press Retry microphone.':'Could not start listening. Check microphone permissions and try again.';}}
-async function start(){if(started)return;conversationMode=true;if(!SpeechRecognition){status('Unsupported browser');$('#orionHint').textContent='Use a current Chrome or Edge browser that supports Web Speech recognition.';return}if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){status('Secure microphone access required');$('#orionHint').textContent='Open OV CLOUD on its HTTPS address in the latest Chrome or Edge browser.';return}started=true;manualStop=false;recognitionFailed=false;awaitingCommand=false;if($('#orionTalk'))$('#orionTalk').disabled=true;if($('#orionStop'))$('#orionStop').disabled=false;transcript('','Checking microphone access…');status('Checking microphone','listening');try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});stream.getTracks().forEach(track=>track.stop());if(!started||manualStop)return;transcript('','Microphone access confirmed. Starting ORION listening…');status('Starting speech recognition','listening');listen()}catch(e){started=false;manualStop=true;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status(e&&e.name==='NotAllowedError'?'Microphone permission needed':'Microphone unavailable');$('#orionHint').textContent=e&&e.name==='NotAllowedError'?'Click the site icon beside the address bar → Site settings → Microphone → Allow, then retry.':'No microphone could be opened. Check Windows Settings → System → Sound → Input and Chrome microphone selection.'}}
-function stop(message='Listening paused. Say Enable wake word when you want me back.'){manualStop=true;started=false;awaitingCommand=false;listening=false;clearTimeout(restartTimer);try{recognition?.stop()}catch{}try{window.speechSynthesis?.cancel()}catch{}stopBargeWatch();speaking=false;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status('Standby');if(message){transcript('',message);if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(message),v=voice();if(v)u.voice=v;window.speechSynthesis.speak(u)}}}
+async function start(){
+ if(started)return;
+ if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status('Secure microphone access required');$('#orionHint').textContent='Open OV CLOUD in the latest Chrome or Edge over HTTPS to use continuous voice conversation.';return}
+ started=true;manualStop=false;recognitionFailed=false;awaitingCommand=false;conversationMode=true;
+ if($('#orionTalk'))$('#orionTalk').disabled=true;if($('#orionStop'))$('#orionStop').disabled=false;
+ transcript('','Connecting your microphone…');status('Starting voice conversation','listening');
+ try{
+  conversationStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}});
+  if(!started||manualStop){stopConversationEngine();return}
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)throw new Error('Web Audio is not supported in this browser.');
+  conversationContext=new AudioCtx();await conversationContext.resume();
+  const source=conversationContext.createMediaStreamSource(conversationStream);
+  conversationAnalyser=conversationContext.createAnalyser();conversationAnalyser.fftSize=2048;
+  source.connect(conversationAnalyser);conversationBuffer=new Uint8Array(conversationAnalyser.fftSize);
+  transcript('','ORION is ready. Speak naturally; you do not need to press the microphone again.');
+  $('#orionHint').textContent='Continuous conversation is active. Speak naturally, pause when you finish, and ORION will reply. During replies, the interruption listener is available.';
+  startConversationListening();
+ }catch(error){
+  stopConversationEngine();started=false;manualStop=true;
+  if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;
+  status('Could not start voice conversation');
+  $('#orionHint').textContent=error?.name==='NotAllowedError'?'Allow microphone access for this site, then click Start conversation again.':(error?.message||'Check your microphone and try again.');
+ }
+}
+function stop(message='Voice conversation paused. Click Start conversation when you are ready.'){manualStop=true;started=false;awaitingCommand=false;listening=false;clearTimeout(restartTimer);try{recognition?.stop()}catch{}try{window.speechSynthesis?.cancel()}catch{}stopBargeWatch();stopConversationEngine();speaking=false;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status('Standby');if(message){transcript('',message)}}
 
 let voiceStream=null,voiceRecorder=null,voiceChunks=[],voiceTimer=null,voiceBusy=false;
 async function toggleVoiceRecording(){
@@ -141,7 +225,7 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;askAI(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!SpeechRecognition)$('#orionHint').textContent='Speech recognition is not available in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;askAI(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function activateAfterLogin(){openPanel();transcript('','Welcome back. ORION is starting automatically. Allow microphone access if your browser asks, then say “ORION” or “wake up” whenever you need me.');status('Starting microphone','listening');if(!started&&!manualStop){setTimeout(()=>{if(!started&&!manualStop)start()},350)}}
 function addNav(){const nav=$('#nav'),btn=$('#orionNav');if(!nav||!btn)return;btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openPanel();if(!started){transcript('','I am here. Start conversation to talk naturally with me.');status('Standby')}},true)}
