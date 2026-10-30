@@ -171,6 +171,45 @@ async function listSecurityEvents(req,res){
   }catch(error){console.error('OVESH security events read failed:',error?.message||error);return res.status(500).json({ok:false,error:'Unable to load security events. Check Firebase Admin configuration and Firestore access.'})}
 }
 
+
+async function handleOrionTranscribe(req,res){
+  res.setHeader('Cache-Control','private, no-store, max-age=0');
+  res.setHeader('Vary','Cookie');
+  if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed.'});
+  try{
+    requireCloudSession(req);
+    const apiKey=String(process.env.GROQ_API_KEY||'').trim();
+    if(!apiKey)return res.status(503).json({ok:false,error:'ORION voice transcription is not configured.'});
+    const audio=String(req.body?.audio||'');
+    const mime=String(req.body?.mimeType||'audio/webm').split(';')[0].toLowerCase();
+    const allowed=['audio/webm','audio/ogg','audio/mp4','audio/mpeg','audio/wav'];
+    if(!allowed.includes(mime))return res.status(400).json({ok:false,error:'Unsupported microphone recording format.'});
+    if(!audio||audio.length>1150000||!/^[A-Za-z0-9+/]+={0,2}$/.test(audio))return res.status(400).json({ok:false,error:'Recording is empty or too large. Please record a shorter voice message.'});
+    const bytes=Buffer.from(audio,'base64');
+    if(!bytes.length||bytes.length>850000)return res.status(413).json({ok:false,error:'Voice recording is too large. Keep recordings under 12 seconds.'});
+    const ext=mime==='audio/webm'?'webm':mime==='audio/ogg'?'ogg':mime==='audio/mp4'?'mp4':mime==='audio/mpeg'?'mp3':'wav';
+    const form=new FormData();
+    form.append('file',new Blob([bytes],{type:mime}), 'orion-voice.'+ext);
+    form.append('model','whisper-large-v3-turbo');
+    form.append('language','en');
+    form.append('response_format','json');
+    const upstream=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{method:'POST',headers:{Authorization:'Bearer '+apiKey},body:form,signal:AbortSignal.timeout(25000)});
+    const data=await upstream.json().catch(()=>({}));
+    if(!upstream.ok){
+      if(upstream.status===429)return res.status(429).json({ok:false,error:'ORION voice has reached the current free transcription limit. Please wait and retry.'});
+      console.error('ORION transcription provider failed:',upstream.status,data?.error?.message||'provider error');
+      return res.status(502).json({ok:false,error:'ORION could not transcribe this recording. Please try again.'});
+    }
+    const transcript=String(data?.text||'').trim();
+    if(!transcript)return res.status(422).json({ok:false,error:'I could not hear any clear words. Please speak closer to the microphone and try again.'});
+    return res.status(200).json({ok:true,text:transcript});
+  }catch(error){
+    if(error.name==='TimeoutError'||error.name==='AbortError')return res.status(504).json({ok:false,error:'Voice transcription timed out. Please try again.'});
+    console.error('ORION transcription endpoint error:',error?.message||error);
+    return res.status(Number(error.statusCode)||500).json({ok:false,error:error.message||'Unable to process the voice recording.'});
+  }
+}
+
 async function handleOrionChat(req,res){
   res.setHeader('Cache-Control','private, no-store, max-age=0');
   res.setHeader('Vary','Cookie');
@@ -219,6 +258,7 @@ async function handleOrionChat(req,res){
 
 module.exports = async function handler(req,res){
   if(String(req.query?.action||'')==='orion-chat')return handleOrionChat(req,res);
+  if(String(req.query?.action||'')==='orion-transcribe')return handleOrionTranscribe(req,res);
 
   if(req.method==='GET'&&(String(req.query?.action||'')==='drive-list'||String(req.query?.action||'')==='drive-download')){
     const mapped={...req,query:{...req.query,action:String(req.query.action)==='drive-list'?'list':'download'}};
