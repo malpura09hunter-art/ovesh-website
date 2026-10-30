@@ -10,8 +10,8 @@ const panel=()=>`<section class="orion-shell" aria-labelledby="orionTitle">
 function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity');if(led)led.className=mode;if(orb)orb.className='orion-orb '+mode;if(act)act.textContent=s.toUpperCase()}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply}
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
-let bargeStream=null,bargeFrame=0,bargeSince=0;
-function stopBargeWatch(){if(bargeFrame)cancelAnimationFrame(bargeFrame);bargeFrame=0;if(bargeStream){bargeStream.getTracks().forEach(t=>t.stop());bargeStream=null}}
+let bargeStream=null,bargeFrame=0,bargeSince=0,bargeRecording=false;
+function stopBargeWatch(){if(bargeFrame)cancelAnimationFrame(bargeFrame);bargeFrame=0;if(bargeStream){bargeStream.getTracks().forEach(t=>t.stop());bargeStream=null}bargeRecording=false}
 async function startBargeWatch(){
  stopBargeWatch();
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return;
@@ -24,8 +24,8 @@ async function startBargeWatch(){
   const cleanup=()=>{try{source.disconnect();ctx.close()}catch{}};
   const finish=()=>{if(recorder&&recorder.state==='recording')recorder.stop()};
   const upload=async blob=>{
-   stream.getTracks().forEach(t=>t.stop());if(bargeStream===stream)bargeStream=null;cleanup();
-   if(blob.size<1200){if(started&&!manualStop)listen();return}
+   stream.getTracks().forEach(t=>t.stop());if(bargeStream===stream)bargeStream=null;bargeRecording=false;cleanup();
+   if(blob.size<1200){bargeRecording=false;if(started&&!manualStop)listen();return}
    status('Hearing your interruption','speaking');transcript('','One moment — I’m listening.');
    try{
     const reader=new FileReader();const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read audio'));reader.readAsDataURL(blob)});
@@ -33,14 +33,14 @@ async function startBargeWatch(){
     const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Voice transcription failed');
     const words=String(data.text||'').trim();if(!words)throw new Error('I did not catch that. Please say it again.');
     transcript(words,'');status('You interrupted','listening');replyTo(words);
-   }catch(error){transcript('','I could not understand that: '+error.message);if(started&&!manualStop)listen()}
+   }catch(error){bargeRecording=false;transcript('','I could not understand that: '+error.message);if(started&&!manualStop)listen()}
   };
   const tick=()=>{
    if(!speaking||recording||!bargeStream){cleanup();return}
    analyser.getByteTimeDomainData(buffer);let sum=0;for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;sum+=x*x}const rms=Math.sqrt(sum/buffer.length);
    if(rms>0.045){above++;lastVoice=Date.now()}else above=Math.max(0,above-1);
    if(above>=4){
-    recording=true;try{window.speechSynthesis?.cancel()}catch{}speaking=false;status('Interrupted · listening','listening');
+    recording=true;bargeRecording=true;try{window.speechSynthesis?.cancel()}catch{}speaking=false;status('Interrupted · listening','listening');
     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');
     recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
     chunks=[];recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};recorder.onstop=()=>upload(new Blob(chunks,{type:recorder.mimeType||'audio/webm'}));recorder.start(250);
@@ -52,7 +52,7 @@ async function startBargeWatch(){
   bargeFrame=requestAnimationFrame(tick);
  }catch(e){/* Keep spoken replies available even if barge-in mic access is unavailable. */}
 }
-function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(text),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;stopBargeWatch();if(thenListen&&started&&!manualStop){status('Waiting for “wake up”','listening');listen()}else if(!started)status('Standby')};u.onerror=()=>{speaking=false;stopBargeWatch();if(thenListen&&started&&!manualStop)listen();else status('Standby')};synth.speak(u);startBargeWatch()}
+function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(text),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){status('Waiting for “wake up”','listening');listen()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)listen();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
 function navigate(pageName,label){if(typeof window.render==='function')window.render(pageName);else document.querySelector('[data-page="'+pageName+'"]')?.click();speak('Opening '+label+'. Say “wake up” whenever you need me again.',true)}
 let chatHistory=[];
 async function askAI(raw,speakResponse=true){
@@ -68,7 +68,7 @@ async function askAI(raw,speakResponse=true){
     if(!response.ok)throw new Error(data.error||'ORION could not get an AI response.');
     const answer=String(data.reply||'').trim();
     if(!answer)throw new Error('ORION received an empty response. Please try again.');
-    chatHistory.push({role:'assistant',content:answer});
+    chatHistory.push({role:'assistant',content:answer.slice(0,3800)});
     chatHistory=chatHistory.slice(-14);
     if(speakResponse)speak(answer,true);else{transcript('',answer);status('Reply ready');}
   }catch(error){
