@@ -28,7 +28,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <button type="button" data-orion-say="Open security"><span class="orion-command-icon amber">⬡</span><span><b>Security Center</b><small>Login and security activity</small></span><i>↗</i></button>
 </div>
 <div class="orion-routing"><div class="orion-panel-head"><div><small>INTELLIGENCE FLOW</small><h2>How ORION works</h2></div><span class="orion-flow-live">● READY</span></div>
-<div class="orion-flow"><div class="orion-flow-node"><i>01</i><span>Listen</span></div><b></b><div class="orion-flow-node"><i>02</i><span>Understand</span></div><b></b><div class="orion-flow-node"><i>03</i><span>Respond</span></div></div>
+<div class="orion-flow-3d" aria-label="ORION three-dimensional workflow: voice input, AI reasoning, cloud action, response"><div class="orion-flow-scene"><div class="orion-flow-grid"></div><div class="orion-flow-path"></div><div class="orion-flow-nodes"><div class="orion-flow-node"><i>◉</i><span>Listen</span><small>Voice input</small></div><div class="orion-flow-node"><i>✧</i><span>Understand</span><small>AI reasoning</small></div><div class="orion-flow-node"><i>⌘</i><span>Operate</span><small>Cloud tools</small></div><div class="orion-flow-node"><i>↗</i><span>Respond</span><small>Verified result</small></div></div></div></div>
 <div class="orion-flow-legend"><span><i class="violet"></i> Voice input</span><span><i class="blue"></i> AI reasoning</span><span><i class="teal"></i> Spoken reply</span></div></div>
 <div class="orion-privacy"><div class="orion-privacy-icon">⌑</div><div><strong>OWNER SESSION PROTECTED</strong><p>Microphone access is controlled by your browser. Audio is sent to the configured transcription service only when you speak during an active voice session.</p></div></div>
 </aside></div>
@@ -141,6 +141,41 @@ async function startBargeWatch(){
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
 function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+async function cloudCommand(raw){
+ const q=String(raw||'').trim(),lower=q.toLowerCase();
+ const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
+ const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
+ const say=(message)=>{speak(message,true)};
+ const findFile=(name)=>{const needle=String(name||'').trim().replace(/^["']|["']$/g,'').toLowerCase();if(!needle)return null;const all=files();return all.find(f=>String(f.name||'').toLowerCase()===needle)||all.find(f=>String(f.name||'').toLowerCase().includes(needle))||null};
+ const showStorage=()=>{navigate('storage','Cloud Storage')};
+ try{
+  if(/^(?:check|show|get|tell me|what is|what's).*(?:cloud|storage).*(?:status|usage|health|space)|^(?:storage|cloud)\s+(?:status|usage|health)$/i.test(q)){
+   const result=await storage.api({action:'status'});const list=await refresh();const bytes=list.reduce((n,f)=>n+Number(f.size||0),0);
+   showStorage();say('Your private Backblaze storage connection is '+(result.ok?'available':'not available')+'. I found '+list.length+' files using '+formatBytes(bytes)+'.');return true;
+  }
+  if(/^(?:list|show|find all|read out|what are).*(?:files|documents|assets)|^(?:list files|show files|what files do i have)$/i.test(q)){
+   const list=await refresh();showStorage();if(!list.length){say('Your cloud storage currently has no files in the index.');return true}
+   const names=list.slice(0,12).map(f=>f.name).filter(Boolean);say('I found '+list.length+' files. '+names.join(', ')+(list.length>12?'. And '+(list.length-12)+' more.':''));return true;
+  }
+  let m=q.match(/^(?:search|find|locate)\s+(?:for\s+)?(?:a\s+)?file\s+(?:named\s+)?(.+)$/i);
+  if(m){await refresh();const f=findFile(m[1]);showStorage();if(!f){say('I could not find a file matching '+m[1]+'.');return true}say('I found '+f.name+'. Would you like me to preview, download, or share it?');return true}
+  m=q.match(/^(?:preview|view|open)\s+(?:the\s+)?file\s+(.+)$/i)||q.match(/^open\s+(.+\.[a-z0-9]{2,8})$/i);
+  if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find that file in your private storage.');return true}if(!window.OVESH_B2_ACTIONS?.preview){say('The secure file preview module is not ready.');return true}showStorage();await window.OVESH_B2_ACTIONS.preview(f.objectKey||f.id);say('Opening '+f.name+' in the secure preview.');return true}
+  m=q.match(/^(?:download|get)\s+(?:the\s+)?file\s+(.+)$/i);
+  if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find that file in your private storage.');return true}showStorage();await storage.downloadRemote(f.objectKey||f.id);say('The secure download for '+f.name+' has been prepared.');return true}
+  m=q.match(/^(?:share)\s+(?:the\s+)?file\s+(.+)$/i);
+  if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find that file in your private storage.');return true}if(!window.OVESH_SHARE?.share){say('Secure sharing is not ready.');return true}showStorage();window.OVESH_SHARE.share(f.objectKey||f.id);say('I opened the secure sharing options for '+f.name+'. Choose the sharing method and expiration.');return true}
+  m=q.match(/^(?:create|make|add)\s+(?:a\s+)?folder\s+(?:called\s+|named\s+)?(.+)$/i);
+  if(m){const folder=m[1].trim().replace(/^["']|["']$/g,'');if(!folder||folder.length>100||/[\\\0]/.test(folder)){say('That folder name is not valid.');return true}if(!confirm('Create this folder in your private OV CLOUD storage?\n\n'+folder))return true;const result=await storage.api({action:'create-folder',folder});await refresh();showStorage();say(result.ok?'Folder '+folder+' has been created.':'I could not create that folder.');return true}
+  m=q.match(/^(?:move)\s+(?:the\s+)?file\s+(.+?)\s+to\s+(?:folder\s+)?(.+)$/i);
+  if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find the source file.');return true}const dest=m[2].trim().replace(/^["']|["']$/g,'').replace(/^\/+|\/+$/g,'');if(!dest||dest.includes('..')){say('That destination folder is not valid.');return true}const leaf=String(f.objectKey||f.id).split('/').pop();const destinationKey='users/OVESH/'+dest+'/'+leaf;if(!confirm('Move '+f.name+' to '+dest+'? The original object will be removed after the move succeeds.'))return true;await storage.moveRemote(f.objectKey||f.id,destinationKey,'file');await refresh();showStorage();say('The move request for '+f.name+' completed.');return true}
+  m=q.match(/^(?:delete|trash|remove)\s+(?:the\s+)?file\s+(.+)$/i);
+  if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find that file.');return true}if(!confirm('Move '+f.name+' to OV CLOUD Trash? You can restore it later.'))return true;const result=await storage.api({action:'trash',objectKey:f.objectKey||f.id,kind:'file'});await refresh();showStorage();say(result.ok?'I moved '+f.name+' to Trash. It has not been permanently erased.':'I could not move the file to Trash.');return true}
+  if(/^(?:upload|add)\s+(?:a\s+)?files?$/i.test(q)){showStorage();say('Cloud Storage is open. Use the Upload button to choose files from your device. I will not upload anything until you select it.');return true}
+ }catch(error){say('I could not complete that cloud action. '+(error?.message||'Please try again.'));return true}
+ return false;
+}
+function formatBytes(n){n=Number(n||0);if(!n)return'0 bytes';const units=['bytes','KB','MB','GB','TB'],i=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return(n/1024**i).toFixed(i?1:0)+' '+units[i]}
 function navigate(pageName,label){if(typeof window.render==='function')window.render(pageName);else document.querySelector('[data-page="'+pageName+'"]')?.click();speak('Opening '+label+'. What would you like to do next?',true)}
 let chatHistory=[];
 async function askAI(raw,speakResponse=true){
@@ -165,7 +200,7 @@ async function askAI(raw,speakResponse=true){
     if(speakResponse){speak(message,true)}else{transcript('',message);status('AI request failed');}
   }
 }
-function replyTo(raw){
+async function replyTo(raw){
  conversationReplying=true;
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
