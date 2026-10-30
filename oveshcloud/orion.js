@@ -278,7 +278,7 @@ async function askAI(raw,speakResponse=true){
     if(speakResponse){speak(message,true)}else{transcript('',message);status('AI request failed');}
   }
 }
-async let lastWorkspacePage='command';
+let lastWorkspacePage='command';
 const workspaceAliases=[
  {page:'command',label:'Command Center',terms:/\b(?:dashboard|home|overview|main screen|control room|command center)\b/},
  {page:'storage',label:'Cloud Storage',terms:/\b(?:my files|file manager|documents|storage|uploads|folders)\b/},
