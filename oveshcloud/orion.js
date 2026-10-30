@@ -275,18 +275,34 @@ async function askAI(raw,speakResponse=true){
 }
 async function replyTo(raw,speakResponse=true){
  conversationReplying=true;
- const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
+ const q=String(raw||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
  if(await cloudCommand(raw,speakResponse))return;
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
- if(/^(?:open|show|go to|take me to|navigate to|find|view)\s+(?:(?:the|my)\s+)?(?:client['’]?s?\s+)?(?:project|client project|project workspace)(?:\s+(.+))?[.! ]*$/.test(q)){const match=q.match(/^(?:open|show|go to|take me to|navigate to|find|view)\s+(?:(?:the|my)\s+)?(?:client['’]?s?\s+)?(?:project|client project|project workspace)(?:\s+(.+))?[.! ]*$/);navigate('projects','client projects');const requested=(match?.[1]||'').trim();setTimeout(()=>{const host=document.querySelector('#page .projects');const visible=host?.innerText||'';if(requested&&!visible.toLowerCase().includes(requested.toLowerCase()))speak('I opened Client Projects, but I could not find a listed project named '+requested+'. The current project page does not provide a matching entry or project details.',true);else if(requested)speak('I opened Client Projects and found a matching entry for '+requested+'.',true);else speak('I opened Client Projects. Your listed project entries are now visible.',true)},200);return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:the\s+)?(?:security|security center|login activity)[.! ]*$/.test(q)){navigate('security','security');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:college|study workspace|subjects)[.! ]*$/.test(q)){navigate('college','your college workspace');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:client cloud|clients)[.! ]*$/.test(q)){navigate('client-cloud','client cloud management');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:shop orders|orders)[.! ]*$/.test(q)){navigate('shop-orders','shop orders');return}
- askAI(raw);
+ const command=q.replace(/\b(?:please|for me|right now|now|thank you|thanks)\b/g,'').replace(/\s+/g,' ').trim();
+ const verb=/^(?:open|go to|show|take me to|navigate to|switch to|bring up|access|enter)\b/.test(command);
+ if(verb){
+  const routes=[
+   {page:'command',label:'your command center',pattern:/\b(?:command center|dashboard|home)\b/},
+   {page:'storage',label:'cloud storage',pattern:/\b(?:cloud storage|file manager|storage|files)\b/},
+   {page:'projects',label:'client projects',pattern:/\b(?:client projects|projects|project workspace|client project)\b/},
+   {page:'activity',label:'activity',pattern:/\b(?:activity|activity log|recent activity)\b/},
+   {page:'security',label:'security',pattern:/\b(?:security|security center|security console|login activity)\b/},
+   {page:'college',label:'your college workspace',pattern:/\b(?:college|study workspace|subjects)\b/},
+   {page:'client-cloud',label:'client cloud management',pattern:/\b(?:client cloud|client accounts|clients)\b/},
+   {page:'shop-orders',label:'shop orders',pattern:/\b(?:shop orders|orders)\b/}
+  ];
+  const route=routes.find(x=>x.pattern.test(command));
+  if(route){
+   navigate(route.page,route.label);
+   if(route.page==='projects'){
+    const named=command.match(/\b(?:project|projects)\s+(?:named\s+|called\s+)?(.+)$/);
+    const requested=named?.[1]?.trim();
+    if(requested)setTimeout(()=>{const host=document.querySelector('#page .projects');const visible=host?.innerText||'';speak(visible.toLowerCase().includes(requested.toLowerCase())?'I opened Client Projects and found a matching listed project for '+requested+'.':'I opened Client Projects, but I could not find a listed project named '+requested+'. The current page only exposes the project entries shown there.',true)},250);
+   }
+   return;
+  }
+ }
+ askAI(raw,speakResponse);
 }
 let wakeBuffer='',wakeBufferAt=0,conversationMode=true;
 function handleSpeech(raw){transcript(raw,'');const clean=raw.trim();if(!clean)return;if(awaitingCommand){awaitingCommand=false;replyTo(clean);return}if(conversationMode){replyTo(clean);return}
