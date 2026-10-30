@@ -175,20 +175,20 @@ async function cloudCommand(raw,speakResponse=true){
   return data.clients;
  };
  const clientBytes=n=>{n=Number(n||0);if(!n)return'0 bytes';const units=['bytes','KB','MB','GB','TB'],i=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return(n/1024**i).toFixed(i?1:0)+' '+units[i]};
- const clientIntent=/\\b(?:client cloud|client accounts?|clients|client directory|client list|list clients|customer accounts?)\\b/i.test(q);
+ const clientIntent=/\b(?:client cloud|client accounts?|clients|client directory|client list|list clients|customer accounts?)\b/i.test(q);
  if(clientIntent){
   try{
    const clients=await loadClientAccounts(),active=clients.filter(c=>String(c.status||'').toLowerCase()==='active'),suspended=clients.filter(c=>String(c.status||'').toLowerCase()!=='active');
    const used=clients.reduce((n,c)=>n+Number(c.usedBytes||0),0),quota=clients.reduce((n,c)=>n+Number(c.quotaBytes||0),0);
-   if(/\\b(?:how many|count|number|total)\\b/i.test(q)&&/\\b(?:active|enabled)\\b/i.test(q)){say('You have '+active.length+' active client accounts.');return true}
-   if(/\\b(?:how many|count|number|total)\\b/i.test(q)&&/\\b(?:suspended|inactive|disabled)\\b/i.test(q)){say('You have '+suspended.length+' suspended or non-active client accounts.');return true}
-   if(/\\b(?:storage|space|usage|used|quota)\\b/i.test(q)){
+   if(/\b(?:how many|count|number|total)\b/i.test(q)&&/\b(?:active|enabled)\b/i.test(q)){say('You have '+active.length+' active client accounts.');return true}
+   if(/\b(?:how many|count|number|total)\b/i.test(q)&&/\b(?:suspended|inactive|disabled)\b/i.test(q)){say('You have '+suspended.length+' suspended or non-active client accounts.');return true}
+   if(/\b(?:storage|space|usage|used|quota)\b/i.test(q)){
     const ranked=clients.slice().sort((a,b)=>Number(b.usedBytes||0)-Number(a.usedBytes||0));
     const top=ranked[0];
     say('Your '+clients.length+' client accounts use '+clientBytes(used)+' of '+clientBytes(quota)+' total allocated quota.'+(top?' The highest reported usage is '+(top.name||'an unnamed client')+' at '+clientBytes(top.usedBytes)+'.':''));
     return true;
    }
-   if(/\\b(?:list|show|name|who|which|directory)\\b/i.test(q)){
+   if(/\b(?:list|show|name|who|which|directory)\b/i.test(q)){
     const rows=clients.slice(0,10).map(c=>(c.name||'Unnamed client')+(c.company?' at '+c.company:'')+', '+(c.status||'status unavailable')).join('; ');
     say(clients.length?'You have '+clients.length+' client accounts. '+rows+(clients.length>10?'; and '+(clients.length-10)+' more.':''):'There are no client accounts in Client Cloud yet.');
     return true;
@@ -197,7 +197,7 @@ async function cloudCommand(raw,speakResponse=true){
    return true;
   }catch(error){say('I could not read Client Cloud data. '+(error?.message||'Please try again.'));return true}
  }
-  if(/\b(?:shop\\s+orders?|orders?|sales|store\\s+orders?)\b/i.test(q)){
+  if(/\b(?:shop\s+orders?|orders?|sales|store\s+orders?)\b/i.test(q)){
    const orders=await loadShopOrders(),stats=summarizeShopOrders(orders);
    const byNewest=orders.slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
    const recent=byNewest.slice(0,5),money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
@@ -281,6 +281,7 @@ async function replyTo(raw,speakResponse=true){
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
+ if(/^(?:open|show|go to|take me to|navigate to|find|view)\s+(?:(?:the|my)\s+)?(?:client['’]?s?\s+)?(?:project|client project|project workspace)(?:\s+(.+))?[.! ]*$/.test(q)){const match=q.match(/^(?:open|show|go to|take me to|navigate to|find|view)\s+(?:(?:the|my)\s+)?(?:client['’]?s?\s+)?(?:project|client project|project workspace)(?:\s+(.+))?[.! ]*$/);navigate('projects','client projects');const requested=(match?.[1]||'').trim();setTimeout(()=>{const host=document.querySelector('#page .projects');const visible=host?.innerText||'';if(requested&&!visible.toLowerCase().includes(requested.toLowerCase()))speak('I opened Client Projects, but I could not find a listed project named '+requested+'. The current project page does not provide a matching entry or project details.',true);else if(requested)speak('I opened Client Projects and found a matching entry for '+requested+'.',true);else speak('I opened Client Projects. Your listed project entries are now visible.',true)},200);return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:the\s+)?(?:security|security center|login activity)[.! ]*$/.test(q)){navigate('security','security');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:college|study workspace|subjects)[.! ]*$/.test(q)){navigate('college','your college workspace');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:client cloud|clients)[.! ]*$/.test(q)){navigate('client-cloud','client cloud management');return}
