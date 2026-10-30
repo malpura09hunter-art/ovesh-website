@@ -17,7 +17,7 @@ async function askAI(raw){
   const userMessage=String(raw||'').trim();
   if(!userMessage)return;
   chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
-  chatHistory=chatHistory.slice(-10);
+  chatHistory=chatHistory.slice(-14);
   status('Thinking','speaking');
   transcript('', 'Let me think about that.');
   try{
@@ -27,7 +27,7 @@ async function askAI(raw){
     const answer=String(data.reply||'').trim();
     if(!answer)throw new Error('ORION received an empty response. Please try again.');
     chatHistory.push({role:'assistant',content:answer});
-    chatHistory=chatHistory.slice(-10);
+    chatHistory=chatHistory.slice(-14);
     speak(answer,true);
   }catch(error){
     chatHistory.pop();
