@@ -78,7 +78,7 @@ async function toggleVoiceRecording(){
    const blob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||'audio/webm'});voiceRecorder=null;voiceChunks=[];
    if(button){button.disabled=true;button.textContent='Transcribing…'}
    if(blob.size<1200){if(button){button.disabled=false;button.textContent='Tap to speak'}status('No voice detected');transcript('','I did not receive enough audio. Tap to speak and try again.');return}
-   if(blob.size>850000){if(button){button.disabled=false;button.textContent='Tap to speak'}status('Recording too long');transcript('','Please keep voice messages under 12 seconds and try again.');return}
+   if(blob.size>500000){if(button){button.disabled=false;button.textContent='Tap to speak'}status('Recording too long');transcript('','Please keep voice messages under 12 seconds and try again.');return}
    voiceBusy=true;status('Transcribing voice','speaking');transcript('','I’m listening to your recording…');
    try{
     const reader=new FileReader();
