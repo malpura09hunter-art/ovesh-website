@@ -38,13 +38,13 @@ async function askAI(raw){
 function replyTo(raw){
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:the\\s+)?(?:security|security center|login activity)[.! ]*$/.test(q)){navigate('security','security');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:college|study workspace|subjects)[.! ]*$/.test(q)){navigate('college','your college workspace');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:client cloud|clients)[.! ]*$/.test(q)){navigate('client-cloud','client cloud management');return}
- if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:shop orders|orders)[.! ]*$/.test(q)){navigate('shop-orders','shop orders');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:the\s+)?(?:security|security center|login activity)[.! ]*$/.test(q)){navigate('security','security');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:college|study workspace|subjects)[.! ]*$/.test(q)){navigate('college','your college workspace');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:client cloud|clients)[.! ]*$/.test(q)){navigate('client-cloud','client cloud management');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:shop orders|orders)[.! ]*$/.test(q)){navigate('shop-orders','shop orders');return}
  askAI(raw);
 }
 let wakeBuffer='',wakeBufferAt=0;
