@@ -141,11 +141,11 @@ async function startBargeWatch(){
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
 function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
-async function cloudCommand(raw){
+async function cloudCommand(raw,speakResponse=true){
  const q=String(raw||'').trim(),lower=q.toLowerCase();
  const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
- const say=(message)=>{speak(message,true)};
+ const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
  const findFile=(name)=>{const needle=String(name||'').trim().replace(/^["']|["']$/g,'').toLowerCase();if(!needle)return null;const all=files();return all.find(f=>String(f.name||'').toLowerCase()===needle)||all.find(f=>String(f.name||'').toLowerCase().includes(needle))||null};
  const showStorage=()=>{if(typeof window.render==='function')window.render('storage')};
  try{
@@ -200,7 +200,7 @@ async function askAI(raw,speakResponse=true){
     if(speakResponse){speak(message,true)}else{transcript('',message);status('AI request failed');}
   }
 }
-async function replyTo(raw){
+async function replyTo(raw,speakResponse=true){
  conversationReplying=true;
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
@@ -288,7 +288,7 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;askAI(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;replyTo(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function activateAfterLogin(){openPanel();transcript('','Welcome back. ORION is starting automatically. Allow microphone access if your browser asks, then say “ORION” or “wake up” whenever you need me.');status('Starting microphone','listening');if(!started&&!manualStop){setTimeout(()=>{if(!started&&!manualStop)start()},350)}}
 function addNav(){const nav=$('#nav'),btn=$('#orionNav');if(!nav||!btn)return;btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openPanel();if(!started){transcript('','I am here. Start conversation to talk naturally with me.');status('Standby')}},true)}
