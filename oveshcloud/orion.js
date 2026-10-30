@@ -141,11 +141,37 @@ async function startBargeWatch(){
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
 function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+async function loadShopOrders(){
+ const response=await fetch('/api/oveshcloud-auth?action=shop-orders',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok||data.ok!==true||!Array.isArray(data.orders))throw new Error(data.error||'Shop Orders could not be loaded. Please verify your OV CLOUD owner session.');
+ return data.orders;
+}
+function summarizeShopOrders(orders){
+ const countStatus=test=>orders.filter(o=>test(String(o.status||'Pending').toLowerCase())).length;
+ return {total:orders.length,pending:countStatus(s=>s.includes('pending')),reviewing:countStatus(s=>s.includes('review')),inProgress:countStatus(s=>s.includes('progress')||s.includes('working')),completed:countStatus(s=>s.includes('complete')||s.includes('delivered')),rejected:countStatus(s=>s.includes('reject')||s.includes('cancel')),value:orders.reduce((n,o)=>n+(Number(o.estimatedTotal)||0),0)};
+}
 async function cloudCommand(raw,speakResponse=true){
  const q=String(raw||'').trim(),lower=q.toLowerCase();
  const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
  const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
+  if(/\\b(?:shop\\s+orders?|orders?|sales|store\\s+orders?)\\b/i.test(q)){
+   const orders=await loadShopOrders(),stats=summarizeShopOrders(orders);
+   const byNewest=orders.slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+   const recent=byNewest.slice(0,5),money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+   if(/\\b(?:pending|awaiting|not processed|unfulfilled)\\b/i.test(q)){
+    const pending=orders.filter(o=>/pending|reviewing/i.test(String(o.status||'Pending')));
+    say(pending.length?'There are '+pending.length+' pending or reviewing shop orders. '+pending.slice(0,6).map(o=>(o.orderId||o.id)+' for '+(o.selectedService||'a service')+', status '+(o.status||'Pending')).join('. '):'There are no pending or reviewing shop orders.');return true;
+   }
+   if(/\\b(?:latest|recent|newest)\\b/i.test(q)){
+    say(recent.length?'Your '+recent.length+' most recent shop orders are: '+recent.map(o=>(o.orderId||o.id)+' — '+(o.selectedService||'service')+' — '+(o.status||'Pending')+' — '+(o.createdAt?new Date(o.createdAt).toLocaleDateString():'date unavailable')).join('. '):'There are no shop orders yet.');return true;
+   }
+   if(/\\b(?:revenue|sales|total value|order value|amount)\\b/i.test(q)){
+    say('I found '+stats.total+' shop orders. Their recorded estimated order value totals '+money(stats.value)+'. This is order value, not confirmed payments. Payment status is recorded separately.');return true;
+   }
+   say('Your Shop Orders summary: '+stats.total+' total. '+stats.pending+' pending, '+stats.reviewing+' reviewing, '+stats.inProgress+' in progress, '+stats.completed+' completed, and '+stats.rejected+' rejected or cancelled. Recorded estimated order value: '+money(stats.value)+'. This is not confirmed collected revenue.');return true;
+  }
  const findFile=(name)=>{const needle=String(name||'').trim().replace(/^["']|["']$/g,'').toLowerCase();if(!needle)return null;const all=files();return all.find(f=>String(f.name||'').toLowerCase()===needle)||all.find(f=>String(f.name||'').toLowerCase().includes(needle))||null};
  const showStorage=()=>{if(typeof window.render==='function')window.render('storage')};
  try{
