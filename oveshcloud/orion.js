@@ -43,7 +43,7 @@ async function ask(message){
   setStatus('Checking your workspace…',true);
   $('orionSend').disabled=true;
   try{
-    const response=await fetch('/api/oveshcloud-orion',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:clean})});
+    const response=await fetch('/api/oveshcloud-auth?action=orion',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:clean})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'Unable to contact ORION.');
     addMessage(data.answer||'I could not prepare a response.');
@@ -80,7 +80,7 @@ async function greet(){
   const hour=new Date().getHours();
   const greeting=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   try{
-    const response=await fetch('/api/oveshcloud-orion',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'cloud status briefing'})});
+    const response=await fetch('/api/oveshcloud-auth?action=orion',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'cloud status briefing'})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'Briefing unavailable');
     lastGreeting=greeting+', Owner. Welcome back to OV CLOUD. '+data.answer;
