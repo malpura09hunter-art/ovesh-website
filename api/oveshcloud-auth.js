@@ -235,30 +235,56 @@ async function handleOrionChat(req,res){
       signal:AbortSignal.timeout(35000),
       body:JSON.stringify({model,temperature:0.6,max_completion_tokens:maxTokens,reasoning_effort:'low',include_reasoning:false,messages:requestMessages})
     });
-    let upstream=await callGroq('openai/gpt-oss-120b',4096);
-    let data=await upstream.json().catch(()=>({}));
-    let message=data?.choices?.[0]?.message;
-    let answer=typeof message?.content==='string'?message.content:
-      Array.isArray(message?.content)?message.content.map(part=>typeof part==='string'?part:part?.text||'').join(' '):'';
-    if(upstream.ok&&!String(answer||'').trim()){
-      console.warn('ORION primary model returned no user-facing content; retrying with GPT-OSS 20B.');
-      upstream=await callGroq('openai/gpt-oss-20b',4096);
-      data=await upstream.json().catch(()=>({}));
-      message=data?.choices?.[0]?.message;
-      answer=typeof message?.content==='string'?message.content:
-        Array.isArray(message?.content)?message.content.map(part=>typeof part==='string'?part:part?.text||'').join(' '):'';
+    // Each model has its own published quota. Move on immediately when one is rate-limited;
+    // never burn requests by repeatedly retrying a model that has returned 429.
+    const modelFallbacks=['openai/gpt-oss-120b','openai/gpt-oss-20b','qwen/qwen3.8-27b'];
+    let upstream=null,data={},answer='',activeModel='',lastRateLimit=null,lastProviderError=null;
+    for(const model of modelFallbacks){
+      try{
+        const response=await callGroq(model,4096);
+        const payload=await response.json().catch(()=>({}));
+        if(response.status===429){
+          lastRateLimit={
+            retryAfter:response.headers.get('retry-after')||null,
+            resetRequests:response.headers.get('x-ratelimit-reset-requests')||null
+          };
+          console.warn('ORION model rate-limited; trying next configured free model:',model);
+          continue;
+        }
+        if(response.status===401||response.status===403){
+          upstream=response;data=payload;lastProviderError='auth';break;
+        }
+        if(!response.ok){
+          upstream=response;data=payload;lastProviderError='provider';
+          console.warn('ORION model request failed; trying next free model:',model,response.status);
+          continue;
+        }
+        const message=payload?.choices?.[0]?.message;
+        const content=typeof message?.content==='string'?message.content:
+          Array.isArray(message?.content)?message.content.map(part=>typeof part==='string'?part:part?.text||'').join(' '):'';
+        if(!String(content||'').trim()){
+          upstream=response;data=payload;lastProviderError='empty';
+          console.warn('ORION model returned no user-facing content; trying next free model:',model);
+          continue;
+        }
+        upstream=response;data=payload;answer=content;activeModel=payload.model||model;lastProviderError=null;break;
+      }catch(providerError){
+        lastProviderError='network';
+        console.warn('ORION model connection failed; trying next free model:',model,providerError?.message||providerError);
+      }
     }
-    if(!upstream.ok){
-      if(upstream.status===429)return res.status(429).json({ok:false,error:'ORION has reached the current free Groq usage limit. Please wait and try again.'});
-      if(upstream.status===401||upstream.status===403){console.error('ORION Groq authentication/configuration rejected:',upstream.status);return res.status(502).json({ok:false,error:'The AI provider rejected the API key. Check the Groq key in Vercel without sharing it.'});}
-      console.error('ORION Groq request failed:',upstream.status,data?.error?.message||'provider error');
-      return res.status(502).json({ok:false,error:'ORION could not reach its AI service. Please try again.'});
+    if(!answer.trim()){
+      if(lastProviderError==='auth')return res.status(502).json({ok:false,error:'The AI provider rejected the API key. Check the Groq key in Vercel without sharing it.'});
+      if(lastRateLimit){
+        const wait=lastRateLimit.retryAfter?(' Please retry in about '+lastRateLimit.retryAfter+' seconds.'):
+          lastRateLimit.resetRequests?(' The reported daily quota reset is '+lastRateLimit.resetRequests+'.'):' Please check your Groq Limits page for the reset time.';
+        return res.status(429).json({ok:false,error:'ORION has reached the available free Groq model limits.'+wait,retryAfter:lastRateLimit.retryAfter,resetRequests:lastRateLimit.resetRequests});
+      }
+      if(lastProviderError==='empty')return res.status(502).json({ok:false,error:'ORION could not generate a text reply from the available free models. Please try once more.'});
+      console.error('ORION free model fallback chain failed:',lastProviderError,upstream?.status||'no response',data?.error?.message||'');
+      return res.status(502).json({ok:false,error:'ORION could not reach an available free AI model. Please try again shortly.'});
     }
-    if(typeof answer!=='string'||!answer.trim()){
-      console.error('ORION models returned no user-facing content:',data?.choices?.[0]?.finish_reason||'unknown finish reason');
-      return res.status(502).json({ok:false,error:'ORION could not generate a text reply this time. Please try once more.'});
-    }
-    return res.status(200).json({ok:true,reply:answer.trim().slice(0,9000),model:data.model||'openai/gpt-oss-120b'});
+    return res.status(200).json({ok:true,reply:answer.trim().slice(0,9000),model:activeModel});
   }catch(error){
     if(error.name==='TimeoutError'||error.name==='AbortError')return res.status(504).json({ok:false,error:'ORION took too long to respond. Please try again.'});
     console.error('ORION AI endpoint error:',error?.message||error);
