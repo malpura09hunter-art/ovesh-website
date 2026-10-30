@@ -147,6 +147,18 @@ async function loadShopOrders(){
  if(!response.ok||data.ok!==true||!Array.isArray(data.orders))throw new Error(data.error||'Shop Orders could not be loaded. Please verify your OV CLOUD owner session.');
  return data.orders;
 }
+function orderDateValue(value){
+ if(!value)return null;
+ if(typeof value==='string'||typeof value==='number'){const d=new Date(value);return Number.isNaN(d.getTime())?null:d}
+ if(value&&typeof value.toDate==='function'){const d=value.toDate();return Number.isNaN(d.getTime())?null:d}
+ if(value&&typeof value.seconds==='number'){const d=new Date(value.seconds*1000);return Number.isNaN(d.getTime())?null:d}
+ return null;
+}
+function lastCalendarMonthRange(now=new Date()){
+ const start=new Date(now.getFullYear(),now.getMonth()-1,1);
+ const end=new Date(now.getFullYear(),now.getMonth(),1);
+ return {start,end,label:start.toLocaleDateString('en-IN',{month:'long',year:'numeric'})};
+}
 function summarizeShopOrders(orders){
  const countStatus=test=>orders.filter(o=>test(String(o.status||'Pending').toLowerCase())).length;
  return {total:orders.length,pending:countStatus(s=>s.includes('pending')),reviewing:countStatus(s=>s.includes('review')),inProgress:countStatus(s=>s.includes('progress')||s.includes('working')),completed:countStatus(s=>s.includes('complete')||s.includes('delivered')),rejected:countStatus(s=>s.includes('reject')||s.includes('cancel')),value:orders.reduce((n,o)=>n+(Number(o.estimatedTotal)||0),0)};
@@ -156,18 +168,24 @@ async function cloudCommand(raw,speakResponse=true){
  const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
  const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
-  if(/\\b(?:shop\\s+orders?|orders?|sales|store\\s+orders?)\\b/i.test(q)){
+  if(/\b(?:shop\\s+orders?|orders?|sales|store\\s+orders?)\b/i.test(q)){
    const orders=await loadShopOrders(),stats=summarizeShopOrders(orders);
    const byNewest=orders.slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
    const recent=byNewest.slice(0,5),money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-   if(/\\b(?:pending|awaiting|not processed|unfulfilled)\\b/i.test(q)){
+   if(/\b(?:pending|awaiting|not processed|unfulfilled)\b/i.test(q)){
     const pending=orders.filter(o=>/pending|reviewing/i.test(String(o.status||'Pending')));
     say(pending.length?'There are '+pending.length+' pending or reviewing shop orders. '+pending.slice(0,6).map(o=>(o.orderId||o.id)+' for '+(o.selectedService||'a service')+', status '+(o.status||'Pending')).join('. '):'There are no pending or reviewing shop orders.');return true;
    }
-   if(/\\b(?:latest|recent|newest)\\b/i.test(q)){
+   if(/\b(?:latest|recent|newest)\b/i.test(q)){
     say(recent.length?'Your '+recent.length+' most recent shop orders are: '+recent.map(o=>(o.orderId||o.id)+' — '+(o.selectedService||'service')+' — '+(o.status||'Pending')+' — '+(o.createdAt?new Date(o.createdAt).toLocaleDateString():'date unavailable')).join('. '):'There are no shop orders yet.');return true;
    }
-   if(/\\b(?:revenue|sales|total value|order value|amount)\\b/i.test(q)){
+   if(/\b(?:last month|previous month|past month)\b/i.test(q)){
+    const range=lastCalendarMonthRange(),filtered=orders.filter(o=>{const d=orderDateValue(o.createdAt);return d&&d>=range.start&&d<range.end;});
+    const totalValue=filtered.reduce((n,o)=>n+(Number(o.estimatedTotal)||0),0);
+    say('There were '+filtered.length+' shop orders in '+range.label+'. '+filtered.filter(o=>/pending/i.test(String(o.status||''))).length+' pending, '+filtered.filter(o=>/complete|delivered/i.test(String(o.status||''))).length+' completed. Recorded estimated order value: ₹'+totalValue.toLocaleString('en-IN',{maximumFractionDigits:2})+'. This is order value, not confirmed collected revenue. I checked the order creation dates.');
+    return true;
+   }
+   if(/\b(?:revenue|sales|total value|order value|amount)\b/i.test(q)){
     say('I found '+stats.total+' shop orders. Their recorded estimated order value totals '+money(stats.value)+'. This is order value, not confirmed payments. Payment status is recorded separately.');return true;
    }
    say('Your Shop Orders summary: '+stats.total+' total. '+stats.pending+' pending, '+stats.reviewing+' reviewing, '+stats.inProgress+' in progress, '+stats.completed+' completed, and '+stats.rejected+' rejected or cancelled. Recorded estimated order value: '+money(stats.value)+'. This is not confirmed collected revenue.');return true;
