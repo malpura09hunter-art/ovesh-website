@@ -11,7 +11,7 @@ function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;con
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply}
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
 
-let conversationStream=null,conversationContext=null,conversationAnalyser=null,conversationBuffer=null,conversationFrame=0,conversationRecorder=null,conversationChunks=[],conversationStartedAt=0,conversationLastVoice=0,conversationSpeechFrames=0,conversationUploading=false;
+let conversationStream=null,conversationContext=null,conversationAnalyser=null,conversationBuffer=null,conversationFrame=0,conversationRecorder=null,conversationChunks=[],conversationStartedAt=0,conversationLastVoice=0,conversationSpeechFrames=0,conversationUploading=false,conversationReplying=false;
 function stopConversationEngine(){
  if(conversationFrame)cancelAnimationFrame(conversationFrame);conversationFrame=0;
  if(conversationRecorder&&conversationRecorder.state==='recording'){try{conversationRecorder.stop()}catch{}}
@@ -25,7 +25,7 @@ function startConversationListening(){
  status('Listening · speak naturally','listening');
  const tick=()=>{
   if(!started||manualStop||!conversationStream||!conversationAnalyser){conversationFrame=0;return}
-  if(speaking||bargeRecording){conversationFrame=requestAnimationFrame(tick);return}
+  if(speaking||bargeRecording||conversationUploading||conversationReplying){conversationFrame=requestAnimationFrame(tick);return}
   conversationAnalyser.getByteTimeDomainData(conversationBuffer);
   let sum=0;for(let i=0;i<conversationBuffer.length;i++){const v=(conversationBuffer[i]-128)/128;sum+=v*v}
   const rms=Math.sqrt(sum/conversationBuffer.length);
@@ -113,7 +113,7 @@ async function startBargeWatch(){
  }catch(e){stopBargeWatch();/* Keep spoken replies available even if barge-in mic access is unavailable. */}
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
-function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){if(thenListen)listen();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
 function navigate(pageName,label){if(typeof window.render==='function')window.render(pageName);else document.querySelector('[data-page="'+pageName+'"]')?.click();speak('Opening '+label+'. What would you like to do next?',true)}
 let chatHistory=[];
 async function askAI(raw,speakResponse=true){
@@ -139,6 +139,7 @@ async function askAI(raw,speakResponse=true){
   }
 }
 function replyTo(raw){
+ conversationReplying=true;
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
