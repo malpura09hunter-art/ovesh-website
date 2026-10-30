@@ -340,7 +340,6 @@ async function replyTo(raw,speakResponse=true){
  if(/\b(?:scan (?:the )?(?:whole|entire|my)? ?cloud|cloud health report|mission control|daily briefing|brief me|what needs attention|anything unusual|check (?:the )?(?:entire )?cloud|full cloud report)\b/i.test(original)){
   try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
  }
- }
  if(smartNavigation(original,speakResponse))return;
  // Resolve workspace navigation before data commands or AI so phrases like
  // "could you please take me to Client Cloud" never fall through to generic chat.
