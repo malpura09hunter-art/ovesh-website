@@ -184,9 +184,9 @@ async function handleOrionTranscribe(req,res){
     const mime=String(req.body?.mimeType||'audio/webm').split(';')[0].toLowerCase();
     const allowed=['audio/webm','audio/ogg','audio/mp4','audio/mpeg','audio/wav'];
     if(!allowed.includes(mime))return res.status(400).json({ok:false,error:'Unsupported microphone recording format.'});
-    if(!audio||audio.length>1150000||!/^[A-Za-z0-9+/]+={0,2}$/.test(audio))return res.status(400).json({ok:false,error:'Recording is empty or too large. Please record a shorter voice message.'});
+    if(!audio||audio.length>700000||!/^[A-Za-z0-9+/]+={0,2}$/.test(audio))return res.status(400).json({ok:false,error:'Recording is empty or too large. Please record a shorter voice message.'});
     const bytes=Buffer.from(audio,'base64');
-    if(!bytes.length||bytes.length>850000)return res.status(413).json({ok:false,error:'Voice recording is too large. Keep recordings under 12 seconds.'});
+    if(!bytes.length||bytes.length>500000)return res.status(413).json({ok:false,error:'Voice recording is too large. Keep recordings under 12 seconds.'});
     const ext=mime==='audio/webm'?'webm':mime==='audio/ogg'?'ogg':mime==='audio/mp4'?'mp4':mime==='audio/mpeg'?'mp3':'wav';
     const form=new FormData();
     form.append('file',new Blob([bytes],{type:mime}), 'orion-voice.'+ext);
