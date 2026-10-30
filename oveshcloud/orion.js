@@ -230,6 +230,7 @@ async function replyTo(raw,speakResponse=true){
  conversationReplying=true;
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
+ if(await cloudCommand(raw,speakResponse))return;
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
  if(/^(?:open|go to|show|take me to|navigate to|switch to)\s+(?:my\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
