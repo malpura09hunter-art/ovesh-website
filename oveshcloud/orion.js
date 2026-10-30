@@ -38,14 +38,13 @@ async function askAI(raw){
 function replyTo(raw){
  const q=raw.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
  if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
- if(/\b(stop listening|pause listening|go quiet|end conversation)\b/.test(q)){stop('Okay. I have paused the microphone.');return}
- if(/\b(command center|dashboard|home)\b/.test(q)){navigate('command','your command center');return}
- if(/\b(storage|files|file manager|cloud files)\b/.test(q)){navigate('storage','cloud storage');return}
- if(/\b(projects|client work)\b/.test(q)){navigate('projects','client projects');return}
- if(/\b(security|login activity)\b/.test(q)){navigate('security','security');return}
- if(/\b(college|study|subjects|practicals)\b/.test(q)){navigate('college','your college workspace');return}
- if(/\b(client cloud|clients)\b/.test(q)){navigate('client-cloud','client cloud management');return}
- if(/\b(shop|orders)\b/.test(q)){navigate('shop-orders','shop orders');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:command center|dashboard|home)[.! ]*$/.test(q)){navigate('command','your command center');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:cloud storage|file manager|files|storage)[.! ]*$/.test(q)){navigate('storage','cloud storage');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:client projects|projects)[.! ]*$/.test(q)){navigate('projects','client projects');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:the\\s+)?(?:security|security center|login activity)[.! ]*$/.test(q)){navigate('security','security');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:my\\s+)?(?:college|study workspace|subjects)[.! ]*$/.test(q)){navigate('college','your college workspace');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:client cloud|clients)[.! ]*$/.test(q)){navigate('client-cloud','client cloud management');return}
+ if(/^(?:open|go to|show|take me to|navigate to|switch to)\\s+(?:shop orders|orders)[.! ]*$/.test(q)){navigate('shop-orders','shop orders');return}
  askAI(raw);
 }
 let wakeBuffer='',wakeBufferAt=0;
