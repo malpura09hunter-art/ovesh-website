@@ -170,12 +170,57 @@ async function listSecurityEvents(req,res){
     return res.status(200).json({ok:true,count:events.length,events});
   }catch(error){console.error('OVESH security events read failed:',error?.message||error);return res.status(500).json({ok:false,error:'Unable to load security events. Check Firebase Admin configuration and Firestore access.'})}
 }
+
+async function orionCount(db,name){
+  try{const snap=await db.collection(name).count().get();return Number(snap.data().count||0)}catch{return null}
+}
+async function handleOrion(req,res){
+  res.setHeader('Cache-Control','private, no-store, max-age=0');
+  if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
+  if(!readCloudSessionData(req))return res.status(401).json({ok:false,error:'A valid OV CLOUD owner session is required.'});
+  const message=String(req.body?.message||'').trim().slice(0,300);
+  if(!message)return res.status(400).json({ok:false,error:'Please provide a short message.'});
+  try{
+    const db=getAdminDb();
+    const [files,requests,events]=await Promise.all([
+      orionCount(db,'oveshCloudFiles'),
+      orionCount(db,'service_requests'),
+      db.collection('oveshCloudSecurityEvents').orderBy('createdAt','desc').limit(25).get().catch(()=>null)
+    ]);
+    const recent=events?events.docs.map(doc=>{const x=doc.data()||{};return{severity:String(x.severity||'info').toLowerCase()}}):[];
+    const high=recent.filter(x=>x.severity==='high'||x.severity==='critical').length;
+    const q=message.toLowerCase();
+    let answer='';
+    if(/\\b(help|what can you do|commands)\\b/.test(q)){
+      answer='I can give you a cloud briefing, report file metadata counts, summarize recent security events, and report service request totals. Try asking: cloud status, file count, or security status.';
+    }else if(/\\b(security|alert|threat|suspicious|incident)\\b/.test(q)){
+      answer=!events?'I could not retrieve the security event summary right now. Your cloud session remains separate and unaffected.':high?'The latest 25 recorded security events include '+high+' high or critical severity event'+(high===1?'':'s')+'. Please open the Security section to inspect the full records. I have not changed any access or files.':'I found no high or critical severity events in the latest '+recent.length+' recorded security events. Please use the Security section for the full event history.';
+    }else if(/\\b(file|files|upload|storage)\\b/.test(q)){
+      answer=files===null?'The file metadata count is currently unavailable.':'OV CLOUD currently has '+files+' file metadata record'+(files===1?'':'s')+' in its Firestore file index. This is an index count, not a measurement of Backblaze storage usage.';
+    }else if(/\\b(client|order|request|project)\\b/.test(q)){
+      answer=requests===null?'The service request count is currently unavailable.':'I can see '+requests+' service request record'+(requests===1?'':'s')+' in the workspace request collection.';
+    }else if(/\\b(status|briefing|overview|summary|how are things|good morning|good afternoon|hello|hi)\\b/.test(q)){
+      const fileText=files===null?'file index count unavailable':files+' file metadata records';
+      const requestText=requests===null?'service request count unavailable':requests+' service requests';
+      const securityText=!events?'security summary temporarily unavailable':high?high+' high or critical events among the latest '+recent.length+' security records':'no high or critical events among the latest '+recent.length+' security records';
+      answer='Your OV CLOUD owner session is active. The workspace index shows '+fileText+' and '+requestText+'. Security summary: '+securityText+'. These are read-only summaries. What would you like to check next?';
+    }else{
+      answer='I am ORION, your OV CLOUD voice companion. I can summarize cloud status, file index counts, service requests, and recent security events. Ask me for a cloud briefing or say help.';
+    }
+    return res.status(200).json({ok:true,answer,stats:{files,requests,recentSecurityEvents:recent.length,highSeverityEvents:high,securityAvailable:Boolean(events)}});
+  }catch(error){
+    console.error('OV CLOUD ORION briefing failed:',error?.message||error);
+    return res.status(503).json({ok:false,error:'ORION cannot reach the workspace summary right now.'});
+  }
+}
+
 export default async function handler(req,res){
   if(req.method==='GET'&&(String(req.query?.action||'')==='drive-list'||String(req.query?.action||'')==='drive-download')){
     const mapped={...req,query:{...req.query,action:String(req.query.action)==='drive-list'?'list':'download'}};
     return handleGoogleDrive(mapped,res);
   }
   const action=String(req.query?.action||'');
+  if(action==='orion')return handleOrion(req,res);
   if(action==='security-events')return listSecurityEvents(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
