@@ -97,3 +97,19 @@
 @media(max-width:760px){.orion-shell{padding:12px}.orion-heading{align-items:flex-start;flex-direction:column}.orion-overview-grid{grid-template-columns:1fr}.orion-voice-stage{grid-template-columns:1fr;text-align:center}.orion-voice-copy p{margin-left:auto;margin-right:auto}.orion-voice-actions{justify-content:center}.orion-panel{padding:16px}}
 @media(max-width:480px){.orion-metrics{grid-template-columns:1fr 1fr;gap:8px}.orion-metric{padding:11px;gap:8px}.orion-metric-icon{width:32px;height:32px;flex-basis:32px}.orion-metric em{font-size:9px}.orion-voice-stage{padding:18px 13px}.orion-orb{width:108px;height:108px}.orion-chat-row{flex-direction:column}.orion-chat-row .orion-primary{width:100%}.orion-panel-head h2{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.orion-shell *, .orion-shell *:before,.orion-shell *:after{animation:none!important;transition:none!important}}
+
+/* Mission Control — ORION-only extension */
+.orion-mission{margin:0 0 16px;padding:clamp(18px,2.3vw,26px);border:1px solid rgba(112,215,232,.22);border-radius:19px;background:radial-gradient(ellipse at 82% 0,rgba(112,215,232,.13),transparent 42%),linear-gradient(125deg,rgba(17,29,48,.98),rgba(10,17,30,.99));box-shadow:0 18px 50px rgba(0,0,0,.16)}
+.orion-mission-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.orion-mission-top small{font-size:8px;letter-spacing:.18em;font-weight:800;color:#75d9e8}
+.orion-mission-top h2{margin:6px 0 4px;font-size:21px;letter-spacing:-.035em;color:#f0f4ff}
+.orion-mission-top p{margin:0;color:#91a0b8;font-size:12px;line-height:1.5}
+.orion-mission-button{flex:0 0 auto;padding:12px 16px;border:1px solid rgba(112,215,232,.4);border-radius:11px;background:linear-gradient(120deg,rgba(51,137,159,.32),rgba(84,76,157,.35));color:#e8fbff;font:700 11px inherit;cursor:pointer}
+.orion-mission-button:hover{border-color:#75d9e8;transform:translateY(-1px)}
+.orion-mission-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:18px 0 12px}
+.orion-mission-tiles>div{display:flex;align-items:center;gap:9px;padding:11px 12px;border:1px solid rgba(145,166,199,.12);border-radius:11px;background:rgba(7,14,26,.48)}
+.orion-mission-tiles b{font-size:9px;color:#75d9e8;letter-spacing:.08em}.orion-mission-tiles span{font-size:11px;color:#cbd6e8}
+.orion-mission-result{padding:13px 15px;border:1px solid rgba(145,166,199,.12);border-radius:12px;background:rgba(5,11,21,.5);color:#aab8ce;font-size:11px;line-height:1.65}
+.orion-mission-result strong{display:block;color:#e9f3ff;font-size:12px;margin-bottom:4px}
+.orion-mission-result ul{margin:8px 0 0;padding-left:17px}.orion-mission-result li{margin:4px 0}
+@media(max-width:620px){.orion-mission-top{align-items:flex-start;flex-direction:column}.orion-mission-button{width:100%}.orion-mission-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
