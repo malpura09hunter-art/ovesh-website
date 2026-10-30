@@ -280,18 +280,18 @@ async function askAI(raw,speakResponse=true){
 }
 async let lastWorkspacePage='command';
 const workspaceAliases=[
- {page:'command',label:'Command Center',terms:/\\b(?:dashboard|home|overview|main screen|control room|command center)\\b/},
- {page:'storage',label:'Cloud Storage',terms:/\\b(?:my files|file manager|documents|storage|uploads|folders)\\b/},
- {page:'projects',label:'Client Projects',terms:/\\b(?:client work|project workspace|projects|project list)\\b/},
- {page:'activity',label:'Activity',terms:/\\b(?:what happened|recent events|activity|audit trail|history)\\b/},
- {page:'security',label:'Security',terms:/\\b(?:security center|security logs|login events|sign in activity)\\b/},
- {page:'college',label:'College',terms:/\\b(?:study workspace|college|subjects|practicals|assignments)\\b/},
- {page:'client-cloud',label:'Client Cloud',terms:/\\b(?:manage clients|client management|customer accounts|client accounts|my customers)\\b/},
- {page:'shop-orders',label:'Shop Orders',terms:/\\b(?:store orders|shop orders|sales orders|orders)\\b/}
+ {page:'command',label:'Command Center',terms:/\b(?:dashboard|home|overview|main screen|control room|command center)\b/},
+ {page:'storage',label:'Cloud Storage',terms:/\b(?:my files|file manager|documents|storage|uploads|folders)\b/},
+ {page:'projects',label:'Client Projects',terms:/\b(?:client work|project workspace|projects|project list)\b/},
+ {page:'activity',label:'Activity',terms:/\b(?:what happened|recent events|activity|audit trail|history)\b/},
+ {page:'security',label:'Security',terms:/\b(?:security center|security logs|login events|sign in activity)\b/},
+ {page:'college',label:'College',terms:/\b(?:study workspace|college|subjects|practicals|assignments)\b/},
+ {page:'client-cloud',label:'Client Cloud',terms:/\b(?:manage clients|client management|customer accounts|client accounts|my customers)\b/},
+ {page:'shop-orders',label:'Shop Orders',terms:/\b(?:store orders|shop orders|sales orders|orders)\b/}
 ];
 function smartNavigation(raw,speakResponse=true){
- const q=String(raw||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
- const navIntent=/\\b(?:open|go|take me|bring up|show|switch|navigate|head to|let me see|i need|i want to see|where can i|where do i)\\b/.test(q);
+ const q=String(raw||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+ const navIntent=/\b(?:open|go|take me|bring up|show|switch|navigate|head to|let me see|i need|i want to see|where can i|where do i)\b/.test(q);
  const item=workspaceAliases.find(x=>x.terms.test(q));
  if(!item||!navIntent)return false;
  lastWorkspacePage=item.page;
@@ -337,8 +337,9 @@ function replyTo(raw,speakResponse=true){
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
  // Mission Control is an explicit read-only multi-source operation.
- if(/\\b(?:scan (?:the )?(?:whole|entire|my)? ?cloud|cloud health report|mission control|daily briefing|brief me|what needs attention|anything unusual|check (?:the )?(?:entire )?cloud|full cloud report)\\b/i.test(original)){
+ if(/\b(?:scan (?:the )?(?:whole|entire|my)? ?cloud|cloud health report|mission control|daily briefing|brief me|what needs attention|anything unusual|check (?:the )?(?:entire )?cloud|full cloud report)\b/i.test(original)){
   try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
+ }
  }
  if(smartNavigation(original,speakResponse))return;
  // Resolve workspace navigation before data commands or AI so phrases like
