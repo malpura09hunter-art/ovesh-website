@@ -332,7 +332,7 @@ async function runMissionControl(speakResponse=true){
  renderMissionResult(headline,details,speakResponse);
  return{headline,details,alerts,unavailable};
 }
-function replyTo(raw,speakResponse=true){
+async function replyTo(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
