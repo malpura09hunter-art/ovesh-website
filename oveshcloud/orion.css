@@ -1,0 +1,32 @@
+.orion-root{position:fixed;right:24px;bottom:22px;z-index:1200;font-family:inherit;color:#e8f7ff}
+.orion-launcher{display:flex;align-items:center;gap:10px;padding:10px 15px 10px 10px;border:1px solid rgba(74,211,235,.45);border-radius:999px;background:rgba(5,19,31,.94);color:#e8fbff;box-shadow:0 12px 38px rgba(0,0,0,.35),0 0 24px rgba(40,196,226,.12);font:700 11px/1 inherit;letter-spacing:.16em;cursor:pointer;backdrop-filter:blur(16px)}
+.orion-orb{display:block;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d8ffff 0,#67e7f5 16%,#168cb9 45%,#062e54 74%);box-shadow:0 0 14px rgba(69,216,242,.65),inset 0 0 9px rgba(255,255,255,.5);position:relative}
+.orion-orb:after{content:"";position:absolute;inset:-5px;border:1px solid rgba(91,225,244,.35);border-radius:50%;animation:orionPulse 3s ease-out infinite}
+.orion-panel{position:absolute;right:0;bottom:56px;width:min(370px,calc(100vw - 28px));max-height:min(590px,calc(100vh - 120px));display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(76,201,225,.32);border-radius:18px;background:linear-gradient(160deg,rgba(8,24,39,.98),rgba(4,13,24,.98));box-shadow:0 22px 70px rgba(0,0,0,.52),0 0 34px rgba(30,173,210,.1);backdrop-filter:blur(20px)}
+.orion-panel[hidden]{display:none}
+.orion-head{display:flex;align-items:center;gap:11px;padding:15px 16px;border-bottom:1px solid rgba(108,194,218,.14)}
+.orion-head .orion-orb{flex:none;width:34px;height:34px}
+.orion-title{font-size:13px;font-weight:800;letter-spacing:.14em}
+.orion-subtitle{margin-top:4px;color:#8caebe;font-size:10px}
+.orion-status{margin-left:auto;color:#8fa9b8;font-size:10px;white-space:nowrap}
+.orion-status:before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:#4ccfa0;vertical-align:1px}
+.orion-status.active:before{background:#65dff1;box-shadow:0 0 8px #65dff1}
+.orion-close{border:0;background:transparent;color:#b7d5e3;font-size:20px;cursor:pointer;padding:3px 5px}
+.orion-feed{display:flex;flex-direction:column;gap:9px;overflow:auto;min-height:120px;max-height:310px;padding:15px}
+.orion-message{max-width:92%;padding:10px 12px;border:1px solid rgba(110,180,205,.16);border-radius:12px;background:rgba(22,48,67,.72);color:#d8edf7;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.orion-message.owner{align-self:flex-end;background:rgba(15,91,117,.32);border-color:rgba(73,202,225,.22);color:#e4fbff}
+.orion-actions{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 12px}
+.orion-actions button,.orion-voice-tools button{border:1px solid rgba(87,190,214,.22);border-radius:999px;padding:7px 10px;background:rgba(12,42,60,.72);color:#bceaf4;font-size:10px;cursor:pointer}
+.orion-compose{display:flex;gap:7px;padding:12px;border-top:1px solid rgba(108,194,218,.14)}
+.orion-compose input{min-width:0;flex:1;border:1px solid rgba(111,191,215,.22);border-radius:10px;padding:10px;background:#071827;color:#e9faff;outline:none;font:12px inherit}
+.orion-compose input:focus{border-color:#51cce4}
+.orion-compose button{border:1px solid rgba(74,211,235,.36);border-radius:10px;padding:0 12px;background:#0c4560;color:#e7fbff;font-size:12px;cursor:pointer}
+.orion-compose button:disabled{opacity:.5;cursor:wait}
+.orion-voice-tools{display:flex;justify-content:space-between;align-items:center;padding:0 14px 13px}
+.orion-voice-tools button{background:transparent}
+.orion-mic.listening{border-color:#55e5ba;color:#8bffd9;box-shadow:0 0 12px rgba(85,229,186,.18)}
+.orion-root.speaking .orion-orb{box-shadow:0 0 22px rgba(69,216,242,.9),0 0 42px rgba(69,216,242,.35)}
+.orion-root.speaking .orion-orb:after{animation-duration:1s}
+@keyframes orionPulse{0%{transform:scale(.85);opacity:.8}100%{transform:scale(1.55);opacity:0}}
+@media(max-width:640px){.orion-root{right:12px;bottom:14px}.orion-panel{bottom:54px;width:min(360px,calc(100vw - 24px));max-height:70vh}.orion-feed{max-height:34vh}.orion-launcher{padding:8px 12px 8px 8px}}
+@media(prefers-reduced-motion:reduce){.orion-orb:after{animation:none}}
