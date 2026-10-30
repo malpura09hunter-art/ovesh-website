@@ -11,6 +11,11 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <div class="orion-metric"><span class="orion-metric-icon teal">⌘</span><div><small>AI CONNECTION</small><strong>Smart routing</strong><em>Configured model provider</em></div></div>
 <div class="orion-metric"><span class="orion-metric-icon purple">▣</span><div><small>SESSION SECURITY</small><strong>Owner only</strong><em>Protected OV CLOUD session</em></div></div>
 </div>
+<section class="orion-mission" aria-label="ORION Mission Control">
+ <div class="orion-mission-top"><div><small>OWNER OPERATIONS · READ-ONLY SCAN</small><h2>Mission Control</h2><p>One command. A live briefing across the workspace.</p></div><button type="button" id="orionMissionRun" class="orion-mission-button">Run cloud scan <span>↗</span></button></div>
+ <div class="orion-mission-tiles"><div><b>01</b><span>Storage</span></div><div><b>02</b><span>Clients</span></div><div><b>03</b><span>Orders</span></div><div><b>04</b><span>Security</span></div></div>
+ <div id="orionMissionResult" class="orion-mission-result" aria-live="polite">Ready to scan. ORION will inspect available owner-session data without changing files, accounts, or security settings.</div>
+</section>
 <div class="orion-overview-grid">
 <article class="orion-panel orion-live-panel">
 <div class="orion-panel-head"><div><small>LIVE ASSISTANT</small><h2>Conversation workspace</h2></div><span class="orion-live-tag"><i></i> PRIVATE SESSION</span></div>
@@ -273,10 +278,69 @@ async function askAI(raw,speakResponse=true){
     if(speakResponse){speak(message,true)}else{transcript('',message);status('AI request failed');}
   }
 }
-async function replyTo(raw,speakResponse=true){
+async let lastWorkspacePage='command';
+const workspaceAliases=[
+ {page:'command',label:'Command Center',terms:/\\b(?:dashboard|home|overview|main screen|control room|command center)\\b/},
+ {page:'storage',label:'Cloud Storage',terms:/\\b(?:my files|file manager|documents|storage|uploads|folders)\\b/},
+ {page:'projects',label:'Client Projects',terms:/\\b(?:client work|project workspace|projects|project list)\\b/},
+ {page:'activity',label:'Activity',terms:/\\b(?:what happened|recent events|activity|audit trail|history)\\b/},
+ {page:'security',label:'Security',terms:/\\b(?:security center|security logs|login events|sign in activity)\\b/},
+ {page:'college',label:'College',terms:/\\b(?:study workspace|college|subjects|practicals|assignments)\\b/},
+ {page:'client-cloud',label:'Client Cloud',terms:/\\b(?:manage clients|client management|customer accounts|client accounts|my customers)\\b/},
+ {page:'shop-orders',label:'Shop Orders',terms:/\\b(?:store orders|shop orders|sales orders|orders)\\b/}
+];
+function smartNavigation(raw,speakResponse=true){
+ const q=String(raw||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
+ const navIntent=/\\b(?:open|go|take me|bring up|show|switch|navigate|head to|let me see|i need|i want to see|where can i|where do i)\\b/.test(q);
+ const item=workspaceAliases.find(x=>x.terms.test(q));
+ if(!item||!navIntent)return false;
+ lastWorkspacePage=item.page;
+ if(typeof window.render==='function')window.render(item.page);else document.querySelector('[data-page="'+item.page+'"]')?.click();
+ const message='Got it. '+item.label+' is open. You can ask me to inspect it, summarize it, or take the next step.';
+ if(speakResponse)speak(message,true);else{transcript('',message);status('Workspace opened')}
+ return true;
+}
+function renderMissionResult(message,details=[],speakResponse=true){
+ const target=$('#orionMissionResult');
+ if(target)target.innerHTML='<strong>'+message.replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))+'</strong>'+(details.length?'<ul>'+details.map(x=>'<li>'+String(x).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>':'');
+ if(speakResponse)speak(message+(details.length?' '+details.join('. '):''),true);else{transcript('',message+(details.length?' '+details.join('. '):''));status('Mission report ready')}
+}
+async function runMissionControl(speakResponse=true){
+ const target=$('#orionMissionResult');if(target)target.textContent='Scanning storage, client accounts, shop orders and security events…';
+ status('Mission scan in progress','thinking');
+ const storage=window.OVESH_STORAGE;
+ const tasks=[
+  (async()=>{if(!storage?.api||!storage?.listFiles)throw new Error('Storage module unavailable');const [health,files]=await Promise.all([storage.api({action:'status'}),storage.listFiles()]);return{health,files:Array.isArray(files)?files:[]}})(),
+  (async()=>{const r=await fetch('/api/oveshcloud-client-admin',{credentials:'include',headers:{Accept:'application/json','Cache-Control':'no-cache'}});const d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.clients))throw new Error(d.error||'Client data unavailable');return d.clients})(),
+  loadShopOrders(),
+  (async()=>{const r=await fetch('/api/oveshcloud-auth?action=security-events',{credentials:'same-origin',headers:{Accept:'application/json','Cache-Control':'no-cache'}});const d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.events))throw new Error(d.error||'Security events unavailable');return d.events})()
+ ];
+ const results=await Promise.allSettled(tasks),names=['Storage','Client Cloud','Shop Orders','Security'];
+ const data=results.map((r,i)=>({name:names[i],ok:r.status==='fulfilled',value:r.status==='fulfilled'?r.value:null,error:r.status==='rejected'?(r.reason?.message||'Unavailable'):''}));
+ const details=[],alerts=[];
+ const st=data[0];
+ if(st.ok){const bytes=st.value.files.reduce((n,x)=>n+Number(x.size||0),0);details.push('Storage: '+st.value.files.length+' indexed files, '+formatBytes(bytes)+'. Connection '+(st.value.health?.ok?'available':'reported unavailable')+'.');if(!st.value.health?.ok)alerts.push('Storage connection needs checking')}
+ const cl=data[1];
+ if(cl.ok){const clients=cl.value,active=clients.filter(x=>String(x.status||'').toLowerCase()==='active').length,near=clients.filter(x=>Number(x.quotaBytes)>0&&Number(x.usedBytes||0)/Number(x.quotaBytes)>=.8);details.push('Clients: '+clients.length+' accounts, '+active+' active. '+near.length+' at or above 80% of reported quota.');if(near.length)alerts.push(near.length+' client accounts are nearing their storage limit')}
+ const od=data[2];
+ if(od.ok){const orders=od.value,pending=orders.filter(x=>/pending|review/i.test(String(x.status||'pending'))).length;details.push('Shop Orders: '+orders.length+' total, '+pending+' pending or reviewing.');if(pending)alerts.push(pending+' orders need review')}
+ const sec=data[3];
+ if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: '+sec.value.length+' recent events inspected; '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the recent event window')}
+ const unavailable=data.filter(x=>!x.ok).map(x=>x.name);
+ if(unavailable.length)details.push('Unavailable sources: '+unavailable.join(', ')+'. This is a partial report.');
+ const headline=alerts.length?'Scan complete. '+alerts.length+' attention item'+(alerts.length===1?'':'s')+' found.':unavailable.length?'Partial scan complete. Some sources could not be checked.':'Scan complete. No attention flags were found in the available data.';
+ renderMissionResult(headline,details,speakResponse);
+ return{headline,details,alerts,unavailable};
+}
+function replyTo(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
+ // Mission Control is an explicit read-only multi-source operation.
+ if(/\\b(?:scan (?:the )?(?:whole|entire|my)? ?cloud|cloud health report|mission control|daily briefing|brief me|what needs attention|anything unusual|check (?:the )?(?:entire )?cloud|full cloud report)\\b/i.test(original)){
+  try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
+ }
+ if(smartNavigation(original,speakResponse))return;
  // Resolve workspace navigation before data commands or AI so phrases like
  // "could you please take me to Client Cloud" never fall through to generic chat.
  const cleaned=q
@@ -380,7 +444,7 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;replyTo(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;replyTo(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function activateAfterLogin(){openPanel();transcript('','Welcome back. ORION is starting automatically. Allow microphone access if your browser asks, then say “ORION” or “wake up” whenever you need me.');status('Starting microphone','listening');if(!started&&!manualStop){setTimeout(()=>{if(!started&&!manualStop)start()},350)}}
 function addNav(){const nav=$('#nav'),btn=$('#orionNav');if(!nav||!btn)return;btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openPanel();if(!started){transcript('','I am here. Start conversation to talk naturally with me.');status('Standby')}},true)}
