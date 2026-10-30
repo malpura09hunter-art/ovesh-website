@@ -168,6 +168,35 @@ async function cloudCommand(raw,speakResponse=true){
  const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
  const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
+ const loadClientAccounts=async()=>{
+  const response=await fetch('/api/oveshcloud-client-admin',{method:'GET',credentials:'include',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||!Array.isArray(data.clients))throw new Error(data.error||'Client Cloud data could not be loaded. Please verify your owner session.');
+  return data.clients;
+ };
+ const clientBytes=n=>{n=Number(n||0);if(!n)return'0 bytes';const units=['bytes','KB','MB','GB','TB'],i=Math.min(4,Math.floor(Math.log(n)/Math.log(1024)));return(n/1024**i).toFixed(i?1:0)+' '+units[i]};
+ const clientIntent=/\\b(?:client cloud|client accounts?|clients|client directory|client list|list clients|customer accounts?)\\b/i.test(q);
+ if(clientIntent){
+  try{
+   const clients=await loadClientAccounts(),active=clients.filter(c=>String(c.status||'').toLowerCase()==='active'),suspended=clients.filter(c=>String(c.status||'').toLowerCase()!=='active');
+   const used=clients.reduce((n,c)=>n+Number(c.usedBytes||0),0),quota=clients.reduce((n,c)=>n+Number(c.quotaBytes||0),0);
+   if(/\\b(?:how many|count|number|total)\\b/i.test(q)&&/\\b(?:active|enabled)\\b/i.test(q)){say('You have '+active.length+' active client accounts.');return true}
+   if(/\\b(?:how many|count|number|total)\\b/i.test(q)&&/\\b(?:suspended|inactive|disabled)\\b/i.test(q)){say('You have '+suspended.length+' suspended or non-active client accounts.');return true}
+   if(/\\b(?:storage|space|usage|used|quota)\\b/i.test(q)){
+    const ranked=clients.slice().sort((a,b)=>Number(b.usedBytes||0)-Number(a.usedBytes||0));
+    const top=ranked[0];
+    say('Your '+clients.length+' client accounts use '+clientBytes(used)+' of '+clientBytes(quota)+' total allocated quota.'+(top?' The highest reported usage is '+(top.name||'an unnamed client')+' at '+clientBytes(top.usedBytes)+'.':''));
+    return true;
+   }
+   if(/\\b(?:list|show|name|who|which|directory)\\b/i.test(q)){
+    const rows=clients.slice(0,10).map(c=>(c.name||'Unnamed client')+(c.company?' at '+c.company:'')+', '+(c.status||'status unavailable')).join('; ');
+    say(clients.length?'You have '+clients.length+' client accounts. '+rows+(clients.length>10?'; and '+(clients.length-10)+' more.':''):'There are no client accounts in Client Cloud yet.');
+    return true;
+   }
+   say('Your Client Cloud summary: '+clients.length+' total accounts, '+active.length+' active, '+suspended.length+' suspended or non-active. Reported storage used: '+clientBytes(used)+' of '+clientBytes(quota)+' allocated.');
+   return true;
+  }catch(error){say('I could not read Client Cloud data. '+(error?.message||'Please try again.'));return true}
+ }
   if(/\b(?:shop\\s+orders?|orders?|sales|store\\s+orders?)\b/i.test(q)){
    const orders=await loadShopOrders(),stats=summarizeShopOrders(orders);
    const byNewest=orders.slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
