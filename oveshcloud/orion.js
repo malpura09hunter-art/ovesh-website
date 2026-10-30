@@ -274,35 +274,36 @@ async function askAI(raw,speakResponse=true){
   }
 }
 async function replyTo(raw,speakResponse=true){
- conversationReplying=true;
- const q=String(raw||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
- if(!q){speak('I did not catch that. Say “wake up” to try again.',true);return}
- if(await cloudCommand(raw,speakResponse))return;
- const command=q.replace(/\b(?:please|for me|right now|now|thank you|thanks)\b/g,'').replace(/\s+/g,' ').trim();
- const verb=/^(?:open|go to|show|take me to|navigate to|switch to|bring up|access|enter)\b/.test(command);
- if(verb){
-  const routes=[
-   {page:'command',label:'your command center',pattern:/\b(?:command center|dashboard|home)\b/},
-   {page:'storage',label:'cloud storage',pattern:/\b(?:cloud storage|file manager|storage|files)\b/},
-   {page:'projects',label:'client projects',pattern:/\b(?:client projects|projects|project workspace|client project)\b/},
-   {page:'activity',label:'activity',pattern:/\b(?:activity|activity log|recent activity)\b/},
-   {page:'security',label:'security',pattern:/\b(?:security|security center|security console|login activity)\b/},
-   {page:'college',label:'your college workspace',pattern:/\b(?:college|study workspace|subjects)\b/},
-   {page:'client-cloud',label:'client cloud management',pattern:/\b(?:client cloud|client accounts|clients)\b/},
-   {page:'shop-orders',label:'shop orders',pattern:/\b(?:shop orders|orders)\b/}
-  ];
-  const route=routes.find(x=>x.pattern.test(command));
-  if(route){
-   navigate(route.page,route.label);
-   if(route.page==='projects'){
-    const named=command.match(/\b(?:project|projects)\s+(?:named\s+|called\s+)?(.+)$/);
-    const requested=named?.[1]?.trim();
-    if(requested)setTimeout(()=>{const host=document.querySelector('#page .projects');const visible=host?.innerText||'';speak(visible.toLowerCase().includes(requested.toLowerCase())?'I opened Client Projects and found a matching listed project for '+requested+'.':'I opened Client Projects, but I could not find a listed project named '+requested+'. The current page only exposes the project entries shown there.',true)},250);
-   }
-   return;
-  }
+ const original=String(raw||'').trim();
+ const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+ if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
+ // Resolve workspace navigation before data commands or AI so phrases like
+ // "could you please take me to Client Cloud" never fall through to generic chat.
+ const cleaned=q
+  .replace(/\b(?:hey\s+orion|okay\s+orion|ok\s+orion|orion)\b/g,' ')
+  .replace(/\b(?:please|for me|right now|now|thanks|thank you|could you|can you|would you|i want you to|i need you to|take me|bring me)\b/g,' ')
+  .replace(/\s+/g,' ').trim();
+ const routes=[
+  {page:'command',label:'Command Center',patterns:[/\bcommand\s*center\b/,/\bdashboard\b/,/\bhome\b/]},
+  {page:'storage',label:'Cloud Storage',patterns:[/\bcloud\s*storage\b/,/\bstorage\b/,/\bfile\s*manager\b/]},
+  {page:'projects',label:'Client Projects',patterns:[/\bclient\s*projects?\b/,/\bproject\s*workspace\b/,/\bprojects?\b/]},
+  {page:'activity',label:'Activity',patterns:[/\bactivity(?:\s+log)?\b/,/\brecent\s+activity\b/]},
+  {page:'security',label:'Security',patterns:[/\bsecurity(?:\s+(?:center|console|logs?))?\b/,/\blogin\s+activity\b/]},
+  {page:'college',label:'College',patterns:[/\bcollege\b/,/\bstudy\s+workspace\b/,/\bsubjects\b/]},
+  {page:'client-cloud',label:'Client Cloud',patterns:[/\bclient\s*cloud\b/,/\bclient\s+management\b/]},
+  {page:'shop-orders',label:'Shop Orders',patterns:[/\bshop\s+orders?\b/,/\border\s+management\b/]}
+ ];
+ const navigationVerb=/\b(?:open|go|show|navigate|switch|access|enter|visit|load|display|bring\s+up|take\s+me\s+to|head\s+to)\b/.test(cleaned);
+ const route=routes.find(item=>item.patterns.some(pattern=>pattern.test(cleaned)));
+ if(route&&navigationVerb){
+  if(typeof window.render==='function')window.render(route.page);
+  else document.querySelector('[data-page="'+route.page+'"]')?.click();
+  const message='Opening '+route.label+'.';
+  if(speakResponse)speak(message,true);else{transcript('',message);status('Workspace opened')}
+  return;
  }
- askAI(raw,speakResponse);
+ if(await cloudCommand(original,speakResponse))return;
+ await askAI(original,speakResponse);
 }
 let wakeBuffer='',wakeBufferAt=0,conversationMode=true;
 function handleSpeech(raw){transcript(raw,'');const clean=raw.trim();if(!clean)return;if(awaitingCommand){awaitingCommand=false;replyTo(clean);return}if(conversationMode){replyTo(clean);return}
