@@ -21,7 +21,7 @@ async function askAI(raw){
   status('Thinking','speaking');
   transcript('', 'Let me think about that.');
   try{
-    const response=await fetch('/api/oveshcloud-orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
+    const response=await fetch('/api/oveshcloud-auth?action=orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'ORION could not get an AI response.');
     const answer=String(data.reply||'').trim();
