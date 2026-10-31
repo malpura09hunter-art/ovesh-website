@@ -337,8 +337,10 @@ async function replyTo(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
- // Mission Control is an explicit read-only multi-source operation.
- if(/\b(?:scan|check|audit|inspect|review|run)\b.{0,70}\b(?:cloud|workspace|ov cloud|ovesh cloud|storage|health|costs?|billing|accounts?|security|everything|all systems)\b|\b(?:cloud|workspace|storage)\s+(?:health|cost|security)\s+(?:scan|check|report)\b|\b(?:mission control|daily briefing|brief me|what needs attention|anything unusual|full cloud report|quick scan|health and cost scan|health & cost scan)\b/i.test(original)){
+ // Mission Control is the read-only operational tool. Natural status and overview
+ // questions should invoke real owner-session data instead of asking the model to guess.
+ const cloudOverviewIntent=/\b(?:how(?:s| is) (?:my )?(?:ov ?cloud|cloud|workspace|system|everything|things) (?:doing|looking|running)|how are (?:things|we) (?:doing|looking)|give me (?:a |the )?(?:cloud |workspace |system )?(?:summary|overview|briefing|status)|summari[sz]e (?:my )?(?:ov ?cloud|cloud|workspace|system)|overall (?:cloud|workspace|system) (?:status|health)|(?:cloud|workspace|system) (?:status|health|overview|summary)|what needs attention|anything (?:wrong|unusual|needs attention)|what(?:s| is) happening in (?:my )?(?:cloud|workspace)|check (?:my )?(?:ov ?cloud|cloud|workspace) (?:overall|status|health)|how is my ov cloud doing)\b/i.test(q);
+ if(cloudOverviewIntent||/\b(?:scan|check|audit|inspect|review|run)\b.{0,70}\b(?:cloud|workspace|ov cloud|ovesh cloud|storage|health|costs?|billing|accounts?|security|everything|all systems)\b|\b(?:cloud|workspace|storage)\s+(?:health|cost|security)\s+(?:scan|check|report)\b|\b(?:mission control|daily briefing|brief me|what needs attention|anything unusual|full cloud report|quick scan|health and cost scan|health & cost scan)\b/i.test(original)){
   try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
  }
  if(smartNavigation(original,speakResponse))return;
