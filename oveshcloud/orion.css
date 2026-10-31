@@ -153,3 +153,16 @@
 @media(max-width:760px){.orion-voice-stage{grid-template-columns:1fr;gap:8px}.orion-holo-stage{min-height:330px}.orion-holo-panel{min-width:116px;padding:8px;font-size:7px}.orion-holo-panel span{font-size:7px}.holo-panel-a{left:1%;top:7%}.holo-panel-b{right:1%;top:9%}.holo-panel-c{left:3%;bottom:5%}.orion-holo-warning{right:3%;bottom:7%}}
 @media(max-width:430px){.orion-holo-stage{min-height:300px}.orion-holo-orbit{width:78%}.orion-holo-panel{min-width:100px;padding:6px;gap:5px}.orion-holo-panel b,.orion-holo-panel span{font-size:6px}.orion-holo-warning{font-size:7px}}
 @media(prefers-reduced-motion:reduce){.orion-holo-core,.orion-holo-orbit:before{animation:none!important}}
+
+/* ORION presence: distinct reactive states */
+.orion-holo-core.thinking{animation:orionThinkPulse 1.15s ease-in-out infinite;box-shadow:0 0 24px #70eaff,0 0 78px rgba(35,176,255,.92),0 0 145px rgba(0,112,255,.62),inset 0 0 45px rgba(177,250,255,.95)}
+.orion-holo-core.listening{animation:orionListenPulse 1.8s ease-in-out infinite}
+.orion-holo-core.speaking{animation:orionSpeakPulse .72s ease-in-out infinite alternate}
+.orion-holo-stage[data-state="thinking"] .orion-holo-orbit{animation:orionThinkingOrbit 4s linear infinite;border-color:rgba(100,225,255,.72)}
+.orion-holo-stage[data-state="listening"] .orion-holo-orbit{border-color:rgba(86,255,220,.65);box-shadow:0 0 30px rgba(55,255,220,.2)}
+.orion-holo-stage[data-state="speaking"] .orion-holo-panel{border-color:rgba(99,222,255,.72);box-shadow:0 0 28px rgba(0,160,255,.25),inset 0 0 20px rgba(50,175,255,.13)}
+@keyframes orionThinkPulse{0%,100%{filter:brightness(.85);scale:1}50%{filter:brightness(1.42);scale:1.07}}
+@keyframes orionListenPulse{0%,100%{scale:1;filter:brightness(1)}50%{scale:1.055;filter:brightness(1.3)}}
+@keyframes orionSpeakPulse{from{scale:.98;filter:brightness(1)}to{scale:1.08;filter:brightness(1.4)}}
+@keyframes orionThinkingOrbit{to{transform:translate(-50%,-50%) rotate(360deg) rotateX(68deg) scaleY(.48)}}
+@media(prefers-reduced-motion:reduce){.orion-holo-core.thinking,.orion-holo-core.listening,.orion-holo-core.speaking,.orion-holo-stage[data-state="thinking"] .orion-holo-orbit{animation:none!important}}
