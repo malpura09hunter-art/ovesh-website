@@ -228,9 +228,9 @@ async function callOwnerTool(req,name,args){
   return{ok:status.ok===true,provider:'Backblaze B2',fileCount:Array.isArray(files.files)?files.files.length:0,files:(files.files||[]).slice(0,30).map(x=>({name:x.name,size:x.size,createdAt:x.createdAt})),note:'Read-only snapshot; not continuous monitoring.'};
  }
  if(name==='list_clients'){
-  const d=await request('/api/oveshcloud-client-admin');
+  const d=await request('/api/oveshcloud-client-files','GET');
   if(!Array.isArray(d.clients))throw new Error('Client Cloud returned an invalid response.');
-  return{count:d.clients.length,clients:d.clients.slice(0,100).map(x=>({name:x.name,company:x.company,status:x.status,usedBytes:x.usedBytes,quotaBytes:x.quotaBytes}))};
+  return{ok:true,count:d.clients.length,clients:d.clients.slice(0,100).map(x=>({name:x.name,company:x.company,status:x.status,usedBytes:x.usedBytes,quotaBytes:x.quotaBytes}))};
  }
  if(name==='get_shop_orders'){
   const d=await request('/api/oveshcloud-auth?action=shop-orders');
@@ -277,16 +277,20 @@ async function handleOrionChat(req,res){
       try{
         let response=await callGroq(model,requestMessages,4096);
         let payload=await response.json().catch(()=>({}));
-        if(response.ok&&Array.isArray(payload?.choices?.[0]?.message?.tool_calls)&&payload.choices[0].message.tool_calls.length){
-          const toolConversation=[...requestMessages,payload.choices[0].message];
-          let toolFailure=null;
-          for(const call of payload.choices[0].message.tool_calls.slice(0,4)){
-            const name=String(call?.function?.name||''),rawArgs=String(call?.function?.arguments||'{}');
-            let args={};try{args=JSON.parse(rawArgs)}catch{toolFailure='The AI returned invalid tool arguments.'}
+        const toolConversation=[...requestMessages];
+        for(let round=0;round<3&&response.ok;round++){
+          const assistantMessage=payload?.choices?.[0]?.message;
+          const calls=Array.isArray(assistantMessage?.tool_calls)?assistantMessage.tool_calls:[];
+          if(!calls.length)break;
+          toolConversation.push(assistantMessage);
+          for(const call of calls.slice(0,4)){
+            const callId=String(call?.id||''),name=String(call?.function?.name||''),rawArgs=String(call?.function?.arguments||'{}');
             let result;
-            try{if(toolFailure)throw new Error(toolFailure);result=await callOwnerTool(req,name,args)}
-            catch(error){result={ok:false,error:String(error?.message||'Workspace tool failed.')}}
-            toolConversation.push({role:'tool',tool_call_id:String(call.id||''),content:JSON.stringify(result).slice(0,12000)});
+            try{
+              if(!callId)throw new Error('The AI provider returned a tool call without an ID.');
+              result=await callOwnerTool(req,name,JSON.parse(rawArgs));
+            }catch(error){result={ok:false,error:String(error?.message||'Workspace tool failed.')};}
+            toolConversation.push({role:'tool',tool_call_id:callId,content:JSON.stringify(result).slice(0,12000)});
           }
           response=await callGroq(model,toolConversation,4096);
           payload=await response.json().catch(()=>({}));
