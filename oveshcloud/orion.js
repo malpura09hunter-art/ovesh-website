@@ -327,6 +327,7 @@ async function runMissionControl(speakResponse=true){
  const sec=data[3];
  if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: '+sec.value.length+' recent events inspected; '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the recent event window')}
  const unavailable=data.filter(x=>!x.ok).map(x=>x.name);
+ details.push('Cost visibility: OV CLOUD can report file usage and client quota consumption from connected systems. No live provider billing or invoice integration is configured, so this scan cannot calculate actual cloud charges or savings.');
  if(unavailable.length)details.push('Unavailable sources: '+unavailable.join(', ')+'. This is a partial report.');
  const headline=alerts.length?'Scan complete. '+alerts.length+' attention item'+(alerts.length===1?'':'s')+' found.':unavailable.length?'Partial scan complete. Some sources could not be checked.':'Scan complete. No attention flags were found in the available data.';
  renderMissionResult(headline,details,speakResponse);
@@ -337,7 +338,7 @@ async function replyTo(raw,speakResponse=true){
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
  // Mission Control is an explicit read-only multi-source operation.
- if(/\b(?:scan (?:the )?(?:whole|entire|my)? ?cloud|cloud health report|mission control|daily briefing|brief me|what needs attention|anything unusual|check (?:the )?(?:entire )?cloud|full cloud report)\b/i.test(original)){
+ if(/\b(?:scan|check|audit|inspect|review|run)\b.{0,70}\b(?:cloud|workspace|ov cloud|ovesh cloud|storage|health|costs?|billing|accounts?|security|everything|all systems)\b|\b(?:cloud|workspace|storage)\s+(?:health|cost|security)\s+(?:scan|check|report)\b|\b(?:mission control|daily briefing|brief me|what needs attention|anything unusual|full cloud report|quick scan|health and cost scan|health & cost scan)\b/i.test(original)){
   try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
  }
  if(smartNavigation(original,speakResponse))return;
