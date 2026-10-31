@@ -113,3 +113,43 @@
 .orion-mission-result strong{display:block;color:#e9f3ff;font-size:12px;margin-bottom:4px}
 .orion-mission-result ul{margin:8px 0 0;padding-left:17px}.orion-mission-result li{margin:4px 0}
 @media(max-width:620px){.orion-mission-top{align-items:flex-start;flex-direction:column}.orion-mission-button{width:100%}.orion-mission-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* ORION HOLOGRAPHIC CORE — reference-inspired visual system */
+.orion-shell{--orion-accent:#36cfff;--orion-cyan:#65e5ff}
+.orion-brand-mark{border-color:rgba(62,202,255,.48);background:radial-gradient(circle at 35% 25%,rgba(100,226,255,.28),rgba(12,45,75,.35) 58%,rgba(6,16,31,.9));color:#9cecff;box-shadow:0 0 28px rgba(34,177,255,.16),inset 0 0 18px rgba(50,190,255,.12)}
+.orion-kicker,.orion-panel-head>div>small,.orion-message-head small,.orion-chat-label,.orion-user-line small{color:#69dfff}
+.orion-heading h1 span{color:#66dfff}
+.orion-metric{border-color:rgba(70,177,232,.17);background:linear-gradient(145deg,rgba(9,30,51,.96),rgba(7,17,32,.98));box-shadow:inset 0 1px rgba(119,218,255,.05),0 12px 30px rgba(0,0,0,.2)}
+.orion-metric-icon{background:rgba(44,183,255,.13);color:#76dcff}
+.orion-metric-icon.blue{background:rgba(49,132,255,.15);color:#8abaff}.orion-metric-icon.teal{background:rgba(55,221,211,.13);color:#6de8db}.orion-metric-icon.purple{background:rgba(255,145,94,.12);color:#ffad7b}
+.orion-live-panel,.orion-side-panel{border-color:rgba(73,171,226,.2);background:linear-gradient(155deg,rgba(10,24,42,.98),rgba(5,13,25,.99));box-shadow:0 20px 55px rgba(0,0,0,.22),inset 0 1px rgba(120,220,255,.05)}
+.orion-voice-stage{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr);align-items:center;gap:20px;min-height:390px;padding:14px 12px;border:1px solid rgba(62,178,239,.17);border-radius:17px;overflow:hidden;background:radial-gradient(ellipse at 34% 47%,rgba(0,146,255,.15),transparent 48%),linear-gradient(135deg,rgba(4,17,32,.94),rgba(5,12,24,.98))}
+.orion-holo-stage{position:relative;isolation:isolate;min-height:360px;overflow:hidden;border-radius:14px;background:radial-gradient(ellipse at 50% 49%,rgba(0,165,255,.18),transparent 36%),radial-gradient(ellipse at 50% 100%,rgba(0,106,190,.15),transparent 55%),linear-gradient(180deg,rgba(3,13,27,.45),rgba(2,10,21,.1))}
+.orion-holo-grid{position:absolute;inset:0;opacity:.23;background-image:linear-gradient(rgba(53,174,239,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(53,174,239,.2) 1px,transparent 1px);background-size:28px 28px;transform:perspective(320px) rotateX(57deg) scale(1.6);transform-origin:50% 100%;mask-image:linear-gradient(transparent 0%,#000 38%,#000 85%,transparent)}
+.orion-holo-orbit{position:absolute;left:50%;top:47%;width:min(74%,340px);aspect-ratio:1;border:1px solid rgba(55,190,255,.43);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 22px rgba(0,153,255,.12),inset 0 0 24px rgba(0,153,255,.08)}
+.orion-holo-orbit:before,.orion-holo-orbit:after{content:"";position:absolute;inset:9%;border:1px dashed rgba(86,209,255,.24);border-radius:50%;animation:orionOrbit 18s linear infinite}
+.orion-holo-orbit:after{inset:-8%;border-style:solid;border-color:rgba(255,151,92,.25);transform:rotateX(68deg) scaleY(.38)}
+.orion-holo-orbit.orbit-b{width:min(87%,390px);transform:translate(-50%,-50%) rotateX(68deg) scaleY(.48);border-color:rgba(255,154,91,.42)}
+.orion-holo-orbit.orbit-b:before{inset:2%;border-color:rgba(255,160,101,.36);animation-direction:reverse}
+.orion-holo-orbit.orbit-c{width:min(63%,290px);border-color:rgba(109,224,255,.48);transform:translate(-50%,-50%) rotateY(67deg) scaleX(.55)}
+.orion-holo-core-wrap{position:absolute;z-index:2;left:50%;top:47%;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:17px}
+.orion-holo-core{position:relative;width:clamp(112px,18vw,176px);aspect-ratio:1;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(111,225,255,.85);background:radial-gradient(circle at 50% 48%,#e7fdff 0,#7be9ff 4%,rgba(18,163,255,.8) 13%,rgba(5,64,133,.72) 38%,rgba(0,17,43,.85) 68%,rgba(0,9,24,.25) 100%);box-shadow:0 0 15px #43d9ff,0 0 48px rgba(0,168,255,.85),0 0 100px rgba(0,116,255,.38),inset 0 0 32px rgba(106,228,255,.8);animation:orionCorePulse 3.6s ease-in-out infinite}
+.orion-holo-core:before,.orion-holo-core:after{content:"";position:absolute;inset:-13%;border:1px solid rgba(93,216,255,.65);border-radius:50%;transform:rotateX(70deg);box-shadow:0 0 18px rgba(0,178,255,.32)}
+.orion-holo-core:after{inset:-24%;border-color:rgba(255,161,104,.42);transform:rotateY(68deg) rotateX(10deg)}
+.orion-holo-core span{z-index:1;color:#e8fcff;font-size:clamp(34px,5vw,56px);font-weight:300;text-shadow:0 0 22px #52dcff}
+.orion-holo-core i{position:absolute;inset:21%;border-radius:50%;background:radial-gradient(circle,rgba(230,255,255,.85),rgba(0,184,255,.15) 43%,transparent 70%);filter:blur(4px)}
+.orion-holo-core.listening{box-shadow:0 0 22px #66f0ff,0 0 75px rgba(40,255,220,.7),0 0 125px rgba(0,151,255,.55),inset 0 0 38px rgba(130,255,255,.9)}
+.orion-holo-core.speaking{box-shadow:0 0 22px #7ceaff,0 0 75px rgba(0,165,255,.9),0 0 135px rgba(0,100,255,.6),inset 0 0 42px rgba(150,245,255,.95)}
+.orion-holo-core-wrap>small{font-size:8px;letter-spacing:.2em;font-weight:800;color:#85e8ff;text-shadow:0 0 12px #00aaff;text-align:center}
+.orion-holo-panel{position:absolute;z-index:3;display:grid;gap:7px;min-width:130px;padding:10px 12px;border:1px solid rgba(69,190,255,.4);border-radius:7px;background:linear-gradient(135deg,rgba(7,39,66,.76),rgba(5,15,31,.68));box-shadow:0 0 22px rgba(0,140,255,.12),inset 0 0 20px rgba(50,175,255,.08);backdrop-filter:blur(7px);transform:perspective(500px) rotateY(-9deg);font:8px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;color:#a8dfff}
+.orion-holo-panel b{font-size:8px;letter-spacing:.15em;color:#6ce2ff}.orion-holo-panel span{white-space:nowrap;color:#8baecb}.orion-holo-panel i{font-style:normal;color:#70e8ca}.holo-panel-a{left:2%;top:12%}.holo-panel-b{right:2%;top:17%;transform:perspective(500px) rotateY(9deg)}.holo-panel-c{left:8%;bottom:8%;min-width:155px;transform:perspective(500px) rotateY(-6deg)}
+.orion-holo-warning{position:absolute;z-index:4;right:8%;bottom:12%;display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(255,143,87,.5);border-radius:5px;background:rgba(62,24,17,.58);color:#ff9a66;font:700 9px ui-monospace,monospace;box-shadow:0 0 18px rgba(255,108,60,.12)}.orion-holo-warning span{font-size:7px;letter-spacing:.1em}
+.orion-voice-copy{padding:15px 12px}.orion-voice-copy strong{color:#e8f8ff}.orion-voice-copy p{color:#91b2cc}.orion-primary{border-color:rgba(70,205,255,.58);background:linear-gradient(120deg,#087bb5,#1457a0);box-shadow:0 7px 24px rgba(0,153,255,.22)}.orion-primary:hover,.orion-secondary:hover{border-color:#6fe4ff}.orion-secondary{background:#0b2136;border-color:rgba(75,180,230,.25);color:#d8f4ff}
+.orion-transcript,.orion-chat-form,.orion-mission-result{border-color:rgba(65,169,224,.2);background:rgba(3,13,26,.72)}.orion-chat-row textarea{border-color:rgba(69,171,224,.24);background:#071a2d}.orion-chat-row textarea:focus{border-color:#39caff;box-shadow:0 0 0 3px rgba(39,180,255,.1)}
+.orion-mission{border-color:rgba(65,189,239,.26);background:radial-gradient(ellipse at 82% 0,rgba(0,164,255,.16),transparent 42%),linear-gradient(125deg,rgba(8,27,46,.98),rgba(5,14,28,.99))}.orion-mission-top small{color:#69dfff}.orion-mission-button{border-color:rgba(75,200,245,.44);background:linear-gradient(120deg,rgba(8,114,162,.38),rgba(18,65,122,.42));color:#e8fbff}
+.orion-flow-3d{border-color:rgba(64,178,239,.2);background:radial-gradient(ellipse at center,rgba(0,130,220,.13),transparent 70%),#071626}.orion-flow-node i{border-color:rgba(69,188,245,.38);background:#0c2942;color:#8ee7ff}
+@keyframes orionOrbit{to{transform:rotate(360deg)}}@keyframes orionCorePulse{0%,100%{filter:brightness(.94);scale:1}50%{filter:brightness(1.22);scale:1.035}}
+@media(max-width:760px){.orion-voice-stage{grid-template-columns:1fr;gap:8px}.orion-holo-stage{min-height:330px}.orion-holo-panel{min-width:116px;padding:8px;font-size:7px}.orion-holo-panel span{font-size:7px}.holo-panel-a{left:1%;top:7%}.holo-panel-b{right:1%;top:9%}.holo-panel-c{left:3%;bottom:5%}.orion-holo-warning{right:3%;bottom:7%}}
+@media(max-width:430px){.orion-holo-stage{min-height:300px}.orion-holo-orbit{width:78%}.orion-holo-panel{min-width:100px;padding:6px;gap:5px}.orion-holo-panel b,.orion-holo-panel span{font-size:6px}.orion-holo-warning{font-size:7px}}
+@media(prefers-reduced-motion:reduce){.orion-holo-core,.orion-holo-orbit:before{animation:none!important}}
