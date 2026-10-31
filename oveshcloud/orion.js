@@ -20,7 +20,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <article class="orion-panel orion-live-panel">
 <div class="orion-panel-head"><div><small>LIVE ASSISTANT</small><h2>Conversation workspace</h2></div><span class="orion-live-tag"><i></i> PRIVATE SESSION</span></div>
 <div class="orion-voice-stage"><div class="orion-holo-stage" aria-label="ORION holographic intelligence core"><div class="orion-holo-grid"></div><div class="orion-holo-orbit orbit-a"></div><div class="orion-holo-orbit orbit-b"></div><div class="orion-holo-orbit orbit-c"></div><div class="orion-holo-core-wrap"><div class="orion-holo-core" id="orionOrb"><span>O</span><i></i></div><small id="orionActivity">SYSTEM STANDBY</small></div><div class="orion-holo-panel holo-panel-a" aria-hidden="true"><b>CORE CONFIGURATION</b><span>AI ROUTING <i>● CONFIGURED</i></span><span>VOICE ENGINE <i>● BROWSER AUDIO</i></span><span>OWNER ACCESS <i>● SESSION-GATED</i></span></div><div class="orion-holo-panel holo-panel-b" aria-hidden="true"><b>WORKSPACE MODULES</b><span>STORAGE <i>MODULE</i></span><span>CLIENT CLOUD <i>MODULE</i></span><span>SECURITY <i>MODULE</i></span></div><div class="orion-holo-panel holo-panel-c" aria-hidden="true"><b>INTELLIGENCE STREAM</b><span>LISTEN → UNDERSTAND</span><span>REASON → EXECUTE</span><span>VERIFY → RESPOND</span></div><div class="orion-holo-warning" aria-hidden="true">! <span>SECURITY MODULE</span></div></div><div class="orion-voice-copy"><strong>Your command center, connected.</strong><p>Talk to ORION, ask questions, or direct it to sections of your private workspace.</p><div class="orion-voice-actions"><button id="orionTalk" class="orion-primary" type="button">Start conversation <span>→</span></button><button id="orionStop" class="orion-secondary" type="button" disabled>Pause</button></div></div></div>
-<div class="orion-transcript"><div class="orion-message-head"><small><i class="orion-message-dot"></i> ORION RESPONSE</small><span>LIVE TRANSCRIPT</span></div><p id="orionReply" aria-live="polite">Hello. I'm ORION. Start a conversation and speak naturally. You do not need to say a wake word.</p><div class="orion-user-line"><small>YOU SAID</small><p id="orionHeard">Your spoken words will appear here.</p></div></div>
+<div class="orion-transcript"><div class="orion-message-head"><small><i class="orion-message-dot"></i> LIVE CONVERSATION</small><span>THIS SESSION</span></div><div id="orionConversationLog" class="orion-conversation-log" role="log" aria-live="polite" aria-relevant="additions"></div><p id="orionReply" class="orion-transcript-legacy" aria-live="polite"></p><div class="orion-user-line orion-transcript-legacy"><small>YOU SAID</small><p id="orionHeard"></p></div></div>
 <form id="orionChatForm" class="orion-chat-form"><label class="orion-chat-label" for="orionTextInput">MESSAGE ORION</label><div class="orion-chat-row"><textarea id="orionTextInput" rows="2" maxlength="1800" placeholder="Ask ORION anything about your workspace…"></textarea><button id="orionSend" class="orion-primary" type="submit">Send ↑</button></div></form>
 <p class="orion-hint" id="orionHint">Start once, allow microphone access, and speak naturally. ORION listens for each turn and resumes after replying. You can interrupt while ORION speaks.</p>
 </article>
@@ -41,6 +41,26 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 
 function status(s,mode=''){const dockStatus=$('#orionDockStatus');if(dockStatus)dockStatus.textContent=s;const dockTalk=$('#orionDockTalk'),dockPause=$('#orionDockPause'),dockLed=$('#orionDockLed');if(dockLed)dockLed.className=mode||'';if(dockTalk)dockTalk.disabled=started;if(dockPause)dockPause.disabled=!started;const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity'),metric=$('#orionMetricStatus');if(led)led.className=mode;if(orb)orb.className='orion-holo-core '+mode;if(act)act.textContent=s.toUpperCase();if(metric)metric.textContent=mode==='listening'?'Listening':mode==='thinking'?'Thinking':mode==='speaking'?'Speaking':started?'Connected':'Standby';const stage=$('.orion-holo-stage');if(stage)stage.dataset.state=mode||'idle'}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply;const dockHeard=$('#orionDockHeard'),dockReply=$('#orionDockReply');if(user&&dockHeard)dockHeard.textContent=user;if(reply&&dockReply)dockReply.textContent=reply}
+let conversationMessages=[{role:'assistant',content:'I’m here. We can talk naturally, explore your workspace, or work through an idea together.'}];
+function renderConversationHistory(){
+ const targets=[$('#orionConversationLog'),$('#orionDockConversationLog')].filter(Boolean);
+ for(const target of targets){
+  target.replaceChildren();
+  for(const item of conversationMessages.slice(-36)){
+   const message=document.createElement('article');message.className='orion-conversation-message '+(item.role==='user'?'user':'assistant');
+   const label=document.createElement('small');label.textContent=item.role==='user'?'YOU':'ORION';
+   const body=document.createElement('p');body.textContent=item.content;
+   message.append(label,body);target.append(message);
+  }
+  target.scrollTop=target.scrollHeight;
+ }
+}
+function recordConversationMessage(role,value){
+ const content=String(value||'').trim();if(!content)return;
+ conversationMessages.push({role:role==='user'?'user':'assistant',content});
+ if(conversationMessages.length>36)conversationMessages=conversationMessages.slice(-36);
+ renderConversationHistory();
+}
 function preferredAudioMime(){if(!window.MediaRecorder)return'';return['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg'].find(type=>MediaRecorder.isTypeSupported(type))||''}
 let _orionVoices=[],_orionVoicesReady=false;
 function refreshVoices(){if(!window.speechSynthesis)return;_orionVoices=window.speechSynthesis.getVoices()||[];if(_orionVoices.length)_orionVoicesReady=true}
@@ -182,6 +202,7 @@ function speechFriendlyText(value){let s=String(value||'');
  s=s.replace(/\s+/g,' ').trim();
  return s}
 function speak(text,thenListen=true){
+ if(String(text||'').trim())recordConversationMessage('assistant',String(text).trim());
  if(thenListen&&Array.isArray(chatHistory)&&String(text||'').trim()){const last=chatHistory[chatHistory.length-1];if(last?.role==='user')chatHistory.push({role:'assistant',content:String(text).trim().slice(0,3800)});chatHistory=chatHistory.slice(-14)}
  if(listening){try{recognition?.stop()}catch{}listening=false}
  const display=String(text||'').trim();
@@ -242,7 +263,7 @@ async function cloudCommand(raw,speakResponse=true){
  const q=String(raw||'').trim(),lower=q.toLowerCase();
  const storage=window.OVESH_STORAGE,files=()=>Array.isArray(storage?.files)?storage.files:[];
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
- const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
+ const say=(message)=>{if(speakResponse)speak(message,true);else{recordConversationMessage('assistant',message);transcript('',message);status('Cloud action complete')}};
  const loadClientAccounts=async()=>{
   const response=await fetch('/api/oveshcloud-client-files',{method:'GET',credentials:'include',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
   const data=await response.json().catch(()=>({}));
@@ -406,7 +427,7 @@ async function askAI(raw,speakResponse=true){
     if(!answer)throw new Error('ORION received an empty response. Please try again.');
     chatHistory.push({role:'assistant',content:answer.slice(0,3800)});
     chatHistory=chatHistory.slice(-14);
-    if(speakResponse)speak(answer,true);else{transcript('',answer);status('Reply ready');}
+    if(speakResponse)speak(answer,true);else{recordConversationMessage('assistant',answer);transcript('',answer);status('Reply ready');}
   }catch(error){
     chatHistory.pop();
     const message=error&&error.message?error.message:'The AI service is temporarily unavailable.';
@@ -438,7 +459,7 @@ function smartNavigation(raw,speakResponse=true){
 function renderMissionResult(message,details=[],speakResponse=true){
  const target=$('#orionMissionResult');
  if(target)target.innerHTML='<strong>'+message.replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))+'</strong>'+(details.length?'<ul>'+details.map(x=>'<li>'+String(x).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>':'');
- if(speakResponse)speak(message+(details.length?' '+details.join('. '):''),true);else{transcript('',message+(details.length?' '+details.join('. '):''));status('Mission report ready')}
+ if(speakResponse)speak(message+(details.length?' '+details.join('. '):''),true);else{recordConversationMessage('assistant',message+(details.length?' '+details.join('. '):''));transcript('',message+(details.length?' '+details.join('. '):''));status('Mission report ready')}
 }
 async function runMissionControl(speakResponse=true){
  const target=$('#orionMissionResult');if(target)target.textContent='Scanning storage, client accounts, shop orders and security events…';
@@ -472,7 +493,8 @@ async function runMissionControl(speakResponse=true){
 async function replyTo(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
- if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
+ if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else{recordConversationMessage('assistant','I did not catch that. Please repeat your command.');transcript('','I did not catch that. Please repeat your command.')}return}
+ recordConversationMessage('user',original);
  if(Array.isArray(chatHistory)){const last=chatHistory[chatHistory.length-1];if(!(last?.role==='user'&&last.content===original.slice(0,1800)))chatHistory.push({role:'user',content:original.slice(0,1800)});chatHistory=chatHistory.slice(-14)}
  // Mission Control is the read-only operational tool. Natural status and overview
  // questions should invoke real owner-session data instead of asking the model to guess.
@@ -586,13 +608,14 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;if(started)conversationReplying=true;replyTo(q,!!started).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();renderConversationHistory();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;if(started)conversationReplying=true;replyTo(q,!!started).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function mountGlobalDock(){
  if($('#orionGlobalDock'))return;
  const dock=document.createElement('section');dock.id='orionGlobalDock';dock.className='orion-global-dock';dock.style.display=document.querySelector('#appView:not(.hidden)')?'block':'none';
- dock.innerHTML='<button type="button" id="orionDockLauncher" class="orion-dock-launcher" aria-expanded="false" aria-controls="orionDockPanel"><span class="orion-dock-spark">✧</span><span>ORION</span><i id="orionDockLed"></i></button><div id="orionDockPanel" class="orion-dock-panel" hidden><header class="orion-dock-head"><div><small>OV CLOUD INTELLIGENCE</small><strong>ORION Assistant</strong><span id="orionDockStatus">Ready · microphone off</span></div><button type="button" id="orionDockClose" aria-label="Close ORION">×</button></header><div class="orion-dock-conversation"><small>YOU</small><p id="orionDockHeard">Ask ORION about any section of your workspace.</p><small>ORION</small><p id="orionDockReply" aria-live="polite">I stay available while you move through OV CLOUD. Your microphone remains off until you start voice.</p></div><form id="orionDockForm" class="orion-dock-form"><textarea id="orionDockInput" maxlength="1800" rows="2" placeholder="Ask ORION anything…"></textarea><button type="submit" id="orionDockSend">Send ↑</button></form><div class="orion-dock-actions"><button type="button" id="orionDockTalk">Start voice</button><button type="button" id="orionDockPause" disabled>Pause</button><span>Owner session · private</span></div></div>';
+ dock.innerHTML='<button type="button" id="orionDockLauncher" class="orion-dock-launcher" aria-expanded="false" aria-controls="orionDockPanel"><span class="orion-dock-spark">✧</span><span>ORION</span><i id="orionDockLed"></i></button><div id="orionDockPanel" class="orion-dock-panel" hidden><header class="orion-dock-head"><div><small>OV CLOUD INTELLIGENCE</small><strong>ORION Assistant</strong><span id="orionDockStatus">Ready · microphone off</span></div><button type="button" id="orionDockClose" aria-label="Close ORION">×</button></header><div id="orionDockConversationLog" class="orion-dock-conversation orion-dock-history" role="log" aria-live="polite" aria-relevant="additions"></div><p id="orionDockHeard" hidden></p><p id="orionDockReply" hidden></p><form id="orionDockForm" class="orion-dock-form"><textarea id="orionDockInput" maxlength="1800" rows="2" placeholder="Ask ORION anything…"></textarea><button type="submit" id="orionDockSend">Send ↑</button></form><div class="orion-dock-actions"><button type="button" id="orionDockTalk">Start voice</button><button type="button" id="orionDockPause" disabled>Pause</button><span>Owner session · private</span></div></div>';
  document.body.appendChild(dock);
+ renderConversationHistory();
  const launcher=$('#orionDockLauncher'),panelEl=$('#orionDockPanel');
  launcher.onclick=()=>{const open=panelEl.hidden;panelEl.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open)$('#orionDockInput')?.focus()};
  $('#orionDockClose').onclick=()=>{panelEl.hidden=true;launcher.setAttribute('aria-expanded','false')};
