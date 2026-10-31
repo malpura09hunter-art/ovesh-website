@@ -108,7 +108,7 @@ async function isInside(token,fileId,rootId){
   }
   return false;
 }
-function safeDownloadName(name){return String(name||'file').replace(/[\\/\r\n\0]/g,'_').slice(0,180)||'file'}
+function safeDownloadName(name){return String(name||'file').replace(/[\/\r\n\0]/g,'_').slice(0,180)||'file'}
 function exportForMime(mime){return({'application/vnd.google-apps.document':['application/pdf','pdf'],'application/vnd.google-apps.spreadsheet':['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','xlsx'],'application/vnd.google-apps.presentation':['application/vnd.openxmlformats-officedocument.presentationml.presentation','pptx']})[mime]||null}
 async function handleGoogleDrive(req,res){
   res.setHeader('Cache-Control','private, no-store, max-age=0');
@@ -230,14 +230,14 @@ async function callOwnerTool(req,name,args){
   return{ok:status.ok===true,provider:'Backblaze B2',fileCount:Array.isArray(files.files)?files.files.length:0,files:(files.files||[]).slice(0,30).map(x=>({name:x.name,size:x.size,createdAt:x.createdAt})),note:'Read-only snapshot; not continuous monitoring.'};
  }
  if(name==='list_storage_files'){
-  const folder=String(args.folder||'').replace(/^\\/+|\\/+$/g,'');
+  const folder=String(args.folder||'').replace(/^\/+|\/+$/g,'');
   if(folder.split('/').some(x=>x==='.'||x==='..'))throw new Error('Invalid folder path.');
   const d=await request('/api/backblaze','POST',{action:'list-files'});
   const prefix=folder?folder+'/':'';
   const items=new Map();
   for(const x of (d.files||[])){
    const key=String(x.objectKey||x.id||'');
-   const rel=key.replace(/^users\\/[^/]+\\//,'');
+   const rel=key.replace(/^users\/[^/]+\//,'');
    if(!rel.startsWith(prefix)||rel===folder)continue;
    const rest=rel.slice(prefix.length),parts=rest.split('/'),isFolder=parts.length>1||x.contentType==='application/x-ovesh-folder';
    const path=prefix+parts[0];
@@ -247,11 +247,11 @@ async function callOwnerTool(req,name,args){
  }
  if(name==='read_storage_file'){
   const objectKey=String(args.objectKey||'');
-  if(!/^users\\/[^/]+\\//.test(objectKey)||objectKey.includes('..'))throw new Error('Invalid storage object key.');
+  if(!/^users\/[^/]+\//.test(objectKey)||objectKey.includes('..'))throw new Error('Invalid storage object key.');
   return await request('/api/backblaze','POST',{action:'read-file',objectKey});
  }
  if(name==='create_storage_folder'){
-  const folder=String(args.folder||'').replace(/^\\/+|\\/+$/g,'');
+  const folder=String(args.folder||'').replace(/^\/+|\/+$/g,'');
   if(!folder||folder.split('/').some(x=>!x||x==='.'||x==='..'))throw new Error('Invalid folder path.');
   return await request('/api/backblaze','POST',{action:'create-folder',folder});
  }
