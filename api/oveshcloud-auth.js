@@ -218,7 +218,8 @@ const ORION_TOOLS=[
  {type:'function',function:{name:'list_college_drive',description:'List files and folders in the configured private College Google Drive root or a parentId from a previous listing.',parameters:{type:'object',properties:{parentId:{type:'string',maxLength:300}},additionalProperties:false}}}
 ];
 async function callOwnerTool(req,name,args){
- if(!args||typeof args!=='object'||Array.isArray(args)||Object.keys(args).length)throw Object.assign(new Error('Tool arguments are invalid.'),{statusCode:400});
+ const schemas={get_storage_status:[],list_clients:[],get_shop_orders:[],get_security_events:[],list_storage_files:['folder'],read_storage_file:['objectKey'],create_storage_folder:['folder'],list_college_drive:['parentId']};
+ if(!args||typeof args!=='object'||Array.isArray(args)||!Object.prototype.hasOwnProperty.call(schemas,name)||Object.keys(args).some(k=>!schemas[name].includes(k)))throw Object.assign(new Error('Tool arguments are invalid.'),{statusCode:400});
  const host=String(req.headers['x-forwarded-host']||req.headers.host||'').split(',')[0].trim();
  const proto=String(req.headers['x-forwarded-proto']||'https').split(',')[0].trim();
  if(!host)throw new Error('Owner workspace API host is unavailable.');
@@ -227,6 +228,36 @@ async function callOwnerTool(req,name,args){
  if(name==='get_storage_status'){
   const status=await request('/api/backblaze','POST',{action:'status'}),files=await request('/api/backblaze','POST',{action:'list-files'});
   return{ok:status.ok===true,provider:'Backblaze B2',fileCount:Array.isArray(files.files)?files.files.length:0,files:(files.files||[]).slice(0,30).map(x=>({name:x.name,size:x.size,createdAt:x.createdAt})),note:'Read-only snapshot; not continuous monitoring.'};
+ }
+ if(name==='list_storage_files'){
+  const folder=String(args.folder||'').replace(/^\\/+|\\/+$/g,'');
+  if(folder.split('/').some(x=>x==='.'||x==='..'))throw new Error('Invalid folder path.');
+  const d=await request('/api/backblaze','POST',{action:'list-files'});
+  const prefix=folder?folder+'/':'';
+  const items=new Map();
+  for(const x of (d.files||[])){
+   const key=String(x.objectKey||x.id||'');
+   const rel=key.replace(/^users\\/[^/]+\\//,'');
+   if(!rel.startsWith(prefix)||rel===folder)continue;
+   const rest=rel.slice(prefix.length),parts=rest.split('/'),isFolder=parts.length>1||x.contentType==='application/x-ovesh-folder';
+   const path=prefix+parts[0];
+   if(!items.has(path))items.set(path,isFolder?{name:parts[0],path,kind:'folder'}:{name:x.name,path:rel,objectKey:key,kind:'file',size:x.size,contentType:x.contentType,createdAt:x.createdAt});
+  }
+  return{ok:true,folder:folder||'/',count:items.size,items:[...items.values()].sort((a,b)=>a.name.localeCompare(b.name))};
+ }
+ if(name==='read_storage_file'){
+  const objectKey=String(args.objectKey||'');
+  if(!/^users\\/[^/]+\\//.test(objectKey)||objectKey.includes('..'))throw new Error('Invalid storage object key.');
+  return await request('/api/backblaze','POST',{action:'read-file',objectKey});
+ }
+ if(name==='create_storage_folder'){
+  const folder=String(args.folder||'').replace(/^\\/+|\\/+$/g,'');
+  if(!folder||folder.split('/').some(x=>!x||x==='.'||x==='..'))throw new Error('Invalid folder path.');
+  return await request('/api/backblaze','POST',{action:'create-folder',folder});
+ }
+ if(name==='list_college_drive'){
+  const q=args.parentId?'&parentId='+encodeURIComponent(String(args.parentId)):'';
+  return await request('/api/oveshcloud-auth?action=drive-list'+q,'GET');
  }
  if(name==='list_clients'){
   const d=await request('/api/oveshcloud-client-files','GET');
