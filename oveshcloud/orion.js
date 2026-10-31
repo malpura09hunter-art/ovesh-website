@@ -42,7 +42,15 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 function status(s,mode=''){const dockStatus=$('#orionDockStatus');if(dockStatus)dockStatus.textContent=s;const dockTalk=$('#orionDockTalk'),dockPause=$('#orionDockPause'),dockLed=$('#orionDockLed');if(dockLed)dockLed.className=mode||'';if(dockTalk)dockTalk.disabled=started;if(dockPause)dockPause.disabled=!started;const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity'),metric=$('#orionMetricStatus');if(led)led.className=mode;if(orb)orb.className='orion-holo-core '+mode;if(act)act.textContent=s.toUpperCase();if(metric)metric.textContent=mode==='listening'?'Listening':mode==='thinking'?'Thinking':mode==='speaking'?'Speaking':started?'Connected':'Standby';const stage=$('.orion-holo-stage');if(stage)stage.dataset.state=mode||'idle'}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply;const dockHeard=$('#orionDockHeard'),dockReply=$('#orionDockReply');if(user&&dockHeard)dockHeard.textContent=user;if(reply&&dockReply)dockReply.textContent=reply}
 function preferredAudioMime(){if(!window.MediaRecorder)return'';return['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg'].find(type=>MediaRecorder.isTypeSupported(type))||''}
-function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
+let _orionVoices=[],_orionVoicesReady=false;
+function refreshVoices(){if(!window.speechSynthesis)return;_orionVoices=window.speechSynthesis.getVoices()||[];if(_orionVoices.length)_orionVoicesReady=true}
+if(typeof window!=='undefined'&&window.speechSynthesis){refreshVoices();window.speechSynthesis.onvoiceschanged=()=>refreshVoices()}
+function voice(){refreshVoices();const voices=_orionVoices.length?_orionVoices:(window.speechSynthesis?window.speechSynthesis.getVoices():[]);
+ const prefer=v=>/en[-_]IN/i.test(v.lang)&&/female|natural|google|microsoft|samantha|neerja|heera/i.test(v.name);
+ const enIN=v=>/en[-_]IN/i.test(v.lang);
+ const en=v=>/^en/i.test(v.lang);
+ return voices.find(prefer)||voices.find(enIN)||voices.find(v=>en(v)&&/female|natural|google|samantha/i.test(v.name))||voices.find(en)||voices.find(v=>v.default)||voices[0]||null}
+function unlockSpeech(){if(!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance('');u.volume=0;u.rate=1;window.speechSynthesis.speak(u);window.speechSynthesis.cancel()}catch{}}
 
 let conversationStream=null,conversationContext=null,conversationAnalyser=null,conversationBuffer=null,conversationFrame=0,conversationRecorder=null,conversationChunks=[],conversationStartedAt=0,conversationLastVoice=0,conversationSpeechFrames=0,conversationUploading=false,conversationReplying=false;
 function stopConversationEngine(){
@@ -162,8 +170,52 @@ async function startBargeWatch(){
  };
  bargeFrame=requestAnimationFrame(tick);
 }
-function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
-function speak(text,thenListen=true){if(thenListen&&Array.isArray(chatHistory)&&String(text||'').trim()){const last=chatHistory[chatHistory.length-1];if(last?.role==='user')chatHistory.push({role:'assistant',content:String(text).trim().slice(0,3800)});chatHistory=chatHistory.slice(-14)}if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;if(started&&thenListen)conversationReplying=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+function speechFriendlyText(value){let s=String(value||'');
+ s=s.replace(/```[\s\S]*?```/g,' code block ');
+ s=s.replace(/`([^`]+)`/g,'$1');
+ s=s.replace(/https?:\/\/\S+/g,' link ');
+ s=s.replace(/^\s{0,3}#{1,6}\s+/gm,'');
+ s=s.replace(/^\s*[-*+]\s+/gm,'');
+ s=s.replace(/^\s*\d+[.)]\s+/gm,'');
+ s=s.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1');
+ s=s.replace(/[_#{}\[\]<>\\|]/g,' ');
+ s=s.replace(/\s+/g,' ').trim();
+ return s}
+function speak(text,thenListen=true){
+ if(thenListen&&Array.isArray(chatHistory)&&String(text||'').trim()){const last=chatHistory[chatHistory.length-1];if(last?.role==='user')chatHistory.push({role:'assistant',content:String(text).trim().slice(0,3800)});chatHistory=chatHistory.slice(-14)}
+ if(listening){try{recognition?.stop()}catch{}listening=false}
+ const display=String(text||'').trim();
+ transcript('',display);
+ if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}
+ const spoken=(speechFriendlyText(display)||display).slice(0,1200);
+ if(!spoken){conversationReplying=false;if(thenListen&&started&&!manualStop)startConversationListening();return}
+ const synth=window.speechSynthesis;
+ try{synth.cancel()}catch{}
+ speaking=true;
+ if(started&&thenListen)conversationReplying=true;
+ status('Speaking · you can interrupt','speaking');
+ const run=()=>{
+  const u=new SpeechSynthesisUtterance(spoken);
+  const v=voice();
+  if(v){u.voice=v;u.lang=v.lang||'en-IN'}else u.lang='en-IN';
+  u.rate=0.94;u.pitch=1.0;u.volume=1;
+  u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!started&&!bargeRecording)status('Standby')};
+  u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};
+  try{
+   synth.speak(u);
+   // Chrome sometimes parks the queue; nudge it
+   if(synth.paused)try{synth.resume()}catch{}
+   setTimeout(()=>{if(speaking&&synth.paused)try{synth.resume()}catch{}},250);
+  }catch(e){speaking=false;conversationReplying=false;if(thenListen&&started&&!manualStop)startConversationListening()}
+  startBargeWatch();
+ };
+ refreshVoices();
+ if(!_orionVoicesReady&&!(window.speechSynthesis.getVoices()||[]).length){
+  const once=()=>{refreshVoices();window.speechSynthesis.onvoiceschanged=null;run()};
+  window.speechSynthesis.onvoiceschanged=once;
+  setTimeout(run,400);
+ }else run();
+}
 async function loadShopOrders(){
  const response=await fetch('/api/oveshcloud-auth?action=shop-orders',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
  const data=await response.json().catch(()=>({}));
@@ -345,7 +397,7 @@ async function askAI(raw,speakResponse=true){
   if(!(lastMessage?.role==='user'&&lastMessage.content===userMessage.slice(0,1800)))chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
   chatHistory=chatHistory.slice(-14);
   status('Thinking','thinking');
-  transcript('', 'Let me think about that.');
+  // Keep previous reply visible; only the status LED shows thinking — more human
   try{
     const response=await fetch('/api/oveshcloud-auth?action=orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
     const data=await response.json().catch(()=>({}));
@@ -481,6 +533,7 @@ async function start(){
   const source=conversationContext.createMediaStreamSource(conversationStream);
   conversationAnalyser=conversationContext.createAnalyser();conversationAnalyser.fftSize=2048;
   source.connect(conversationAnalyser);conversationBuffer=new Uint8Array(conversationAnalyser.fftSize);
+  unlockSpeech();refreshVoices();
   transcript('','ORION is ready. Speak naturally; you do not need to press the microphone again.');
   $('#orionHint').textContent='Hands-free conversation is active. Speak naturally; ORION will answer aloud and listen again automatically. You can interrupt while it speaks. Use Pause to end the session.';
   startConversationListening();
@@ -533,7 +586,7 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;if(started)conversationReplying=true;replyTo(q,false).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;if(started)conversationReplying=true;replyTo(q,!!started).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function mountGlobalDock(){
  if($('#orionGlobalDock'))return;
@@ -544,7 +597,7 @@ function mountGlobalDock(){
  launcher.onclick=()=>{const open=panelEl.hidden;panelEl.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open)$('#orionDockInput')?.focus()};
  $('#orionDockClose').onclick=()=>{panelEl.hidden=true;launcher.setAttribute('aria-expanded','false')};
  $('#orionDockTalk').onclick=start;$('#orionDockPause').onclick=()=>stop();
- $('#orionDockForm').onsubmit=e=>{e.preventDefault();const input=$('#orionDockInput'),send=$('#orionDockSend'),q=input.value.trim();if(!q)return;input.value='';transcript(q,'Thinking…');send.disabled=true;if(started)conversationReplying=true;replyTo(q,false).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}send.disabled=false})};
+ $('#orionDockForm').onsubmit=e=>{e.preventDefault();const input=$('#orionDockInput'),send=$('#orionDockSend'),q=input.value.trim();if(!q)return;input.value='';transcript(q,'');send.disabled=true;if(started)conversationReplying=true;replyTo(q,!!started).finally(()=>{if(started&&!speaking){conversationReplying=false;startConversationListening()}send.disabled=false})};
 }
 function activateAfterLogin(){mountGlobalDock();if($('#orionGlobalDock'))$('#orionGlobalDock').style.display='block';transcript('','Welcome back. I’m ORION. I remain available as you move between workspace sections. Start voice only when you choose.');status('Ready · microphone off');if($('#orionHint'))$('#orionHint').textContent='ORION stays available from every owner workspace section. Your microphone remains off until you choose Start conversation.'}
 function addNav(){mountGlobalDock();const nav=$('#nav'),btn=$('#orionNav');if(!nav||!btn)return;btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openPanel();if(!started){transcript('','I am here. Start conversation to talk naturally with me.');status('Standby')}},true)}
