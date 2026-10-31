@@ -192,7 +192,7 @@ async function cloudCommand(raw,speakResponse=true){
  const refresh=async()=>{if(typeof storage?.listFiles!=='function')throw new Error('Cloud storage is not ready yet.');return await storage.listFiles()};
  const say=(message)=>{if(speakResponse)speak(message,true);else{transcript('',message);status('Cloud action complete')}};
  const loadClientAccounts=async()=>{
-  const response=await fetch('/api/oveshcloud-client-admin',{method:'GET',credentials:'include',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
+  const response=await fetch('/api/oveshcloud-client-files',{method:'GET',credentials:'include',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!Array.isArray(data.clients))throw new Error(data.error||'Client Cloud data could not be loaded. Please verify your owner session.');
   return data.clients;
@@ -439,6 +439,7 @@ async function toggleVoiceRecording(){
   manualStop=true;started=false;awaitingCommand=false;clearTimeout(restartTimer);
   try{recognition?.stop()}catch{}
   try{window.speechSynthesis?.cancel()}catch{}
+  stopBargeWatch();stopConversationEngine();
   voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   const mime=preferredAudioMime();
   voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
