@@ -69,7 +69,7 @@ function startConversationListening(){
      conversationRecorder=new MediaRecorder(conversationStream,{mimeType:mime,audioBitsPerSecond:48000});
      conversationChunks=[];conversationStartedAt=Date.now();conversationLastVoice=Date.now();
      conversationRecorder.ondataavailable=e=>{if(e.data&&e.data.size)conversationChunks.push(e.data)};
-     conversationRecorder.onstop=()=>{const blob=new Blob(conversationChunks,{type:conversationRecorder?.mimeType||'audio/webm'});conversationRecorder=null;conversationChunks=[];conversationSpeechFrames=0;processConversationAudio(blob)};
+     const activeRecorder=conversationRecorder;activeRecorder.onstop=()=>{const blob=new Blob(conversationChunks,{type:activeRecorder.mimeType||'audio/webm'});conversationRecorder=null;conversationChunks=[];conversationSpeechFrames=0;processConversationAudio(blob)};
      conversationRecorder.start(250);status('Listening to you…','listening');
     }catch(error){conversationRecorder=null;status('Microphone recording unavailable');transcript('','I could not start voice capture. Please check your browser microphone settings.')}
    }
@@ -92,7 +92,7 @@ async function processConversationAudio(blob){
  try{
   const reader=new FileReader();
   const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read microphone audio.'));reader.readAsDataURL(blob)});
-  const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:'audio/webm'})});
+  const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0].toLowerCase()})});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||'Voice transcription failed.');
   const words=String(data.text||'').trim();
@@ -117,47 +117,49 @@ async function processConversationAudio(blob){
  }
 }
 
-let bargeStream=null,bargeFrame=0,bargeSince=0,bargeRecording=false;
-function stopBargeWatch(){if(bargeFrame)cancelAnimationFrame(bargeFrame);bargeFrame=0;if(bargeStream){bargeStream.getTracks().forEach(t=>t.stop());bargeStream=null}bargeRecording=false}
+let bargeFrame=0,bargeSince=0,bargeRecording=false;
+function stopBargeWatch(){if(bargeFrame)cancelAnimationFrame(bargeFrame);bargeFrame=0;bargeRecording=false}
 async function startBargeWatch(){
  stopBargeWatch();
- if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return;
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  if(!speaking){stream.getTracks().forEach(t=>t.stop());return}
-  bargeStream=stream;
-  const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx){stream.getTracks().forEach(t=>t.stop());bargeStream=null;return;}
-  const ctx=new AudioCtx(),source=ctx.createMediaStreamSource(stream),analyser=ctx.createAnalyser(),buffer=new Uint8Array(2048);analyser.fftSize=2048;source.connect(analyser);let above=0,lastVoice=0,recording=false,recorder=null,chunks=[];
-  const cleanup=()=>{try{source.disconnect();ctx.close()}catch{}};
-  const finish=()=>{if(recorder&&recorder.state==='recording')recorder.stop()};
-  const upload=async blob=>{
-   stream.getTracks().forEach(t=>t.stop());if(bargeStream===stream)bargeStream=null;cleanup();
-   if(blob.size<1200){bargeRecording=false;conversationReplying=false;if(started&&!manualStop)startConversationListening();return}
-   status('Hearing your interruption','speaking');transcript('','One moment — I’m listening.');
-   try{
-    const reader=new FileReader();const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read audio'));reader.readAsDataURL(blob)});
-    const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0]})});
-    const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Voice transcription failed');
-    const words=String(data.text||'').trim();if(!words)throw new Error('I did not catch that. Please say it again.');
-    transcript(words,'');status('You interrupted','listening');conversationReplying=true;await replyTo(words,true);
-   }catch(error){bargeRecording=false;conversationReplying=false;transcript('','I could not understand that: '+error.message);if(started&&!manualStop)startConversationListening()}
-  };
-  const tick=()=>{
-   if(!speaking||recording||!bargeStream){cleanup();return}
-   analyser.getByteTimeDomainData(buffer);let sum=0;for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;sum+=x*x}const rms=Math.sqrt(sum/buffer.length);
-   if(rms>0.045){above++;lastVoice=Date.now()}else above=Math.max(0,above-1);
-   if(above>=4){
+ if(!speaking||!conversationStream||!conversationAnalyser||!window.MediaRecorder)return;
+ let above=0,recording=false,recorder=null,chunks=[],lastVoice=0;
+ const stream=conversationStream,analyser=conversationAnalyser,buffer=conversationBuffer;
+ const cleanup=()=>{try{recorder?.state==='recording'&&recorder.stop()}catch{}};
+ const upload=async blob=>{
+  if(!blob||blob.size<1200){bargeRecording=false;conversationReplying=false;if(started&&!manualStop)startConversationListening();return}
+  status('Hearing your interruption','thinking');transcript('','One moment — I’m listening.');
+  try{
+   const reader=new FileReader();
+   const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read audio'));reader.readAsDataURL(blob)});
+   const mime=(blob.type||'audio/webm').split(';')[0].toLowerCase();
+   const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:mime})});
+   const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Voice transcription failed');
+   const words=String(data.text||'').trim();if(!words)throw new Error('I did not catch that. Please say it again.');
+   transcript(words,'');bargeRecording=false;conversationReplying=true;await replyTo(words,true);
+  }catch(error){bargeRecording=false;conversationReplying=false;transcript('','I could not understand that: '+error.message);if(started&&!manualStop)startConversationListening()}
+ };
+ const tick=()=>{
+  if(!speaking||!stream.active||!recording&&(!started||manualStop)){bargeFrame=0;return}
+  analyser.getByteTimeDomainData(buffer);let sum=0;for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;sum+=x*x}const rms=Math.sqrt(sum/buffer.length);
+  if(!recording){
+   if(rms>0.035)above++;else above=Math.max(0,above-1);
+   if(above>=5){
     recording=true;bargeRecording=true;conversationReplying=true;try{window.speechSynthesis?.cancel()}catch{}speaking=false;status('Interrupted · listening','listening');
-    const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');
-    recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
-    chunks=[];recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};recorder.onstop=()=>upload(new Blob(chunks,{type:recorder.mimeType||'audio/webm'}));recorder.start(250);
-    const stopWhenQuiet=()=>{if(!recorder||recorder.state!=='recording')return;analyser.getByteTimeDomainData(buffer);let total=0;for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;total+=x*x}const level=Math.sqrt(total/buffer.length);if(level>0.025)lastVoice=Date.now();if(Date.now()-lastVoice>1100||Date.now()-bargeSince>10000){finish();return}bargeFrame=requestAnimationFrame(stopWhenQuiet)};
-    bargeSince=Date.now();bargeFrame=requestAnimationFrame(stopWhenQuiet);return;
+    try{
+     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+     recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+     recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
+     recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder?.mimeType||mime||'audio/webm'});recorder=null;chunks=[];bargeFrame=0;upload(blob)};
+     recorder.start(250);lastVoice=Date.now();bargeSince=Date.now();
+    }catch(error){bargeRecording=false;conversationReplying=false;recording=false;status('Interruption capture unavailable');if(started&&!manualStop)startConversationListening();return}
    }
-   bargeFrame=requestAnimationFrame(tick);
-  };
+  }else{
+   if(rms>0.02)lastVoice=Date.now();
+   if(Date.now()-lastVoice>1100||Date.now()-bargeSince>10000){cleanup();return}
+  }
   bargeFrame=requestAnimationFrame(tick);
- }catch(e){stopBargeWatch();/* Keep spoken replies available even if barge-in mic access is unavailable. */}
+ };
+ bargeFrame=requestAnimationFrame(tick);
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
 function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;if(started&&thenListen)conversationReplying=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
