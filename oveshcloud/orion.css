@@ -166,3 +166,17 @@
 @keyframes orionSpeakPulse{from{scale:.98;filter:brightness(1)}to{scale:1.08;filter:brightness(1.4)}}
 @keyframes orionThinkingOrbit{to{transform:translate(-50%,-50%) rotate(360deg) rotateX(68deg) scaleY(.48)}}
 @media(prefers-reduced-motion:reduce){.orion-holo-core.thinking,.orion-holo-core.listening,.orion-holo-core.speaking,.orion-holo-stage[data-state="thinking"] .orion-holo-orbit{animation:none!important}}
+
+/* Persistent ORION assistant dock — owner workspace-wide */
+.orion-global-dock{position:fixed;right:22px;bottom:22px;z-index:12000;font-family:inherit}
+.orion-dock-launcher{display:flex;align-items:center;gap:9px;padding:12px 17px;border:1px solid rgba(91,211,255,.48);border-radius:999px;background:linear-gradient(125deg,#0c3150,#10243d 65%,#171d42);color:#eafaff;font:800 11px/1 inherit;letter-spacing:.13em;box-shadow:0 10px 36px rgba(0,0,0,.42),0 0 24px rgba(42,183,255,.17);cursor:pointer}
+.orion-dock-spark{font-size:18px;color:#77e5ff}.orion-dock-launcher i{width:7px;height:7px;border-radius:50%;background:#73dfb5;box-shadow:0 0 12px #73dfb5}
+.orion-dock-panel{position:absolute;right:0;bottom:58px;width:min(390px,calc(100vw - 28px));padding:14px;border:1px solid rgba(83,191,235,.28);border-radius:17px;background:linear-gradient(150deg,#0b1c30,#07111f);color:#eaf2ff;box-shadow:0 22px 70px rgba(0,0,0,.58),0 0 28px rgba(42,183,255,.1)}
+.orion-dock-panel[hidden]{display:none}
+.orion-dock-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 2px 12px;border-bottom:1px solid rgba(135,171,204,.16)}
+.orion-dock-head>div{display:grid;gap:4px}.orion-dock-head small{font-size:8px;letter-spacing:.16em;color:#72dfff;font-weight:800}.orion-dock-head strong{font-size:14px}.orion-dock-head span{font-size:10px;color:#9aacc3}
+.orion-dock-head>button{width:30px;height:30px;border:1px solid rgba(145,173,204,.2);border-radius:9px;background:#14253a;color:#dbeaff;font-size:20px;cursor:pointer}
+.orion-dock-conversation{display:grid;gap:5px;padding:13px 3px;max-height:180px;overflow:auto}.orion-dock-conversation small{font-size:8px;letter-spacing:.14em;color:#70dfff;font-weight:800}.orion-dock-conversation p{margin:0 0 8px;color:#d5e1f1;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.orion-dock-form{display:flex;gap:8px}.orion-dock-form textarea{flex:1;min-width:0;resize:vertical;min-height:44px;max-height:100px;padding:10px;border:1px solid rgba(137,171,205,.22);border-radius:10px;background:#0c1a2b;color:#eff7ff;font:12px/1.5 inherit}.orion-dock-form button,.orion-dock-actions button{border:1px solid rgba(99,199,235,.32);border-radius:9px;background:#153653;color:#eafaff;padding:9px 12px;font:700 10px inherit;cursor:pointer}.orion-dock-actions{display:flex;align-items:center;gap:8px;margin-top:9px}.orion-dock-actions button:disabled{opacity:.4;cursor:not-allowed}.orion-dock-actions span{margin-left:auto;color:#8296af;font-size:9px}
+@media(max-width:600px){.orion-global-dock{right:12px;bottom:12px}.orion-dock-panel{right:0;bottom:54px}}
+#appView:not(.hidden)~#orionGlobalDock{display:block}
