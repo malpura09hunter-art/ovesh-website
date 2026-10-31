@@ -168,7 +168,7 @@
 @media(prefers-reduced-motion:reduce){.orion-holo-core.thinking,.orion-holo-core.listening,.orion-holo-core.speaking,.orion-holo-stage[data-state="thinking"] .orion-holo-orbit{animation:none!important}}
 
 /* Persistent ORION assistant dock — owner workspace-wide */
-.orion-global-dock{position:fixed;right:22px;bottom:22px;z-index:12000;font-family:inherit}
+.orion-global-dock{display:none;position:fixed;right:22px;bottom:22px;z-index:12000;font-family:inherit}
 .orion-dock-launcher{display:flex;align-items:center;gap:9px;padding:12px 17px;border:1px solid rgba(91,211,255,.48);border-radius:999px;background:linear-gradient(125deg,#0c3150,#10243d 65%,#171d42);color:#eafaff;font:800 11px/1 inherit;letter-spacing:.13em;box-shadow:0 10px 36px rgba(0,0,0,.42),0 0 24px rgba(42,183,255,.17);cursor:pointer}
 .orion-dock-spark{font-size:18px;color:#77e5ff}.orion-dock-launcher i{width:7px;height:7px;border-radius:50%;background:#73dfb5;box-shadow:0 0 12px #73dfb5}
 .orion-dock-panel{position:absolute;right:0;bottom:58px;width:min(390px,calc(100vw - 28px));padding:14px;border:1px solid rgba(83,191,235,.28);border-radius:17px;background:linear-gradient(150deg,#0b1c30,#07111f);color:#eaf2ff;box-shadow:0 22px 70px rgba(0,0,0,.58),0 0 28px rgba(42,183,255,.1)}
