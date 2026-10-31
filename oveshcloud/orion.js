@@ -162,7 +162,7 @@ async function startBargeWatch(){
  bargeFrame=requestAnimationFrame(tick);
 }
 function speechFriendlyText(value){return String(value||'').replace(/`([^`]+)`/g,'$1').replace(/https?:\/\/\S+/g,' link ').replace(/^\s{0,3}#{1,6}\s*/gm,'').replace(/^\s*[-*+]\s+/gm,'').replace(/^\s*\d+[.)]\s+/gm,'').replace(/[>*_~|#{}\[\]<>\\]/g,' ').replace(/[\/=+^%$@&;:]+/g,' ').replace(/\s+/g,' ').trim()}
-function speak(text,thenListen=true){if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;if(started&&thenListen)conversationReplying=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
+function speak(text,thenListen=true){if(started&&thenListen&&Array.isArray(chatHistory)&&String(text||'').trim()){const last=chatHistory[chatHistory.length-1];if(last?.role==='user')chatHistory.push({role:'assistant',content:String(text).trim().slice(0,3800)});chatHistory=chatHistory.slice(-14)}if(listening){try{recognition?.stop()}catch{}listening=false}transcript('',text);if(!window.speechSynthesis){conversationReplying=false;if(thenListen)startConversationListening();return}const spoken=speechFriendlyText(text)||String(text||'');const synth=window.speechSynthesis;synth.cancel();speaking=true;if(started&&thenListen)conversationReplying=true;status('Speaking · you can interrupt','speaking');const u=new SpeechSynthesisUtterance(spoken),v=voice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-IN';u.rate=.92;u.pitch=1.02;u.volume=1;u.onend=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording){startConversationListening()}else if(!started&&!bargeRecording)status('Standby')};u.onerror=()=>{speaking=false;conversationReplying=false;if(!bargeRecording)stopBargeWatch();if(thenListen&&started&&!manualStop&&!bargeRecording)startConversationListening();else if(!bargeRecording)status('Standby')};synth.speak(u);startBargeWatch()}
 async function loadShopOrders(){
  const response=await fetch('/api/oveshcloud-auth?action=shop-orders',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
  const data=await response.json().catch(()=>({}));
@@ -276,7 +276,8 @@ let chatHistory=[];
 async function askAI(raw,speakResponse=true){
   const userMessage=String(raw||'').trim();
   if(!userMessage)return;
-  chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
+  const lastMessage=chatHistory[chatHistory.length-1];
+  if(!(lastMessage?.role==='user'&&lastMessage.content===userMessage.slice(0,1800)))chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
   chatHistory=chatHistory.slice(-14);
   status('Thinking','thinking');
   transcript('', 'Let me think about that.');
@@ -335,6 +336,7 @@ async function runMissionControl(speakResponse=true){
  const results=await Promise.allSettled(tasks),names=['Storage','Client Cloud','Shop Orders','Security'];
  const data=results.map((r,i)=>({name:names[i],ok:r.status==='fulfilled',value:r.status==='fulfilled'?r.value:null,error:r.status==='rejected'?(r.reason?.message||'Unavailable'):''}));
  const details=[],alerts=[];
+ data.forEach(x=>details.push(x.name+': '+(x.ok?'check succeeded':'check failed — '+x.error)));
  const st=data[0];
  if(st.ok){const bytes=st.value.files.reduce((n,x)=>n+Number(x.size||0),0);details.push('Storage: '+st.value.files.length+' indexed files, '+formatBytes(bytes)+'. Connection '+(st.value.health?.ok?'available':'reported unavailable')+'.');if(!st.value.health?.ok)alerts.push('Storage connection needs checking')}
  const cl=data[1];
@@ -342,7 +344,7 @@ async function runMissionControl(speakResponse=true){
  const od=data[2];
  if(od.ok){const orders=od.value,pending=orders.filter(x=>/pending|review/i.test(String(x.status||'pending'))).length;details.push('Shop Orders: '+orders.length+' total, '+pending+' pending or reviewing.');if(pending)alerts.push(pending+' orders need review')}
  const sec=data[3];
- if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: latest '+sec.value.length+' stored events inspected (the security endpoint returns at most 100); '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the recent event window')}
+ if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: '+sec.value.length+' stored events inspected (the endpoint returns at most 100; this is not a guaranteed time window); '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the stored sample')}
  const unavailable=data.filter(x=>!x.ok).map(x=>x.name);
  details.push('Cost visibility: OV CLOUD can report file usage and client quota consumption from connected systems. No live provider billing or invoice integration is configured, so this scan cannot calculate actual cloud charges or savings.');
  if(unavailable.length)details.push('Unavailable sources: '+unavailable.join(', ')+'. This is a partial report.');
