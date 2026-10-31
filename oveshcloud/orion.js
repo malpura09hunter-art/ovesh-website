@@ -340,7 +340,7 @@ async function runMissionControl(speakResponse=true){
  const od=data[2];
  if(od.ok){const orders=od.value,pending=orders.filter(x=>/pending|review/i.test(String(x.status||'pending'))).length;details.push('Shop Orders: '+orders.length+' total, '+pending+' pending or reviewing.');if(pending)alerts.push(pending+' orders need review')}
  const sec=data[3];
- if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: '+sec.value.length+' recent events inspected; '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the recent event window')}
+ if(sec.ok){const high=sec.value.filter(x=>/high|critical/i.test(String(x.severity||''))),blocked=sec.value.filter(x=>/blocked|denied|failure/i.test(String(x.outcome||'')));details.push('Security: latest '+sec.value.length+' stored events inspected (the security endpoint returns at most 100); '+high.length+' high/critical severity and '+blocked.length+' blocked/failed outcomes.');if(high.length)alerts.push(high.length+' high/critical security events in the recent event window')}
  const unavailable=data.filter(x=>!x.ok).map(x=>x.name);
  details.push('Cost visibility: OV CLOUD can report file usage and client quota consumption from connected systems. No live provider billing or invoice integration is configured, so this scan cannot calculate actual cloud charges or savings.');
  if(unavailable.length)details.push('Unavailable sources: '+unavailable.join(', ')+'. This is a partial report.');
