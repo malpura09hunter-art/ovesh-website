@@ -39,7 +39,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 </aside></div>
 </section>`;
 
-function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity');if(led)led.className=mode;if(orb)orb.className='orion-orb '+mode;if(act)act.textContent=s.toUpperCase()}
+function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity'),metric=$('#orionMetricStatus');if(led)led.className=mode;if(orb)orb.className='orion-holo-core '+mode;if(act)act.textContent=s.toUpperCase();if(metric)metric.textContent=mode==='listening'?'Listening':mode==='thinking'?'Thinking':mode==='speaking'?'Speaking':started?'Connected':'Standby';const stage=$('.orion-holo-stage');if(stage)stage.dataset.state=mode||'idle'}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply}
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
 
@@ -261,7 +261,7 @@ async function askAI(raw,speakResponse=true){
   if(!userMessage)return;
   chatHistory.push({role:'user',content:userMessage.slice(0,1800)});
   chatHistory=chatHistory.slice(-14);
-  status('Thinking','speaking');
+  status('Thinking','thinking');
   transcript('', 'Let me think about that.');
   try{
     const response=await fetch('/api/oveshcloud-auth?action=orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
