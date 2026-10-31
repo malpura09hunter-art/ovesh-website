@@ -41,6 +41,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 
 function status(s,mode=''){const el=$('#orionStatus');if(el)el.textContent=s;const led=$('#orionLed'),orb=$('#orionOrb'),act=$('#orionActivity'),metric=$('#orionMetricStatus');if(led)led.className=mode;if(orb)orb.className='orion-holo-core '+mode;if(act)act.textContent=s.toUpperCase();if(metric)metric.textContent=mode==='listening'?'Listening':mode==='thinking'?'Thinking':mode==='speaking'?'Speaking':started?'Connected':'Standby';const stage=$('.orion-holo-stage');if(stage)stage.dataset.state=mode||'idle'}
 function transcript(user,reply){if(user&&$('#orionHeard'))$('#orionHeard').textContent=user;if(reply&&$('#orionReply'))$('#orionReply').textContent=reply}
+function preferredAudioMime(){if(!window.MediaRecorder)return'';return['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg'].find(type=>MediaRecorder.isTypeSupported(type))||''}
 function voice(){if(!window.speechSynthesis)return null;const voices=window.speechSynthesis.getVoices();return voices.find(v=>/^en[-_]IN$/i.test(v.lang)&&/female|natural|google/i.test(v.name))||voices.find(v=>/^en[-_]IN$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices.find(v=>v.default)||voices[0]}
 
 let conversationStream=null,conversationContext=null,conversationAnalyser=null,conversationBuffer=null,conversationFrame=0,conversationRecorder=null,conversationChunks=[],conversationStartedAt=0,conversationLastVoice=0,conversationSpeechFrames=0,conversationUploading=false,conversationReplying=false;
@@ -65,8 +66,8 @@ function startConversationListening(){
    if(rms>0.014)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
    if(conversationSpeechFrames>=4){
     try{
-     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
-     conversationRecorder=new MediaRecorder(conversationStream,{mimeType:mime,audioBitsPerSecond:48000});
+     const mime=preferredAudioMime();
+     conversationRecorder=mime?new MediaRecorder(conversationStream,{mimeType:mime,audioBitsPerSecond:48000}):new MediaRecorder(conversationStream,{audioBitsPerSecond:48000});
      conversationChunks=[];conversationStartedAt=Date.now();conversationLastVoice=Date.now();
      conversationRecorder.ondataavailable=e=>{if(e.data&&e.data.size)conversationChunks.push(e.data)};
      const activeRecorder=conversationRecorder;activeRecorder.onstop=()=>{const blob=new Blob(conversationChunks,{type:activeRecorder.mimeType||'audio/webm'});conversationRecorder=null;conversationChunks=[];conversationSpeechFrames=0;processConversationAudio(blob)};
@@ -146,7 +147,7 @@ async function startBargeWatch(){
    if(above>=5){
     recording=true;bargeRecording=true;conversationReplying=true;try{window.speechSynthesis?.cancel()}catch{}speaking=false;status('Interrupted · listening','listening');
     try{
-     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'';
+     const mime=preferredAudioMime();
      recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
      recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
      recorder.onstop=()=>{const blob=new Blob(chunks,{type:recorder?.mimeType||mime||'audio/webm'});recorder=null;chunks=[];bargeFrame=0;upload(blob)};
@@ -438,7 +439,7 @@ async function toggleVoiceRecording(){
   try{recognition?.stop()}catch{}
   try{window.speechSynthesis?.cancel()}catch{}
   voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');
+  const mime=preferredAudioMime();
   voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
   voiceChunks=[];voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data)};
   voiceRecorder.onstop=async()=>{
