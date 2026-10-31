@@ -211,10 +211,11 @@ async function handleOrionTranscribe(req,res){
 }
 
 const ORION_TOOLS=[
- {type:'function',function:{name:'get_storage_status',description:'Read the owner private Backblaze storage connection and file count. Read-only.',parameters:{type:'object',properties:{},additionalProperties:false}}},
- {type:'function',function:{name:'list_clients',description:'Read the owner client account directory and quota summaries. Read-only.',parameters:{type:'object',properties:{},additionalProperties:false}}},
- {type:'function',function:{name:'get_shop_orders',description:'Read recent shop order records and statuses. Read-only.',parameters:{type:'object',properties:{},additionalProperties:false}}},
- {type:'function',function:{name:'get_security_events',description:'Read the latest stored security events. Read-only.',parameters:{type:'object',properties:{},additionalProperties:false}}}
+ {type:'function',function:{name:'get_storage_status',description:'Read owner private Backblaze storage connection and file count. Read-only.',parameters:{type:'object',properties:{},additionalProperties:false}}},
+ {type:'function',function:{name:'list_storage_files',description:'Browse files and folders in owner private Backblaze storage. folder is a relative path such as College or College/Notes; use empty string for root.',parameters:{type:'object',properties:{folder:{type:'string',maxLength:500}},required:['folder'],additionalProperties:false}}},
+ {type:'function',function:{name:'read_storage_file',description:'Read a supported text file from owner private Backblaze storage using its exact objectKey returned by list_storage_files.',parameters:{type:'object',properties:{objectKey:{type:'string',maxLength:1500}},required:['objectKey'],additionalProperties:false}}},
+ {type:'function',function:{name:'create_storage_folder',description:'Create a folder in owner private Backblaze storage.',parameters:{type:'object',properties:{folder:{type:'string',maxLength:500}},required:['folder'],additionalProperties:false}}},
+ {type:'function',function:{name:'list_college_drive',description:'List files and folders in the configured private College Google Drive root or a parentId from a previous listing.',parameters:{type:'object',properties:{parentId:{type:'string',maxLength:300}},additionalProperties:false}}}
 ];
 async function callOwnerTool(req,name,args){
  if(!args||typeof args!=='object'||Array.isArray(args)||Object.keys(args).length)throw Object.assign(new Error('Tool arguments are invalid.'),{statusCode:400});
