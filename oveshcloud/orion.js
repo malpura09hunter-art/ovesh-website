@@ -19,7 +19,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <div class="orion-overview-grid">
 <article class="orion-panel orion-live-panel">
 <div class="orion-panel-head"><div><small>LIVE ASSISTANT</small><h2>Conversation workspace</h2></div><span class="orion-live-tag"><i></i> PRIVATE SESSION</span></div>
-<div class="orion-voice-stage"><div class="orion-holo-stage" aria-label="ORION holographic intelligence core"><div class="orion-holo-grid"></div><div class="orion-holo-orbit orbit-a"></div><div class="orion-holo-orbit orbit-b"></div><div class="orion-holo-orbit orbit-c"></div><div class="orion-holo-core-wrap"><div class="orion-holo-core" id="orionOrb"><span>O</span><i></i></div><small id="orionActivity">SYSTEM STANDBY</small></div><div class="orion-holo-panel holo-panel-a" aria-hidden="true"><b>CORE SYSTEM</b><span>NEURAL LINK <i>● ONLINE</i></span><span>VOICE ENGINE <i>● READY</i></span><span>OWNER SESSION <i>● SECURE</i></span></div><div class="orion-holo-panel holo-panel-b" aria-hidden="true"><b>LIVE TELEMETRY</b><span>STORAGE <i>CONNECTED</i></span><span>CLIENT CLOUD <i>READY</i></span><span>SECURITY <i>MONITORED</i></span></div><div class="orion-holo-panel holo-panel-c" aria-hidden="true"><b>INTELLIGENCE STREAM</b><span>LISTEN → UNDERSTAND</span><span>REASON → EXECUTE</span><span>VERIFY → RESPOND</span></div><div class="orion-holo-warning" aria-hidden="true">! <span>THREAT MONITOR</span></div></div><div class="orion-voice-copy"><strong>Your command center, connected.</strong><p>Talk to ORION, ask questions, or direct it to sections of your private workspace.</p><div class="orion-voice-actions"><button id="orionTalk" class="orion-primary" type="button">Start voice session <span>→</span></button><button id="orionRecord" class="orion-secondary" type="button">Tap to speak</button><button id="orionStop" class="orion-secondary" type="button" disabled>Pause</button></div></div></div>
+<div class="orion-voice-stage"><div class="orion-holo-stage" aria-label="ORION holographic intelligence core"><div class="orion-holo-grid"></div><div class="orion-holo-orbit orbit-a"></div><div class="orion-holo-orbit orbit-b"></div><div class="orion-holo-orbit orbit-c"></div><div class="orion-holo-core-wrap"><div class="orion-holo-core" id="orionOrb"><span>O</span><i></i></div><small id="orionActivity">SYSTEM STANDBY</small></div><div class="orion-holo-panel holo-panel-a" aria-hidden="true"><b>CORE SYSTEM</b><span>NEURAL LINK <i>● ONLINE</i></span><span>VOICE ENGINE <i>● READY</i></span><span>OWNER SESSION <i>● SECURE</i></span></div><div class="orion-holo-panel holo-panel-b" aria-hidden="true"><b>LIVE TELEMETRY</b><span>STORAGE <i>CONNECTED</i></span><span>CLIENT CLOUD <i>READY</i></span><span>SECURITY <i>MONITORED</i></span></div><div class="orion-holo-panel holo-panel-c" aria-hidden="true"><b>INTELLIGENCE STREAM</b><span>LISTEN → UNDERSTAND</span><span>REASON → EXECUTE</span><span>VERIFY → RESPOND</span></div><div class="orion-holo-warning" aria-hidden="true">! <span>THREAT MONITOR</span></div></div><div class="orion-voice-copy"><strong>Your command center, connected.</strong><p>Talk to ORION, ask questions, or direct it to sections of your private workspace.</p><div class="orion-voice-actions"><button id="orionTalk" class="orion-primary" type="button">Start conversation <span>→</span></button><button id="orionRecord" class="orion-secondary" type="button">Start hands-free voice</button><button id="orionStop" class="orion-secondary" type="button" disabled>Pause</button></div></div></div>
 <div class="orion-transcript"><div class="orion-message-head"><small><i class="orion-message-dot"></i> ORION RESPONSE</small><span>LIVE TRANSCRIPT</span></div><p id="orionReply" aria-live="polite">Hello. I'm ORION. Start a conversation and speak naturally. You do not need to say a wake word.</p><div class="orion-user-line"><small>YOU SAID</small><p id="orionHeard">Your spoken words will appear here.</p></div></div>
 <form id="orionChatForm" class="orion-chat-form"><label class="orion-chat-label" for="orionTextInput">MESSAGE ORION</label><div class="orion-chat-row"><textarea id="orionTextInput" rows="2" maxlength="1800" placeholder="Ask ORION anything about your workspace…"></textarea><button id="orionSend" class="orion-primary" type="submit">Send ↑</button></div></form>
 <p class="orion-hint" id="orionHint">Start once, allow microphone access, and speak naturally. ORION listens for each turn and resumes after replying. You can interrupt while ORION speaks.</p>
@@ -62,7 +62,7 @@ function startConversationListening(){
   let sum=0;for(let i=0;i<conversationBuffer.length;i++){const v=(conversationBuffer[i]-128)/128;sum+=v*v}
   const rms=Math.sqrt(sum/conversationBuffer.length);
   if(!conversationRecorder){
-   if(rms>0.022)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
+   if(rms>0.014)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
    if(conversationSpeechFrames>=4){
     try{
      const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
@@ -74,8 +74,8 @@ function startConversationListening(){
     }catch(error){conversationRecorder=null;status('Microphone recording unavailable');transcript('','I could not start voice capture. Please check your browser microphone settings.')}
    }
   }else{
-   if(rms>0.018)conversationLastVoice=Date.now();
-   if(Date.now()-conversationLastVoice>950||Date.now()-conversationStartedAt>9500){
+   if(rms>0.014)conversationLastVoice=Date.now();
+   if(Date.now()-conversationLastVoice>1250||Date.now()-conversationStartedAt>14000){
     const rec=conversationRecorder;conversationRecorder=null;
     try{if(rec.state==='recording')rec.stop()}catch{}
    }
@@ -385,7 +385,7 @@ async function start(){
  if(started)return;
  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status('Secure microphone access required');$('#orionHint').textContent='Open OV CLOUD in the latest Chrome or Edge over HTTPS to use continuous voice conversation.';return}
  started=true;manualStop=false;recognitionFailed=false;awaitingCommand=false;conversationMode=true;
- if($('#orionTalk'))$('#orionTalk').disabled=true;if($('#orionStop'))$('#orionStop').disabled=false;
+ if($('#orionTalk'))$('#orionTalk').disabled=true;if($('#orionRecord'))$('#orionRecord').disabled=true;if($('#orionStop'))$('#orionStop').disabled=false;
  transcript('','Connecting your microphone…');status('Starting voice conversation','listening');
  try{
   conversationStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}});
@@ -397,16 +397,16 @@ async function start(){
   conversationAnalyser=conversationContext.createAnalyser();conversationAnalyser.fftSize=2048;
   source.connect(conversationAnalyser);conversationBuffer=new Uint8Array(conversationAnalyser.fftSize);
   transcript('','ORION is ready. Speak naturally; you do not need to press the microphone again.');
-  $('#orionHint').textContent='Continuous conversation is active. Speak naturally, pause when you finish, and ORION will reply. During replies, the interruption listener is available.';
+  $('#orionHint').textContent='Hands-free conversation is active. Speak naturally; ORION will answer aloud and listen again automatically. You can interrupt while it speaks. Use Pause to end the session.';
   startConversationListening();
  }catch(error){
   stopConversationEngine();started=false;manualStop=true;
-  if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;
+  if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionRecord'))$('#orionRecord').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;
   status('Could not start voice conversation');
   $('#orionHint').textContent=error?.name==='NotAllowedError'?'Allow microphone access for this site, then click Start conversation again.':(error?.message||'Check your microphone and try again.');
  }
 }
-function stop(message='Voice conversation paused. Click Start conversation when you are ready.'){manualStop=true;started=false;awaitingCommand=false;listening=false;clearTimeout(restartTimer);try{recognition?.stop()}catch{}try{window.speechSynthesis?.cancel()}catch{}stopBargeWatch();stopConversationEngine();speaking=false;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status('Standby');if(message){transcript('',message)}}
+function stop(message='Voice conversation paused. Click Start conversation when you are ready.'){manualStop=true;started=false;awaitingCommand=false;listening=false;clearTimeout(restartTimer);try{recognition?.stop()}catch{}try{window.speechSynthesis?.cancel()}catch{}stopBargeWatch();stopConversationEngine();speaking=false;if($('#orionTalk'))$('#orionTalk').disabled=false;if($('#orionRecord'))$('#orionRecord').disabled=false;if($('#orionStop'))$('#orionStop').disabled=true;status('Standby');if(message){transcript('',message)}}
 
 let voiceStream=null,voiceRecorder=null,voiceChunks=[],voiceTimer=null,voiceBusy=false;
 async function toggleVoiceRecording(){
@@ -447,7 +447,7 @@ async function toggleVoiceRecording(){
   status('Could not start voice recording');transcript('','The microphone could not start. Check that this site is allowed to use your microphone, then try again.');
  }
 }
-function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionRecord').onclick=toggleVoiceRecording;$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;replyTo(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
+function show(){if(!page)return;page.innerHTML=panel();$('#orionMissionRun')?.addEventListener('click',()=>runMissionControl(false).catch(e=>renderMissionResult('Mission scan failed: '+(e?.message||'Please try again.'),[],false)));$('#orionTalk').onclick=start;$('#orionRecord').onclick=()=>{if(started){status('Conversation already active','listening');return}start()};$('#orionStop').onclick=()=>stop();$('#orionChatForm').onsubmit=e=>{e.preventDefault();const input=$('#orionTextInput'),send=$('#orionSend'),q=input.value.trim();if(!q)return;transcript(q,'');input.value='';send.disabled=true;replyTo(q,false).finally(()=>{if($('#orionSend'))$('#orionSend').disabled=false})};document.querySelectorAll('[data-orion-say]').forEach(b=>b.onclick=()=>{const q=b.dataset.orionSay;transcript(q,'');replyTo(q)});if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)$('#orionHint').textContent='Continuous microphone conversation is not supported in this browser. You can still chat with ORION by typing.'}
 function openPanel(){show();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.id==='orionNav'));if($('#pageTitle'))$('#pageTitle').textContent='ORION Assistant'}
 function activateAfterLogin(){openPanel();transcript('','Welcome back. ORION is starting automatically. Allow microphone access if your browser asks, then say “ORION” or “wake up” whenever you need me.');status('Starting microphone','listening');if(!started&&!manualStop){setTimeout(()=>{if(!started&&!manualStop)start()},350)}}
 function addNav(){const nav=$('#nav'),btn=$('#orionNav');if(!nav||!btn)return;btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openPanel();if(!started){transcript('','I am here. Start conversation to talk naturally with me.');status('Standby')}},true)}
