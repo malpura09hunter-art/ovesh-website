@@ -1,0 +1,75 @@
+/* ORION reference dashboard — scoped extension only */
+.orion-ops-dashboard{--ops-bg:#070e16;--ops-panel:rgba(11,22,32,.94);--ops-line:rgba(94,207,194,.18);--ops-muted:#8299a8;--ops-text:#e9f7f5;color:var(--ops-text);display:grid;gap:15px;margin:0 0 18px;padding:clamp(14px,2vw,24px);border:1px solid rgba(79,203,190,.12);border-radius:20px;background:radial-gradient(ellipse at 8% 0,rgba(21,139,130,.13),transparent 38%),radial-gradient(ellipse at 100% 35%,rgba(26,118,156,.11),transparent 34%),linear-gradient(145deg,#07111a,#050b12 65%,#07131a);box-shadow:0 22px 70px rgba(0,0,0,.28);font-family:inherit}
+.orion-ops-dashboard *{box-sizing:border-box}
+.orion-ops-header{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:3px 2px 9px}
+.orion-ops-kicker,.orion-ops-card-head small{font-size:8px;letter-spacing:.2em;font-weight:800;color:#66d8c8}
+.orion-ops-header h1{margin:7px 0 5px;font-size:clamp(25px,3vw,36px);letter-spacing:-.045em;color:#f1fbfa}
+.orion-ops-header h1 span{color:#63d8d0;font-weight:500}
+.orion-ops-header p{margin:0;color:#8da4b0;font-size:11px;line-height:1.6}
+.orion-ops-head-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.orion-ops-session,.orion-ops-live{display:inline-flex;align-items:center;gap:7px;font-size:8px;letter-spacing:.13em;color:#a8c5c7;white-space:nowrap}
+.orion-ops-session i,.orion-ops-live i{width:6px;height:6px;border-radius:50%;background:#5ce0a8;box-shadow:0 0 12px rgba(92,224,168,.65)}
+.orion-ops-head-actions button,.orion-ops-run-secondary{border:1px solid rgba(83,215,195,.42);border-radius:9px;padding:11px 15px;background:linear-gradient(120deg,rgba(24,135,129,.35),rgba(20,100,137,.25));color:#dffffb;font:800 9px/1.2 inherit;letter-spacing:.1em;cursor:pointer;transition:.2s}
+.orion-ops-head-actions button:hover,.orion-ops-run-secondary:hover{border-color:#69e4d4;box-shadow:0 0 22px rgba(58,207,190,.12);transform:translateY(-1px)}
+.orion-ops-main-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:13px;align-items:stretch}
+.orion-ops-card{min-width:0;padding:17px;border:1px solid var(--ops-line);border-radius:15px;background:linear-gradient(150deg,rgba(13,28,39,.94),rgba(7,17,26,.97));box-shadow:inset 0 1px rgba(255,255,255,.018),0 12px 32px rgba(0,0,0,.16)}
+.orion-ops-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.orion-ops-card-head h2{margin:5px 0 0;color:#e9f7f5;font-size:15px;letter-spacing:-.025em}
+.orion-ops-count,.orion-ops-timeline-caption,.orion-ops-card-head>span:not(.orion-ops-live){font-size:8px;letter-spacing:.12em;color:#8aa5b0}
+.orion-ops-agent .orion-live-panel{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.orion-ops-agent .orion-panel-head{margin-bottom:12px}
+.orion-ops-agent .orion-panel-head>div>small{color:#69d8cc}
+.orion-ops-agent .orion-panel-head h2{font-size:15px}
+.orion-ops-agent .orion-voice-stage{grid-template-columns:minmax(125px,.58fr) minmax(0,1.4fr);padding:15px;background:radial-gradient(ellipse at 20% 50%,rgba(34,159,148,.14),transparent 55%),linear-gradient(120deg,#0c1d28,#09131d);border-color:rgba(94,207,194,.14)}
+.orion-ops-agent .orion-holo-core{border-color:rgba(92,226,212,.6);background:radial-gradient(circle at 35% 25%,#4a9f9b 0,#1a555b 32%,#102b39 70%,#091722 100%);box-shadow:inset 0 0 24px rgba(115,238,222,.16),0 0 0 8px rgba(80,220,202,.05),0 0 48px rgba(54,201,187,.2)}
+.orion-ops-agent .orion-holo-orbit{border-color:rgba(89,218,203,.25)}
+.orion-ops-agent .orion-holo-grid{opacity:.38}
+.orion-ops-agent .orion-voice-copy strong{font-size:17px}
+.orion-ops-agent .orion-voice-copy p{font-size:11px}
+.orion-ops-agent .orion-primary{border-color:rgba(75,220,200,.55);background:linear-gradient(120deg,#168d84,#176d88);box-shadow:0 7px 20px rgba(23,137,130,.18)}
+.orion-ops-agent .orion-primary:hover,.orion-ops-agent .orion-secondary:hover{border-color:#75e9d9}
+.orion-ops-agent .orion-transcript,.orion-ops-agent .orion-chat-form{border-color:rgba(94,207,194,.14);background:rgba(4,12,19,.7)}
+.orion-ops-agent .orion-message-head small,.orion-ops-agent .orion-chat-label,.orion-ops-agent .orion-user-line small{color:#6fd9ce}
+.orion-ops-current{position:relative;overflow:hidden}
+.orion-ops-current:after{content:"";position:absolute;width:170px;height:170px;right:-85px;top:-90px;border-radius:50%;background:rgba(47,187,176,.09);filter:blur(12px);pointer-events:none}
+#orionOpsCurrentTime{font-size:7px;letter-spacing:.12em;color:#72d8cb}
+.orion-ops-task-icon{width:42px;height:42px;display:grid;place-items:center;margin:5px 0 13px;border:1px solid rgba(87,218,201,.25);border-radius:12px;background:rgba(46,180,168,.1);color:#79e7d6;font-size:20px}
+.orion-ops-task-state{margin-bottom:9px}
+.orion-ops-task-state i{display:inline-block;padding:5px 8px;border:1px solid rgba(143,164,172,.2);border-radius:99px;color:#9aafb7;font-size:7px;font-style:normal;font-weight:800;letter-spacing:.12em}
+.orion-ops-task-state i[data-state="running"]{color:#75e6d5;border-color:rgba(91,222,203,.35);background:rgba(54,190,175,.08)}
+.orion-ops-task-state i[data-state="complete"]{color:#78e5a9;border-color:rgba(91,222,150,.35)}
+.orion-ops-task-state i[data-state="partial"]{color:#ffd08a;border-color:rgba(255,190,100,.35)}
+.orion-ops-current h3{margin:0;color:#edf8f6;font-size:17px;letter-spacing:-.03em}
+.orion-ops-current>p{min-height:48px;margin:8px 0 15px;color:#91a8b2;font-size:10px;line-height:1.65}
+.orion-ops-task-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0;border-top:1px solid rgba(94,207,194,.13)}
+.orion-ops-task-meta span{display:grid;gap:5px}.orion-ops-task-meta small{font-size:7px;letter-spacing:.13em;color:#708d98}.orion-ops-task-meta b{font-size:9px;color:#c9dedb}
+.orion-ops-run-secondary{width:100%;margin-top:8px}
+.orion-ops-timeline-card{padding:16px 18px}
+.orion-ops-timeline{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:8px 4px 2px}
+.orion-ops-timeline:before{content:"";position:absolute;top:23px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,rgba(77,215,188,.85),rgba(53,173,192,.5),rgba(81,121,146,.22));box-shadow:0 0 12px rgba(65,210,188,.16)}
+.orion-ops-step{position:relative;z-index:1;display:grid;justify-items:center;gap:7px;text-align:center}
+.orion-ops-step-dot{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(113,146,157,.3);border-radius:50%;background:#0b1a25;color:#7895a0;font-size:9px}
+.orion-ops-step.done .orion-ops-step-dot{border-color:rgba(78,221,167,.65);background:rgba(32,128,101,.24);color:#80edb5;box-shadow:0 0 15px rgba(67,215,158,.16)}
+.orion-ops-step.active .orion-ops-step-dot{border-color:#65e1d2;color:#8df4e4;box-shadow:0 0 0 5px rgba(71,206,190,.08),0 0 19px rgba(65,220,202,.28);animation:orionOpsPulse 1.5s ease-in-out infinite}
+.orion-ops-step.warn .orion-ops-step-dot{border-color:rgba(255,190,100,.5);color:#ffd08a}
+.orion-ops-step b{font-size:10px;color:#d8ebe8}.orion-ops-step small{font-size:8px;color:#7e99a3}
+.orion-ops-three-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.orion-ops-bottom-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.orion-ops-dependencies{display:grid;gap:8px}
+.orion-ops-dependency{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid rgba(94,207,194,.1);border-radius:10px;background:rgba(3,12,19,.38)}
+.orion-ops-source-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:8px;background:rgba(48,174,165,.1);color:#6fe0d1;font-size:13px}
+.orion-ops-dependency>span:nth-child(2){display:grid;gap:3px;flex:1;min-width:0}.orion-ops-dependency b{font-size:9px;color:#d8e9e6}.orion-ops-dependency small{font-size:8px;color:#7f98a2}
+.orion-ops-dependency>i{font-size:9px;font-style:normal;color:#6c8791}.orion-ops-dependency>i.ok{color:#70e4a8}.orion-ops-dependency>i.fail{color:#ffb978}
+.orion-ops-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.orion-ops-list li{position:relative;padding:0 0 0 13px;color:#a6bbc0;font-size:9px;line-height:1.6}
+.orion-ops-list li:before{content:"";position:absolute;left:0;top:5px;width:5px;height:5px;border-radius:50%;background:#59cfc0;box-shadow:0 0 8px rgba(89,207,192,.3)}
+.orion-ops-list li.orion-ops-empty{color:#718a95}.orion-ops-list li.orion-ops-empty:before{background:#607681;box-shadow:none}
+.orion-ops-trace-note{margin:-3px 0 12px;color:#718d98;font-size:8px;line-height:1.5}
+.orion-ops-trace{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.orion-ops-trace li{display:grid;grid-template-columns:60px 1fr;gap:8px;color:#a6bbc0;font-size:8px;line-height:1.5}
+.orion-ops-trace time{color:#5fcbbd;font-variant-numeric:tabular-nums}
+@keyframes orionOpsPulse{50%{transform:scale(1.08);box-shadow:0 0 0 8px rgba(71,206,190,.04),0 0 22px rgba(65,220,202,.34)}}
+@media(max-width:1050px){.orion-ops-main-grid{grid-template-columns:1fr}.orion-ops-three-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.orion-ops-three-grid>section:last-child{grid-column:1/-1}}
+@media(max-width:700px){.orion-ops-dashboard{padding:12px}.orion-ops-header{align-items:flex-start;flex-direction:column}.orion-ops-head-actions{width:100%;justify-content:space-between}.orion-ops-three-grid,.orion-ops-bottom-grid{grid-template-columns:1fr}.orion-ops-three-grid>section:last-child{grid-column:auto}.orion-ops-agent .orion-voice-stage{grid-template-columns:1fr;text-align:center}.orion-ops-agent .orion-voice-actions{justify-content:center}.orion-ops-timeline{gap:3px}.orion-ops-step b{font-size:9px}.orion-ops-step small{font-size:7px}.orion-ops-timeline:before{left:12%;right:12%}}
+@media(max-width:420px){.orion-ops-card{padding:13px}.orion-ops-head-actions button{padding:10px}.orion-ops-session{font-size:7px}.orion-ops-task-meta{grid-template-columns:1fr}.orion-ops-timeline{grid-template-columns:repeat(4,minmax(0,1fr))}.orion-ops-step-dot{width:26px;height:26px}}
+@media(prefers-reduced-motion:reduce){.orion-ops-dashboard *,.orion-ops-dashboard *:before,.orion-ops-dashboard *:after{animation:none!important;transition:none!important}}
