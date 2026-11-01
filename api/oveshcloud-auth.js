@@ -311,11 +311,11 @@ async function handleOrionChat(req,res){
     });
     // Each model has its own published quota. Move on immediately when one is rate-limited;
     // never burn requests by repeatedly retrying a model that has returned 429.
-    const modelFallbacks=['openai/gpt-oss-120b','openai/gpt-oss-20b','qwen/qwen3.8-27b'];
+    const modelFallbacks=['openai/gpt-oss-20b','openai/gpt-oss-120b','qwen/qwen3.8-27b'];
     let upstream=null,data={},answer='',activeModel='',lastRateLimit=null,lastProviderError=null;
     for(const model of modelFallbacks){
       try{
-        let response=await callGroq(model,requestMessages,4096);
+        let response=await callGroq(model,requestMessages,1536);
         let payload=await response.json().catch(()=>({}));
         const toolConversation=[...requestMessages];
         for(let round=0;round<3&&response.ok;round++){
@@ -332,7 +332,7 @@ async function handleOrionChat(req,res){
             }catch(error){result={ok:false,error:String(error?.message||'Workspace tool failed.')};}
             toolConversation.push({role:'tool',tool_call_id:callId,content:JSON.stringify(result).slice(0,12000)});
           }
-          response=await callGroq(model,toolConversation,4096);
+          response=await callGroq(model,toolConversation,1536);
           payload=await response.json().catch(()=>({}));
         }
         if(response.status===429){
