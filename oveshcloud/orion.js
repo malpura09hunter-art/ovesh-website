@@ -84,7 +84,7 @@ function startConversationListening(){
    }
   }else{
    if(rms>0.014)conversationLastVoice=Date.now();
-   if(Date.now()-conversationLastVoice>1250||Date.now()-conversationStartedAt>14000){
+   if(Date.now()-conversationLastVoice>850||Date.now()-conversationStartedAt>14000){
     const rec=conversationRecorder;conversationRecorder=null;
     try{if(rec.state==='recording')rec.stop()}catch{}
    }
