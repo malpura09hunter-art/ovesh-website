@@ -2,25 +2,41 @@
   'use strict';
 
   const active = new Map();
+  const attempts = { login: 0, orion: 0 };
   const state = window.__OV_SPRING_STATUS = {
-    bundle: 'waiting',
-    webgpu: !!navigator.gpu,
-    login: 'waiting',
-    orion: 'waiting',
-    errors: {}
+    bundle: 'waiting', webgpu: !!navigator.gpu,
+    login: 'waiting', orion: 'waiting', errors: {}
   };
   const getApi = () => {
     const api = window.OvSpringChoreography;
     return api && typeof api.mountSpringChoreography === 'function' ? api : null;
   };
 
-  function setStatus(key, value, error) {
-    state[key] = value;
+  function report(key, status, error) {
+    state[key] = status;
     if (error) {
-      state.errors[key] = String(error && (error.stack || error.message) || error);
+      const message = String(error?.message || error || 'Unknown renderer error');
+      state.errors[key] = message;
       console.error('[OV CLOUD] Spring Choreography ' + key + ':', error);
+      const stage = key === 'login'
+        ? document.querySelector('#loginSpringCanvas')?.closest('.brand-stage')
+        : document.querySelector('#orionSpringCanvas')?.closest('.orion-holo-stage');
+      if (stage) {
+        let note = stage.querySelector('.ov-spring-diagnostic');
+        if (!note) {
+          note = document.createElement('div');
+          note.className = 'ov-spring-diagnostic';
+          note.setAttribute('role', 'status');
+          stage.appendChild(note);
+        }
+        note.textContent = 'SPRING RENDERER: ' + message.slice(0, 180);
+      }
     } else {
       delete state.errors[key];
+      const stage = key === 'login'
+        ? document.querySelector('#loginSpringCanvas')?.closest('.brand-stage')
+        : document.querySelector('#orionSpringCanvas')?.closest('.orion-holo-stage');
+      stage?.querySelector('.ov-spring-diagnostic')?.remove();
     }
   }
 
@@ -28,33 +44,42 @@
     if (active.has(key) || !canvas || !container) return;
     const api = getApi();
     if (!api) {
-      setStatus('bundle', 'missing', 'Renderer bundle did not expose mountSpringChoreography');
+      report('bundle', 'missing', 'Renderer bundle export is unavailable');
       return;
     }
     if (!navigator.gpu) {
-      setStatus(key, 'webgpu-unavailable', 'This page cannot access navigator.gpu');
+      report(key, 'webgpu-unavailable', 'WebGPU API unavailable in this page');
       return;
     }
 
     canvas.hidden = false;
-    setStatus(key, 'initializing');
+    canvas.style.display = 'block';
+    report(key, 'initializing');
     try {
       const instance = api.mountSpringChoreography(canvas, container);
+      if (!instance || !('ready' in instance) || typeof instance.dispose !== 'function') {
+        throw new Error('Renderer returned an invalid instance');
+      }
       active.set(key, { instance, canvas, container });
       await Promise.resolve(instance.ready);
       if (active.get(key)?.instance !== instance) return;
       container.classList.add('ov-spring-active');
-      setStatus(key, 'running');
+      report(key, 'running');
     } catch (error) {
       const current = active.get(key);
-      if (current?.instance) {
-        try { current.instance.dispose(); } catch (_) {}
-      }
+      try { current?.instance?.dispose(); } catch (_) {}
       active.delete(key);
       canvas.hidden = true;
       container.classList.remove('ov-spring-active');
-      setStatus(key, 'failed', error);
+      report(key, 'failed', error);
     }
+  }
+
+  function schedule(key, canvas, container) {
+    if (active.has(key) || state[key] === 'initializing' || state[key] === 'running') return;
+    if (attempts[key] >= 3) return;
+    const delay = attempts[key]++ === 0 ? 0 : 900;
+    window.setTimeout(() => requestAnimationFrame(() => start(key, canvas, container)), delay);
   }
 
   function stop(key) {
@@ -66,7 +91,7 @@
       console.warn('[OV CLOUD] Spring Choreography cleanup:', error);
     }
     current.canvas.hidden = true;
-    setStatus(key, 'stopped');
+    report(key, 'stopped');
   }
 
   function syncLogin() {
@@ -74,22 +99,14 @@
     const canvas = document.getElementById('loginSpringCanvas');
     const stage = canvas?.closest('.brand-stage');
     if (!view || !canvas || !stage) return;
-    if (!view.classList.contains('hidden')) {
-      if (!active.has('login') && state.login !== 'initializing' && state.login !== 'running') {
-        requestAnimationFrame(() => start('login', canvas, stage));
-      }
-    } else {
-      stop('login');
-    }
+    if (!view.classList.contains('hidden')) schedule('login', canvas, stage);
+    else stop('login');
   }
 
   function syncOrion() {
     const page = document.getElementById('page');
     const stage = page?.querySelector('.orion-holo-stage');
-    if (!stage) {
-      stop('orion');
-      return;
-    }
+    if (!stage) { stop('orion'); return; }
     let canvas = stage.querySelector('#orionSpringCanvas');
     if (!canvas) {
       canvas = document.createElement('canvas');
@@ -99,41 +116,24 @@
       canvas.setAttribute('aria-label', 'Spring Choreography particle animation. Move the pointer to part the particles and click to create a spring burst.');
       stage.prepend(canvas);
     }
-    if (!active.has('orion') && state.orion !== 'initializing' && state.orion !== 'running') {
-      requestAnimationFrame(() => start('orion', canvas, stage));
-    }
+    schedule('orion', canvas, stage);
   }
 
   function boot() {
     state.bundle = getApi() ? 'loaded' : 'missing';
     syncLogin();
     syncOrion();
-
     const login = document.getElementById('loginView');
-    if (login) new MutationObserver(syncLogin).observe(login, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
+    if (login) new MutationObserver(syncLogin).observe(login, { attributes: true, attributeFilter: ['class'] });
     const page = document.getElementById('page');
-    if (page) new MutationObserver(syncOrion).observe(page, {
-      childList: true,
-      subtree: true
-    });
-
-    window.addEventListener('pagehide', () => {
-      stop('login');
-      stop('orion');
-    }, { once: true });
+    if (page) new MutationObserver(syncOrion).observe(page, { childList: true, subtree: true });
+    window.addEventListener('pagehide', () => { stop('login'); stop('orion'); }, { once: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  else boot();
   window.addEventListener('load', () => {
-    if (!getApi()) setStatus('bundle', 'missing', 'Spring Choreography bundle is not available on this page');
+    state.bundle = getApi() ? 'loaded' : 'missing';
     syncLogin();
     syncOrion();
   }, { once: true });
