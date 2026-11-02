@@ -272,5 +272,7 @@
         }
       ]
     }
-  ]
+  ],
+  "buildCommand": "npm run build:spring-choreography",
+  "outputDirectory": "."
 }
