@@ -11,7 +11,7 @@
   };
 
   const getApi = () => {
-    const api = window.OvSpringChoreography;
+    const api = window.__OV_SPRING_RENDERER__;
     return api && typeof api.mountSpringChoreography === 'function' ? api : null;
   };
 
