@@ -1,0 +1,13 @@
+/* Isolated Spring Choreography layer for OV CLOUD login and ORION. */
+.ov-spring-canvas{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0;touch-action:none;background:transparent}
+.ov-spring-canvas[hidden]{display:none!important}
+.brand-stage>.ov-spring-canvas{opacity:.94}
+.brand-stage>.eyebrow,.brand-stage>h1,.brand-stage>p,.brand-stage>.system-line{position:relative;z-index:1}
+.brand-stage.ov-spring-active .orbit-stage{opacity:0;pointer-events:none}
+.orion-holo-stage{position:relative}
+.orion-holo-stage>.ov-spring-canvas{opacity:.98}
+.orion-holo-stage.ov-spring-active .orion-holo-grid,.orion-holo-stage.ov-spring-active .orion-holo-orbit{opacity:.08;pointer-events:none}
+.orion-holo-stage .orion-holo-core-wrap,.orion-holo-stage .orion-holo-panel,.orion-holo-stage .orion-holo-warning{pointer-events:none}
+.brand-stage .lil-gui,.orion-holo-stage .lil-gui{display:none!important}
+@media(max-width:760px){.brand-stage>.ov-spring-canvas{opacity:.72}.orion-holo-stage>.ov-spring-canvas{opacity:.78}}
+@media(prefers-reduced-motion:reduce){.ov-spring-canvas{opacity:.48}}
