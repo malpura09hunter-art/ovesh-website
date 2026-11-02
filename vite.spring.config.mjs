@@ -10,7 +10,7 @@ export default defineConfig({
     minify: 'esbuild',
     lib: {
       entry: 'oveshcloud/spring-choreography-entry.ts',
-      name: 'OvSpringChoreography',
+      name: 'OvSpringChoreographyBundle',
       formats: ['iife'],
       fileName: () => 'spring-choreography.bundle.js',
     },
