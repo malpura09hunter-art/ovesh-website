@@ -5,9 +5,8 @@ export function mountSpringChoreography(canvas: HTMLCanvasElement, container: HT
   return { ready: renderer.ready, dispose: renderer.dispose };
 }
 
-// Explicitly publish the API on window. This avoids relying on the bundler's
-// top-level IIFE variable being reflected as a Window property in every host.
+// Use a dedicated global that cannot be confused with the IIFE library name.
 if (typeof window !== 'undefined') {
-  (window as Window & { OvSpringChoreography?: { mountSpringChoreography: typeof mountSpringChoreography } })
-    .OvSpringChoreography = { mountSpringChoreography };
+  (window as Window & { __OV_SPRING_RENDERER__?: { mountSpringChoreography: typeof mountSpringChoreography } })
+    .__OV_SPRING_RENDERER__ = { mountSpringChoreography };
 }
