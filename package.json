@@ -7,11 +7,11 @@
     "nodemailer": "^6.9.14",
     "firebase-admin": "^12.3.1",
     "@aws-sdk/client-s3": "^3.879.0",
-    "@aws-sdk/s3-request-presigner": "^3.879.0",
+    "@aws-sdk/s3-request-presigner": "^3.879.2",
     "pdfkit": "^0.17.2"
   },
   "scripts": {
-    "build:spring-choreography": "vgpu examples pull spring-choreography --out ./oveshcloud/spring-choreography-source && vite build --config vite.spring.config.mjs"
+    "build:spring-choreography": "rm -rf ./oveshcloud/spring-choreography-source && vgpu examples pull spring-choreography --out ./oveshcloud/spring-choreography-source && vite build --config vite.spring.config.mjs"
   },
   "devDependencies": {
     "@vgpu/wgsl": "^0.6.0",
