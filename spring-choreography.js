@@ -1,7 +1,7 @@
 /* ============================================================
-   OV CLOUD — Spring Choreography (self-contained Canvas 2D)
-   Premium spring-physics particle field for the login gateway.
-   Does not touch Firebase, auth, or any existing logic.
+   OV CLOUD — Spring Choreography (lightweight, design-matched)
+   Soft spring-physics particle field tuned to the existing
+   cyan / soft-green login aesthetic. Low particle count.
    ============================================================ */
 (function () {
   'use strict';
@@ -17,18 +17,21 @@
   if (!ctx) return;
 
   let W = 0, H = 0, dpr = 1;
-  const COUNT = Math.min(420, Math.floor((window.innerWidth * window.innerHeight) / 2800));
+  // Much lighter particle count for smooth 60fps
+  const COUNT = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 9000));
   const particles = [];
-  const mouse = { x: 0, y: 0, active: false, burst: 0 };
+  const mouse = { x: 0, y: 0, active: false };
   let t = 0, last = performance.now();
   let shapePhase = 0;
+  let rafId = 0;
 
-  const STIFF = 48;
-  const DAMP  = 11.5;
-  const MASS  = 1.0;
+  // Softer spring constants
+  const STIFF = 28;
+  const DAMP  = 9.5;
+  const MASS  = 1.15;
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width  = Math.floor(W * dpr);
@@ -38,35 +41,40 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  // Target shapes centered near the existing orbit-stage area (left-center)
   function targetFor(i, phase) {
     const n = COUNT;
-    const a = (i / n) * Math.PI * 2;
-    const cx = W * 0.5;
-    const cy = H * 0.48;
-    const R  = Math.min(W, H) * 0.28;
+    const a = (i / n) * Math.PI * 2 + phase * 0.4;
+    // Sit the system toward the left brand / orbit area
+    const cx = W * 0.38;
+    const cy = H * 0.52;
+    const R  = Math.min(W, H) * 0.26;
 
+    // Soft ring
     const ringX = cx + Math.cos(a) * R;
-    const ringY = cy + Math.sin(a) * R * 0.72;
+    const ringY = cy + Math.sin(a) * R * 0.68;
 
-    const waveX = cx + ((i % 28) - 13.5) * (R * 0.085);
-    const waveY = cy + Math.sin(a * 3 + phase * 6) * R * 0.22 + ((Math.floor(i / 28) - 7) * R * 0.055);
+    // Gentle wave band
+    const waveX = cx + ((i % 20) - 9.5) * (R * 0.09);
+    const waveY = cy + Math.sin(a * 2.2 + phase * 4) * R * 0.18 + ((Math.floor(i / 20) - 4) * R * 0.05);
 
-    const u = a * 2;
-    const knotX = cx + (Math.cos(u) * (1 + 0.45 * Math.cos(1.5 * u))) * R * 0.85;
-    const knotY = cy + (Math.sin(u) * (1 + 0.45 * Math.cos(1.5 * u))) * R * 0.55;
+    // Soft ellipse / torus suggestion
+    const u = a * 1.6;
+    const knotX = cx + Math.cos(u) * R * 0.92;
+    const knotY = cy + Math.sin(u) * R * 0.55 + Math.sin(u * 2) * R * 0.08;
 
-    const p = (phase % 1);
+    const p = phase % 1;
     let x, y;
-    if (p < 0.33) {
-      const k = p / 0.33;
+    if (p < 0.34) {
+      const k = p / 0.34;
       x = ringX + (waveX - ringX) * k;
       y = ringY + (waveY - ringY) * k;
-    } else if (p < 0.66) {
-      const k = (p - 0.33) / 0.33;
+    } else if (p < 0.67) {
+      const k = (p - 0.34) / 0.33;
       x = waveX + (knotX - waveX) * k;
       y = waveY + (knotY - waveY) * k;
     } else {
-      const k = (p - 0.66) / 0.34;
+      const k = (p - 0.67) / 0.33;
       x = knotX + (ringX - knotX) * k;
       y = knotY + (ringY - knotY) * k;
     }
@@ -83,117 +91,111 @@
         vx: 0, vy: 0,
         tx: tgt.x, ty: tgt.y,
         size: 1.1 + Math.random() * 1.6,
-        hue: 120 + Math.random() * 40,
-        alpha: 0.35 + Math.random() * 0.55
+        hue: Math.random() // 0 = cyan-ish, 1 = soft green
       });
     }
   }
 
-  function springStep(p, dt) {
-    const dx = p.tx - p.x;
-    const dy = p.ty - p.y;
-    const ax = (STIFF * dx - DAMP * p.vx) / MASS;
-    const ay = (STIFF * dy - DAMP * p.vy) / MASS;
-    p.vx += ax * dt;
-    p.vy += ay * dt;
-
-    if (mouse.active) {
-      const mx = p.x - mouse.x;
-      const my = p.y - mouse.y;
-      const d2 = mx * mx + my * my;
-      const rad = 110;
-      if (d2 < rad * rad && d2 > 1) {
-        const d = Math.sqrt(d2);
-        const f = (1 - d / rad) * 420;
-        p.vx += (mx / d) * f * dt;
-        p.vy += (my / d) * f * dt;
-      }
-    }
-
-    if (mouse.burst > 0) {
-      const mx = p.x - mouse.x;
-      const my = p.y - mouse.y;
-      const d2 = mx * mx + my * my;
-      if (d2 < 220 * 220 && d2 > 1) {
-        const d = Math.sqrt(d2);
-        const f = mouse.burst * (1 - d / 220) * 18;
-        p.vx += (mx / d) * f;
-        p.vy += (my / d) * f;
-      }
-    }
-
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-  }
-
-  function frame(now) {
-    const dt = Math.min(0.033, (now - last) / 1000);
-    last = now;
+  function step(dt) {
     t += dt;
     shapePhase = (t * 0.045) % 1;
 
     for (let i = 0; i < COUNT; i++) {
+      const p = particles[i];
       const tgt = targetFor(i, shapePhase);
-      particles[i].tx = tgt.x;
-      particles[i].ty = tgt.y;
-      springStep(particles[i], dt);
-    }
-    if (mouse.burst > 0) mouse.burst = Math.max(0, mouse.burst - dt * 2.8);
+      p.tx = tgt.x;
+      p.ty = tgt.y;
 
-    ctx.fillStyle = 'rgba(2, 6, 4, 0.18)';
+      // Spring force
+      const dx = p.tx - p.x;
+      const dy = p.ty - p.y;
+      const ax = (STIFF * dx - DAMP * p.vx) / MASS;
+      const ay = (STIFF * dy - DAMP * p.vy) / MASS;
+      p.vx += ax * dt;
+      p.vy += ay * dt;
+
+      // Soft pointer attraction
+      if (mouse.active) {
+        const mx = mouse.x - p.x;
+        const my = mouse.y - p.y;
+        const dist2 = mx * mx + my * my;
+        if (dist2 < 220 * 220) {
+          const dist = Math.sqrt(dist2) || 1;
+          const force = (1 - dist / 220) * 38;
+          p.vx += (mx / dist) * force * dt;
+          p.vy += (my / dist) * force * dt;
+        }
+      }
+
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+    }
+  }
+
+  function draw() {
+    // Very light trail (keeps motion smooth without heavy fill)
+    ctx.fillStyle = 'rgba(5, 7, 13, 0.22)';
     ctx.fillRect(0, 0, W, H);
 
     for (let i = 0; i < COUNT; i++) {
       const p = particles[i];
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3.5);
-      g.addColorStop(0, `hsla(${p.hue}, 95%, 62%, ${p.alpha})`);
-      g.addColorStop(0.45, `hsla(${p.hue}, 90%, 45%, ${p.alpha * 0.35})`);
-      g.addColorStop(1, 'hsla(140, 80%, 30%, 0)');
+      // Design palette: soft cyan → soft mint green
+      const r = Math.floor(90 + p.hue * 30);
+      const g = Math.floor(210 + p.hue * 30);
+      const b = Math.floor(230 - p.hue * 80);
+      const alpha = 0.55 + Math.min(0.35, (Math.abs(p.vx) + Math.abs(p.vy)) * 0.02);
+
       ctx.beginPath();
-      ctx.fillStyle = g;
-      ctx.arc(p.x, p.y, p.size * 3.5, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
       ctx.fill();
     }
+  }
 
-    ctx.strokeStyle = 'rgba(57, 255, 20, 0.035)';
-    ctx.lineWidth = 0.6;
-    for (let i = 0; i < COUNT; i += 3) {
-      const a = particles[i];
-      for (let j = i + 1; j < Math.min(i + 8, COUNT); j++) {
-        const b = particles[j];
-        const dx = a.x - b.x, dy = a.y - b.y;
-        if (dx * dx + dy * dy < 3600) {
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    requestAnimationFrame(frame);
+  function loop(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    step(dt);
+    draw();
+    rafId = requestAnimationFrame(loop);
   }
 
   function onMove(e) {
-    const pt = e.touches ? e.touches[0] : e;
-    mouse.x = pt.clientX;
-    mouse.y = pt.clientY;
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
     mouse.active = true;
   }
   function onLeave() { mouse.active = false; }
-  function onDown(e) {
-    onMove(e);
-    mouse.burst = 1.0;
+  function onClick(e) {
+    // Gentle burst
+    for (let i = 0; i < COUNT; i++) {
+      const p = particles[i];
+      const dx = p.x - e.clientX;
+      const dy = p.y - e.clientY;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (d < 260) {
+        const f = (1 - d / 260) * 180;
+        p.vx += (dx / d) * f * 0.018;
+        p.vy += (dy / d) * f * 0.018;
+      }
+    }
   }
-
-  window.addEventListener('resize', () => { resize(); init(); }, { passive: true });
-  window.addEventListener('pointermove', onMove, { passive: true });
-  window.addEventListener('pointerleave', onLeave, { passive: true });
-  window.addEventListener('pointerdown', onDown, { passive: true });
 
   resize();
   init();
-  ctx.fillStyle = '#020604';
-  ctx.fillRect(0, 0, W, H);
-  requestAnimationFrame(frame);
+  window.addEventListener('resize', () => { resize(); init(); }, { passive: true });
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('pointerleave', onLeave, { passive: true });
+  window.addEventListener('click', onClick, { passive: true });
+  rafId = requestAnimationFrame(loop);
+
+  // Pause when tab is hidden (saves battery / lag)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(rafId);
+    } else {
+      last = performance.now();
+      rafId = requestAnimationFrame(loop);
+    }
+  });
 })();
