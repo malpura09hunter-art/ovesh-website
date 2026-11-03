@@ -1,5 +1,6 @@
 /* ============================================================
-   OV CLOUD — Quantum Field Hybrid (strong mouse interaction)
+   OV CLOUD — Quantum Field Hybrid
+   Login-only. Soft opacity so text stays readable.
    ============================================================ */
 (function () {
   'use strict';
@@ -8,7 +9,6 @@
   const canvas = document.createElement('canvas');
   canvas.id = 'spring-choreography';
   canvas.setAttribute('aria-hidden', 'true');
-  // pointer-events none so form still works; we listen on window
   canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;';
   document.body.insertBefore(canvas, document.body.firstChild);
 
@@ -16,15 +16,16 @@
   if (!ctx) return;
 
   let W = 0, H = 0, dpr = 1;
-  const COUNT = Math.min(200, Math.floor((window.innerWidth * window.innerHeight) / 7000));
+  const COUNT = Math.min(180, Math.floor((window.innerWidth * window.innerHeight) / 8000));
   const particles = [];
-  const mouse = { x: W / 2, y: H / 2, active: false, down: false };
+  const mouse = { x: 0, y: 0, active: false };
   let t = 0, last = performance.now();
   let shapePhase = 0;
   let rafId = 0;
+  let running = true;
   const shockwaves = [];
 
-  const STIFF = 18;   // weaker spring so mouse wins easily
+  const STIFF = 18;
   const DAMP  = 7.5;
   const MASS  = 1.0;
 
@@ -36,8 +37,14 @@
     [180, 200, 255],
   ];
 
+  function isLoginVisible() {
+    const login = document.getElementById('loginView');
+    if (!login) return true;
+    return !login.classList.contains('hidden') && login.style.display !== 'none';
+  }
+
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width  = Math.floor(W * dpr);
@@ -101,9 +108,9 @@
         x: tgt.x + (Math.random() - 0.5) * 80,
         y: tgt.y + (Math.random() - 0.5) * 80,
         vx: 0, vy: 0,
-        size: 1.2 + Math.random() * 2.0,
+        size: 1.1 + Math.random() * 1.8,
         color: COLORS[i % COLORS.length],
-        baseAlpha: 0.4 + Math.random() * 0.4,
+        baseAlpha: 0.18 + Math.random() * 0.22,
         wake: 0
       });
     }
@@ -111,7 +118,6 @@
 
   function step(dt) {
     t += dt;
-    // Slow morph when idle, faster feel when interacting
     shapePhase = (t * (mouse.active ? 0.055 : 0.032)) % 1;
 
     for (let s = shockwaves.length - 1; s >= 0; s--) {
@@ -125,36 +131,28 @@
       const p = particles[i];
       const tgt = targetFor(i, shapePhase);
 
-      // Spring toward morph target (weaker so mouse dominates)
       let dx = tgt.x - p.x;
       let dy = tgt.y - p.y;
       let ax = (STIFF * dx - DAMP * p.vx) / MASS;
       let ay = (STIFF * dy - DAMP * p.vy) / MASS;
 
-      // ===== STRONG FULL-SCREEN MOUSE GRAVITY =====
       if (mouse.active) {
         const mx = mouse.x - p.x;
         const my = mouse.y - p.y;
         const dist = Math.hypot(mx, my) || 1;
-        const rad = Math.max(W, H) * 0.55; // large radius
+        const rad = Math.max(W, H) * 0.55;
         if (dist < rad) {
           const falloff = 1 - dist / rad;
           const f2 = falloff * falloff;
-
-          // Strong pull toward cursor
           const pull = f2 * 220;
           ax += (mx / dist) * pull;
           ay += (my / dist) * pull;
-
-          // Swirl (perpendicular)
           ax += (-my / dist) * falloff * 55;
           ay += ( mx / dist) * falloff * 55;
-
           p.wake = Math.min(1, p.wake + f2 * 0.5);
         }
       }
 
-      // Shockwave
       for (let s = 0; s < shockwaves.length; s++) {
         const sw = shockwaves[s];
         const sx = p.x - sw.x;
@@ -180,15 +178,15 @@
   }
 
   function draw() {
-    ctx.fillStyle = 'rgba(5, 7, 13, 0.18)';
+    ctx.fillStyle = 'rgba(5, 7, 13, 0.32)';
     ctx.fillRect(0, 0, W, H);
 
     for (let s = 0; s < shockwaves.length; s++) {
       const sw = shockwaves[s];
       ctx.beginPath();
       ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(103, 232, 249, ${Math.max(0, sw.life * 0.4)})`;
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = `rgba(103, 232, 249, ${Math.max(0, sw.life * 0.22)})`;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     }
 
@@ -196,8 +194,8 @@
       const p = particles[i];
       const [r, g, b] = p.color;
       const speed = Math.hypot(p.vx, p.vy);
-      const a = Math.min(0.95, p.baseAlpha + speed * 0.01 + p.wake * 0.5);
-      const sz = p.size * (1 + p.wake * 0.7);
+      const a = Math.min(0.42, p.baseAlpha + speed * 0.006 + p.wake * 0.25);
+      const sz = p.size * (1 + p.wake * 0.5);
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
@@ -205,13 +203,25 @@
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(p.x, p.y, sz * 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${r},${g},${b},${a * 0.14})`;
+      ctx.arc(p.x, p.y, sz * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${a * 0.1})`;
       ctx.fill();
     }
   }
 
   function loop(now) {
+    if (!isLoginVisible()) {
+      canvas.style.display = 'none';
+      running = false;
+      rafId = requestAnimationFrame(loop);
+      return;
+    }
+    if (!running) {
+      canvas.style.display = 'block';
+      running = true;
+      last = now;
+    }
+
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
     step(dt);
@@ -219,7 +229,6 @@
     rafId = requestAnimationFrame(loop);
   }
 
-  // Bulletproof mouse tracking on window
   function updateMouse(e) {
     const pt = e.touches ? e.touches[0] : e;
     if (!pt) return;
@@ -227,9 +236,7 @@
     mouse.y = pt.clientY;
     mouse.active = true;
   }
-  function clearMouse() {
-    mouse.active = false;
-  }
+  function clearMouse() { mouse.active = false; }
   function onDown(e) {
     updateMouse(e);
     const pt = e.touches ? e.touches[0] : e;
