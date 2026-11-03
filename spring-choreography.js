@@ -1,7 +1,7 @@
 /* ============================================================
-   OV CLOUD — Spring Choreography (lightweight, design-matched)
-   Soft spring-physics particle field tuned to the existing
-   cyan / soft-green login aesthetic. Low particle count.
+   OV CLOUD — Spring Choreography
+   Matched to design tokens: soft cyan, accent blue, mint.
+   Sits with the existing orbit-stage, not against it.
    ============================================================ */
 (function () {
   'use strict';
@@ -17,21 +17,29 @@
   if (!ctx) return;
 
   let W = 0, H = 0, dpr = 1;
-  // Much lighter particle count for smooth 60fps
-  const COUNT = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 9000));
+  const COUNT = Math.min(140, Math.floor((window.innerWidth * window.innerHeight) / 11000));
   const particles = [];
   const mouse = { x: 0, y: 0, active: false };
   let t = 0, last = performance.now();
   let shapePhase = 0;
   let rafId = 0;
 
-  // Softer spring constants
-  const STIFF = 28;
-  const DAMP  = 9.5;
-  const MASS  = 1.15;
+  // Soft springs — calm, premium feel
+  const STIFF = 22;
+  const DAMP  = 10.2;
+  const MASS  = 1.2;
+
+  // Design palette from cloud.css
+  // cyan #67e8f9, accent #9eafff, green #72e6a1, orbit blue
+  const COLORS = [
+    [103, 232, 249],  // cyan
+    [158, 175, 255],  // accent blue
+    [114, 230, 161],  // soft mint
+    [120, 145, 255],  // orbit blue
+  ];
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width  = Math.floor(W * dpr);
@@ -41,42 +49,42 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Target shapes centered near the existing orbit-stage area (left-center)
+  // Centered on the brand / orbit-stage region (left side of login layout)
   function targetFor(i, phase) {
     const n = COUNT;
-    const a = (i / n) * Math.PI * 2 + phase * 0.4;
-    // Sit the system toward the left brand / orbit area
-    const cx = W * 0.38;
+    const a = (i / n) * Math.PI * 2 + phase * 0.35;
+    const cx = W * 0.36;
     const cy = H * 0.52;
-    const R  = Math.min(W, H) * 0.26;
+    const R  = Math.min(W, H) * 0.24;
 
-    // Soft ring
+    // Primary soft orbit (matches CSS .orbit)
     const ringX = cx + Math.cos(a) * R;
-    const ringY = cy + Math.sin(a) * R * 0.68;
+    const ringY = cy + Math.sin(a) * R * 0.62;
 
-    // Gentle wave band
-    const waveX = cx + ((i % 20) - 9.5) * (R * 0.09);
-    const waveY = cy + Math.sin(a * 2.2 + phase * 4) * R * 0.18 + ((Math.floor(i / 20) - 4) * R * 0.05);
+    // Inner tilted orbit
+    const a2 = a * 1.15 + 0.8;
+    const innerX = cx + Math.cos(a2) * R * 0.55;
+    const innerY = cy + Math.sin(a2) * R * 0.38;
 
-    // Soft ellipse / torus suggestion
-    const u = a * 1.6;
-    const knotX = cx + Math.cos(u) * R * 0.92;
-    const knotY = cy + Math.sin(u) * R * 0.55 + Math.sin(u * 2) * R * 0.08;
+    // Outer gentle ellipse
+    const a3 = a * 0.9 - 0.4;
+    const outerX = cx + Math.cos(a3) * R * 1.15;
+    const outerY = cy + Math.sin(a3) * R * 0.78;
 
     const p = phase % 1;
     let x, y;
-    if (p < 0.34) {
-      const k = p / 0.34;
-      x = ringX + (waveX - ringX) * k;
-      y = ringY + (waveY - ringY) * k;
-    } else if (p < 0.67) {
-      const k = (p - 0.34) / 0.33;
-      x = waveX + (knotX - waveX) * k;
-      y = waveY + (knotY - waveY) * k;
+    if (p < 0.33) {
+      const k = p / 0.33;
+      x = ringX + (innerX - ringX) * k;
+      y = ringY + (innerY - ringY) * k;
+    } else if (p < 0.66) {
+      const k = (p - 0.33) / 0.33;
+      x = innerX + (outerX - innerX) * k;
+      y = innerY + (outerY - innerY) * k;
     } else {
-      const k = (p - 0.67) / 0.33;
-      x = knotX + (ringX - knotX) * k;
-      y = knotY + (ringY - knotY) * k;
+      const k = (p - 0.66) / 0.34;
+      x = outerX + (ringX - outerX) * k;
+      y = outerY + (ringY - outerY) * k;
     }
     return { x, y };
   }
@@ -86,19 +94,20 @@
     for (let i = 0; i < COUNT; i++) {
       const tgt = targetFor(i, 0);
       particles.push({
-        x: tgt.x + (Math.random() - 0.5) * 40,
-        y: tgt.y + (Math.random() - 0.5) * 40,
+        x: tgt.x + (Math.random() - 0.5) * 30,
+        y: tgt.y + (Math.random() - 0.5) * 30,
         vx: 0, vy: 0,
         tx: tgt.x, ty: tgt.y,
-        size: 1.1 + Math.random() * 1.6,
-        hue: Math.random() // 0 = cyan-ish, 1 = soft green
+        size: 0.9 + Math.random() * 1.4,
+        color: COLORS[i % COLORS.length],
+        alpha: 0.28 + Math.random() * 0.35
       });
     }
   }
 
   function step(dt) {
     t += dt;
-    shapePhase = (t * 0.045) % 1;
+    shapePhase = (t * 0.032) % 1; // slower morph — calmer
 
     for (let i = 0; i < COUNT; i++) {
       const p = particles[i];
@@ -106,7 +115,6 @@
       p.tx = tgt.x;
       p.ty = tgt.y;
 
-      // Spring force
       const dx = p.tx - p.x;
       const dy = p.ty - p.y;
       const ax = (STIFF * dx - DAMP * p.vx) / MASS;
@@ -114,14 +122,14 @@
       p.vx += ax * dt;
       p.vy += ay * dt;
 
-      // Soft pointer attraction
+      // Very soft pointer influence
       if (mouse.active) {
         const mx = mouse.x - p.x;
         const my = mouse.y - p.y;
         const dist2 = mx * mx + my * my;
-        if (dist2 < 220 * 220) {
+        if (dist2 < 180 * 180) {
           const dist = Math.sqrt(dist2) || 1;
-          const force = (1 - dist / 220) * 38;
+          const force = (1 - dist / 180) * 22;
           p.vx += (mx / dist) * force * dt;
           p.vy += (my / dist) * force * dt;
         }
@@ -133,21 +141,26 @@
   }
 
   function draw() {
-    // Very light trail (keeps motion smooth without heavy fill)
-    ctx.fillStyle = 'rgba(5, 7, 13, 0.22)';
+    // Light fade matching page bg #05070d
+    ctx.fillStyle = 'rgba(5, 7, 13, 0.28)';
     ctx.fillRect(0, 0, W, H);
 
     for (let i = 0; i < COUNT; i++) {
       const p = particles[i];
-      // Design palette: soft cyan → soft mint green
-      const r = Math.floor(90 + p.hue * 30);
-      const g = Math.floor(210 + p.hue * 30);
-      const b = Math.floor(230 - p.hue * 80);
-      const alpha = 0.55 + Math.min(0.35, (Math.abs(p.vx) + Math.abs(p.vy)) * 0.02);
+      const [r, g, b] = p.color;
+      const speed = Math.abs(p.vx) + Math.abs(p.vy);
+      const a = Math.min(0.75, p.alpha + speed * 0.015);
 
+      // Soft core
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+      ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+      ctx.fill();
+
+      // Tiny outer glow (cheap, no gradient)
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${a * 0.12})`;
       ctx.fill();
     }
   }
@@ -167,16 +180,15 @@
   }
   function onLeave() { mouse.active = false; }
   function onClick(e) {
-    // Gentle burst
     for (let i = 0; i < COUNT; i++) {
       const p = particles[i];
       const dx = p.x - e.clientX;
       const dy = p.y - e.clientY;
       const d = Math.sqrt(dx * dx + dy * dy) || 1;
-      if (d < 260) {
-        const f = (1 - d / 260) * 180;
-        p.vx += (dx / d) * f * 0.018;
-        p.vy += (dy / d) * f * 0.018;
+      if (d < 200) {
+        const f = (1 - d / 200) * 90;
+        p.vx += (dx / d) * f * 0.012;
+        p.vy += (dy / d) * f * 0.012;
       }
     }
   }
@@ -189,7 +201,6 @@
   window.addEventListener('click', onClick, { passive: true });
   rafId = requestAnimationFrame(loop);
 
-  // Pause when tab is hidden (saves battery / lag)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       cancelAnimationFrame(rafId);
