@@ -100,6 +100,19 @@ app.use("/api", (req, res, next) => {
   }
 });
 
+app.use((req, res, next) => {
+  const pathname = decodeURIComponent(req.path || "/");
+  const blocked = [
+    "/node_modules", "/scripts", "/.render-build", "/api",
+    "/package.json", "/package-lock.json", "/render-server.js",
+    "/vercel.json", "/render.yaml"
+  ];
+  if (blocked.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) {
+    return res.status(404).send("Not Found");
+  }
+  next();
+});
+
 app.use(express.static(root, {
   dotfiles: "deny",
   index: "index.html",
