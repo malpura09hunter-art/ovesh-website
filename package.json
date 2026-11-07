@@ -2,12 +2,21 @@
   "name": "ovesh-website",
   "version": "1.0.0",
   "private": true,
-  "description": "Serverless API functions for OveshMalpura Cyber Labs (site itself is static HTML/CSS/JS)",
+  "description": "Ovesh Malpura Cyber Labs website and API functions; Render-compatible demo runtime",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:render": "node scripts/build-render.js",
+    "start": "node render-server.js"
+  },
   "dependencies": {
-    "nodemailer": "^6.9.14",
-    "firebase-admin": "^12.3.1",
     "@aws-sdk/client-s3": "^3.879.0",
     "@aws-sdk/s3-request-presigner": "^3.879.0",
+    "esbuild": "^0.25.0",
+    "express": "^4.21.2",
+    "firebase-admin": "^12.3.1",
+    "nodemailer": "^6.9.14",
     "pdfkit": "^0.17.2"
   }
 }
