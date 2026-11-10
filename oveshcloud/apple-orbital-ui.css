@@ -78,6 +78,10 @@
   pointer-events: none;
 }
 #loginView #orbital-canvas-container { z-index: 1; }
+#loginView .brand-stage > :not(#orbital-canvas-container) {
+  position: relative;
+  z-index: 2;
+}
 #loginView #orbital-canvas-container canvas {
   display: block;
   width: 100%;
