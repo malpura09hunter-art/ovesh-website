@@ -220,17 +220,29 @@
     if (page === 'services') {
       const grid = document.querySelector('.services-grid-full');
       if (!grid) return;
-      grid.innerHTML = services.map((service) => `
-        <div class="service-card-full reveal-up is-visible">
-          <div class="service-icon-full">${esc(service.icon || '*')}</div>
-          <h3>${esc(service.title)}</h3>
-          <p class="service-desc">${esc(service.description || '')}</p>
-          ${Array.isArray(service.features) && service.features.length ? `<ul class="service-features">${service.features.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
-          ${Array.isArray(service.technologies) && service.technologies.length ? `<div class="service-tech-row">${service.technologies.map((item) => `<span class="tag">${esc(item)}</span>`).join('')}</div>` : ''}
-          ${has(service.benefit) ? `<div class="service-benefit">${esc(service.benefit)}</div>` : ''}
-          <a href="../index.html#contact" class="btn-outline">Enquire About This</a>
-        </div>`).join('');
-    } else if (page === 'home') {
+      const existingCards = Array.from(grid.querySelectorAll('.service-card-full'));
+      services.forEach(service => {
+        const title = String(service.title || '').trim().toLowerCase();
+        const existing = existingCards.find(card => {
+          const heading = card.querySelector('h3');
+          return heading && heading.textContent.trim().toLowerCase() === title;
+        });
+        const markup = servicePriceMarkup(service);
+        if (existing) {
+          const previous = existing.querySelector('.service-price');
+          if (previous) previous.remove();
+          if (markup) {
+            const enquiry = existing.querySelector('.btn-outline');
+            if (enquiry) enquiry.insertAdjacentHTML('beforebegin', markup);
+            else existing.insertAdjacentHTML('beforeend', markup);
+          }
+          return;
+        }
+        const card = document.createElement('div');
+        card.className = 'service-card-full reveal-up is-visible';
+        card.innerHTML = '<div class="service-icon-full">' + esc(service.icon || '*') + '</div><h3>' + esc(service.title || '') + '</h3><p class="service-desc">' + esc(service.description || '') + '</p>' + (Array.isArray(service.features) && service.features.length ? '<ul class="service-features">' + service.features.map(item => '<li>' + esc(item) + '</li>').join('') + '</ul>' : '') + (Array.isArray(service.technologies) && service.technologies.length ? '<div class="service-tech-row">' + service.technologies.map(item => '<span class="tag">' + esc(item) + '</span>').join('') + '</div>' : '') + (has(service.benefit) ? '<div class="service-benefit">' + esc(service.benefit) + '</div>' : '') + markup + '<a href="../index.html#contact" class="btn-outline">Enquire About This</a>';
+        grid.appendChild(card);
+      });    } else if (page === 'home') {
       const grid = document.querySelector('#services-preview .preview-grid');
       if (!grid) return;
       grid.innerHTML = services.slice(0, 4).map((service) => `
