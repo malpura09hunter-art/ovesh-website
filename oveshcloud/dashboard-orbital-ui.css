@@ -1,0 +1,56 @@
+/* OV CLOUD — authenticated dashboard orbital identity layer
+   Keep the signature 3D O clearly visible after login without intercepting UI input.
+   Visual-only: authentication, database, storage and navigation remain untouched.
+*/
+.main{position:relative;isolation:isolate;overflow:hidden}
+.main>.dashboard-orbital-stage{
+  position:absolute!important;
+  top:12px!important;
+  right:0!important;
+  width:min(48vw,620px)!important;
+  height:min(48vw,620px)!important;
+  min-width:420px;
+  min-height:420px;
+  z-index:0!important;
+  opacity:.92!important;
+  overflow:visible!important;
+  pointer-events:none!important;
+  contain:layout paint;
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  filter:drop-shadow(0 0 24px rgba(0,220,255,.12));
+}
+.main>.dashboard-orbital-stage canvas{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+}
+.main>.topbar,.main>.page{
+  position:relative;
+  z-index:1;
+}
+@media(max-width:900px){
+  .main>.dashboard-orbital-stage{
+    width:460px!important;
+    height:460px!important;
+    min-width:0;
+    min-height:0;
+    opacity:.78!important;
+    right:-45px!important;
+    top:30px!important;
+  }
+}
+@media(max-width:560px){
+  .main>.dashboard-orbital-stage{
+    width:360px!important;
+    height:360px!important;
+    min-width:0;
+    min-height:0;
+    opacity:.68!important;
+    right:-100px!important;
+    top:28px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .main>.dashboard-orbital-stage{opacity:.55!important}
+}
