@@ -10,7 +10,7 @@
   width:min(42vw,540px)!important;
   height:390px!important;
   z-index:0!important;
-  opacity:.24;
+  opacity:.32;
   overflow:hidden;
   pointer-events:none!important;
   contain:layout paint;
@@ -30,7 +30,7 @@
   .main>.dashboard-orbital-stage{
     width:340px!important;
     height:300px!important;
-    opacity:.16;
+    opacity:.22;
     right:-36px!important;
   }
 }
@@ -38,10 +38,10 @@
   .main>.dashboard-orbital-stage{
     width:250px!important;
     height:230px!important;
-    opacity:.12;
+    opacity:.18;
     right:-50px!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
-  .main>.dashboard-orbital-stage{opacity:.10}
+  .main>.dashboard-orbital-stage{opacity:.14}
 }
