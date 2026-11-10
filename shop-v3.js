@@ -21,7 +21,8 @@ const fallback=[
 ]
 let products=[...fallback],cart=[],category='All';
 try{const saved=localStorage.getItem('oveshShopCart');const parsed=saved?JSON.parse(saved):[];cart=Array.isArray(parsed)?parsed:[]}catch(e){console.warn('Shop cart storage reset.');cart=[];}
-const $=id=>document.getElementById(id),money=(n,currency='INR')=>currency==='USD'?'
+const $=id=>document.getElementById(id),money=(n,currency='INR')=>new Intl.NumberFormat(currency==='USD'?'en-US':'en-IN',{style:'currency',currency:currency==='USD'?'USD':'INR',maximumFractionDigits:0}).format(Number(n||0));
+function productPrice(p){if(p.priceType==='Custom Quote'||!Number(p.price||0))return 'Request quote';const base=Number(p.price||0),sale=Number(p.salePrice||0),value=sale>0&&sale<base?sale:base;const type=p.priceType||'Starting at';const prefix=type==='Fixed'?'':type==='Hourly'||type==='Monthly'?'From ':'From ';const suffix=type==='Hourly'?' / hour':type==='Monthly'?' / month':'';return (sale>0&&sale<base?'<del>'+money(base,p.currency||'INR')+'</del> ':'')+prefix+money(value,p.currency||'INR')+suffix;}
 function save(){try{localStorage.setItem('oveshShopCart',JSON.stringify(cart))}catch(e){console.warn('Could not save shop cart.')}renderCart()}
 function bumpCart(){const btn=$('cartBtn');if(!btn)return;btn.classList.remove('cart-bump');void btn.offsetWidth;btn.classList.add('cart-bump');setTimeout(()=>btn.classList.remove('cart-bump'),650)}
 async function load(){try{if(typeof db!=='undefined'){const s=await db.collection('shop_products').where('status','==','Published').get();if(!s.empty){const remote=s.docs.map(d=>({id:d.id,...d.data()}));const remoteIds=new Set(remote.map(p=>p.id));products=[...remote,...fallback.filter(p=>!remoteIds.has(p.id))];}}}catch(e){console.info('Shop catalog fallback active.')}renderCategories();renderProducts();renderCart()}
@@ -32,7 +33,7 @@ function renderProducts(){
  const q=$('search').value.toLowerCase();
  const list=products.filter(p=>(category==='All'||p.category===category)&&(!q||(p.name+' '+p.description+' '+p.category).toLowerCase().includes(q)));
  const grid=$('products');
- grid.innerHTML=list.length?list.map((p,i)=>'<article class="product" style="animation-delay:'+Math.min(i*55,440)+'ms"><div class="icon">'+esc(p.icon||'◈')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'')+'</p><div class="chips">'+(p.features||[]).slice(0,4).map(x=>'<span class="chip">'+esc(x)+'</span>').join('')+'</div><div class="price">'+(p.price?'From '+money(p.price):'Request quote')+'</div><button class="primary add-service" type="button" data-service-id="'+esc(p.id)+'">Add to Cart</button><button class="details-btn view-service" type="button" data-service-id="'+esc(p.id)+'">View Details</button></article>').join(''):'<div class="empty-shop"><h3>No matching services</h3><p>Try another search or category.</p></div>';
+ grid.innerHTML=list.length?list.map((p,i)=>'<article class="product" style="animation-delay:'+Math.min(i*55,440)+'ms"><div class="icon">'+esc(p.icon||'◈')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'')+'</p><div class="chips">'+(p.features||[]).slice(0,4).map(x=>'<span class="chip">'+esc(x)+'</span>').join('')+'</div><div class="price">'+(p.price?'From '+productPrice(p):'Request quote')+'</div><button class="primary add-service" type="button" data-service-id="'+esc(p.id)+'">Add to Cart</button><button class="details-btn view-service" type="button" data-service-id="'+esc(p.id)+'">View Details</button></article>').join(''):'<div class="empty-shop"><h3>No matching services</h3><p>Try another search or category.</p></div>';
  grid.querySelectorAll('.add-service').forEach(b=>b.onclick=()=>addToCart(b.dataset.serviceId));
  grid.querySelectorAll('.view-service').forEach(b=>b.onclick=()=>viewService(b.dataset.serviceId));
 }
@@ -41,7 +42,7 @@ function renderCart(){
  const total=cart.reduce((a,x)=>a+x.qty,0);
  $('cartCount').textContent=total;
  $('cartItems').innerHTML=cart.length?cart.map((x,i)=>'<div class="cart-line" data-cart-id="'+esc(x.id)+'" style="--cart-index:'+i+'"><div><strong>'+esc(x.name)+'</strong><button class="remove-cart" type="button" aria-label="Remove '+esc(x.name)+'" data-cart-id="'+esc(x.id)+'">×</button></div><div class="qty"><span>'+money(x.price*x.qty,x.currency||'INR')+'</span><span><button class="qty-minus" type="button" aria-label="Decrease quantity" data-cart-id="'+esc(x.id)+'">−</button> '+x.qty+' <button class="qty-plus" type="button" aria-label="Increase quantity" data-cart-id="'+esc(x.id)+'">+</button></span></div></div>').join(''):'<p class="muted">Your cart is empty.<br><small>Add a service to begin your request.</small></p>';
- $('cartTotal').textContent=money(cart.reduce((a,x)=>a+x.price*x.qty,0));
+ const totals=cart.reduce((a,x)=>{const cur=x.currency||'INR';a[cur]=(a[cur]||0)+x.price*x.qty;return a;},{});$('cartTotal').textContent=Object.keys(totals).map(cur=>money(totals[cur],cur)).join(' + ')||money(0);
  $('checkoutBtn').disabled=!cart.length;
  $('cartItems').querySelectorAll('.remove-cart').forEach(b=>b.onclick=()=>removeCart(b.dataset.cartId));
  $('cartItems').querySelectorAll('.qty-minus').forEach(b=>b.onclick=()=>changeQty(b.dataset.cartId,-1));
@@ -218,7 +219,7 @@ function renderProducts(){
  const q=$('search').value.toLowerCase();
  const list=products.filter(p=>(category==='All'||p.category===category)&&(!q||(p.name+' '+p.description+' '+p.category).toLowerCase().includes(q)));
  const grid=$('products');
- grid.innerHTML=list.length?list.map((p,i)=>'<article class="product" style="animation-delay:'+Math.min(i*55,440)+'ms"><div class="icon">'+esc(p.icon||'◈')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'')+'</p><div class="chips">'+(p.features||[]).slice(0,4).map(x=>'<span class="chip">'+esc(x)+'</span>').join('')+'</div><div class="price">'+(p.price?'From '+money(p.price):'Request quote')+'</div><button class="primary add-service" type="button" data-service-id="'+esc(p.id)+'">Add to Cart</button><button class="details-btn view-service" type="button" data-service-id="'+esc(p.id)+'">View Details</button></article>').join(''):'<div class="empty-shop"><h3>No matching services</h3><p>Try another search or category.</p></div>';
+ grid.innerHTML=list.length?list.map((p,i)=>'<article class="product" style="animation-delay:'+Math.min(i*55,440)+'ms"><div class="icon">'+esc(p.icon||'◈')+'</div><h3>'+esc(p.name)+'</h3><p>'+esc(p.description||'')+'</p><div class="chips">'+(p.features||[]).slice(0,4).map(x=>'<span class="chip">'+esc(x)+'</span>').join('')+'</div><div class="price">'+productPrice(p)+'</div><button class="primary add-service" type="button" data-service-id="'+esc(p.id)+'">Add to Cart</button><button class="details-btn view-service" type="button" data-service-id="'+esc(p.id)+'">View Details</button></article>').join(''):'<div class="empty-shop"><h3>No matching services</h3><p>Try another search or category.</p></div>';
  grid.querySelectorAll('.add-service').forEach(b=>b.onclick=()=>addToCart(b.dataset.serviceId));
  grid.querySelectorAll('.view-service').forEach(b=>b.onclick=()=>viewService(b.dataset.serviceId));
 }
