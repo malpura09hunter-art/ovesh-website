@@ -374,32 +374,42 @@
     const root = byId('cmsPricingRoot');
     if (!root) return;
     root.innerHTML = shell('Central Pricing Manager', 'Manage Shop and Services pricing from the existing Firebase collections.', `
-      <div class="cms-toolbar"><div class="cms-actions"><span class="cms-pill">FIREBASE CONNECTED</span><span class="cms-muted">Shop · Services</span></div>
+      <div class="cms-toolbar"><div class="cms-actions"><span class="cms-pill">LIVE FIREBASE DATA</span><span class="cms-muted">Shop · Services</span></div>
       <div class="cms-actions"><button class="cms-primary" type="button" id="pricingAddService">Add service</button><button class="cms-primary" type="button" id="pricingAddProduct">Add Shop product</button><button class="cms-secondary" type="button" id="pricingReload">Refresh prices</button></div></div>
       <div class="panel"><div class="cms-table-wrap"><table><thead><tr><th>Item</th><th>Section</th><th>Price</th><th>Sale Price</th><th>Visibility</th><th>Status</th><th></th></tr></thead>
       <tbody id="pricingRows"><tr><td colspan="7" class="loading">Loading pricing…</td></tr></tbody></table></div></div>`);
     const body = byId('pricingRows');
     const load = async () => {
-      body.innerHTML = '<tr><td colspan="7" class="loading">Loading pricing…</td></tr>';
-      try {
-        const snaps = await Promise.all([db.collection('services').get(), db.collection('shop_products').get()]);
-        const rows = [...snaps[0].docs.map(doc => ({id:doc.id,...doc.data(),_section:'Services'})), ...snaps[1].docs.map(doc => ({id:doc.id,...doc.data(),_section:'Shop'}))];
-        if (!rows.length) { body.innerHTML = '<tr><td colspan="7" class="cms-empty">No pricing records yet. Add a service or product first.</td></tr>'; return; }
-        const fmt = (n,c) => new Intl.NumberFormat(c === 'USD' ? 'en-US' : 'en-IN', {style:'currency',currency:c === 'USD' ? 'USD' : 'INR',maximumFractionDigits:0}).format(Number(n || 0));
-        body.innerHTML = rows.map(item => {
-          const name = item.title || item.name || item.id, cur = item.currency || 'INR', amount = Number(item.price || 0), sale = Number(item.salePrice || 0);
-          const price = item.priceType === 'Custom Quote' ? 'Custom quote' : amount ? fmt(amount,cur) : 'Not set';
-          return '<tr><td><strong>' + esc(name) + '</strong></td><td>' + item._section + '</td><td>' + esc(price) + '</td><td>' + (sale > 0 ? esc(fmt(sale,cur)) : '—') + '</td><td>' + (item.showPrice === false ? 'Hidden' : 'Visible') + '</td><td>' + esc(item.status || 'Published') + '</td><td><button class="btn-sm" data-pricing-edit="' + esc(item.id) + '" data-pricing-section="' + item._section + '">Edit pricing</button></td></tr>';
-        }).join('');
-        body.querySelectorAll('[data-pricing-edit]').forEach(button => {
-          button.onclick = () => {
-            const key = button.dataset.pricingSection === 'Shop' ? 'shop-products' : 'services';
-            const config = listModules.find(x => x.key === key);
-            const item = rows.find(x => x.id === button.dataset.pricingEdit && x._section === button.dataset.pricingSection);
-            if (config && item) openItemEditor(config,item);
-          };
-        });
-      } catch (error) { body.innerHTML = '<tr><td colspan="7" class="empty">' + esc(friendlyError(error)) + '</td></tr>'; }
+      body.innerHTML = '<tr><td colspan="7" class="loading">Loading Shop and Services prices…</td></tr>';
+      const sources = [
+        {label:'Services', key:'services', collection:'services'},
+        {label:'Shop', key:'shop-products', collection:'shop_products'}
+      ];
+      const results = await Promise.all(sources.map(async source => {
+        try {
+          const snap = await db.collection(source.collection).get();
+          return {source, rows:snap.docs.map(doc => ({id:doc.id,...doc.data(),_section:source.label,_key:source.key})), error:null};
+        } catch (error) { return {source, rows:[], error}; }
+      }));
+      const rows = results.flatMap(result => result.rows);
+      const fmt = (n,c) => new Intl.NumberFormat(c === 'USD' ? 'en-US' : 'en-IN', {style:'currency',currency:c === 'USD' ? 'USD' : 'INR',maximumFractionDigits:0}).format(Number(n || 0));
+      const errorRows = results.filter(result => result.error).map(result => '<tr><td colspan="7" class="empty">' + esc(result.source.label + ' could not load: ' + friendlyError(result.error)) + '</td></tr>');
+      const dataRows = rows.map(item => {
+        const name = item.title || item.name || item.id, cur = item.currency || 'INR', amount = Number(item.price || 0), sale = Number(item.salePrice || 0);
+        const price = item.priceType === 'Custom Quote' ? 'Custom quote' : amount ? fmt(amount,cur) : 'Not set';
+        return '<tr><td><strong>' + esc(name) + '</strong></td><td>' + item._section + '</td><td>' + esc(price) + '</td><td>' + (sale > 0 ? esc(fmt(sale,cur)) : '—') + '</td><td>' + (item.showPrice === false ? 'Hidden' : 'Visible') + '</td><td>' + esc(item.status || 'Published') + '</td><td><button class="btn-sm" data-pricing-edit="' + esc(item.id) + '" data-pricing-section="' + item._section + '">Edit pricing</button></td></tr>';
+      });
+      if (!rows.length && !errorRows.length) body.innerHTML = '<tr><td colspan="7" class="cms-empty">No pricing records yet. Add a service or product first.</td></tr>';
+      else body.innerHTML = dataRows.concat(errorRows).join('');
+      body.querySelectorAll('[data-pricing-edit]').forEach(button => {
+        button.onclick = () => {
+          const section = button.dataset.pricingSection;
+          const key = section === 'Shop' ? 'shop-products' : 'services';
+          const config = listModules.find(x => x.key === key);
+          const item = rows.find(x => x.id === button.dataset.pricingEdit && x._section === section);
+          if (config && item) openItemEditor(config,item);
+        };
+      });
     };
     byId('pricingReload').onclick = load;
     byId('pricingAddService').onclick = () => openItemEditor(listModules.find(x => x.key === 'services'));
