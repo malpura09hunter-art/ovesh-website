@@ -1,0 +1,215 @@
+/* OV CLOUD — premium Apple-inspired login layer
+   * Scoped to the authentication experience; dashboard and application logic are untouched.
+   */
+:root {
+  --ov-ink: #f5f7fb;
+  --ov-muted: #9aa6b8;
+  --ov-blue: #9eb8ff;
+  --ov-cyan: #8ce8f2;
+  --ov-glass: rgba(13, 19, 31, .76);
+  --ov-glass-line: rgba(222, 233, 255, .13);
+}
+#loginView {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 16% 22%, rgba(92, 124, 255, .16), transparent 38%),
+    radial-gradient(ellipse at 82% 78%, rgba(65, 205, 226, .10), transparent 34%),
+    #05070c;
+}
+#loginView .scene-grid {
+  opacity: .18;
+  background-size: 68px 68px;
+  mask-image: linear-gradient(to bottom, transparent 3%, #000 42%, transparent 100%);
+}
+#loginView .scene-glow { opacity: .12; filter: blur(125px); }
+#loginView .login-layout {
+  width: min(100%, 1580px);
+  min-height: 100svh;
+  padding: clamp(28px, 5.5vw, 88px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 470px);
+  gap: clamp(40px, 7vw, 112px);
+}
+#loginView .brand-stage { min-height: 620px; }
+#loginView .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(214, 225, 244, .66);
+  font-size: 10px;
+  letter-spacing: .2em;
+}
+#loginView .pulse-dot {
+  width: 6px; height: 6px; margin: 0;
+  box-shadow: 0 0 12px rgba(125, 239, 185, .8);
+}
+#loginView .brand-stage h1 {
+  margin: 28px 0 20px;
+  color: #f7f9ff;
+  font-size: clamp(64px, 8.4vw, 124px);
+  font-weight: 650;
+  letter-spacing: -.085em;
+  line-height: .88;
+}
+#loginView .brand-stage h1 span {
+  background: linear-gradient(105deg, #fff 8%, #c7d6ff 53%, #8ce8f2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+#loginView .brand-stage > p {
+  max-width: 510px;
+  color: rgba(205, 216, 235, .68);
+  font-size: clamp(14px, 1.25vw, 17px);
+  line-height: 1.75;
+  letter-spacing: -.012em;
+}
+#loginView .system-line {
+  color: rgba(175, 190, 215, .62);
+  font-size: 9px;
+  letter-spacing: .17em;
+}
+#loginView .orbit-stage,
+#loginView #orbital-canvas-container {
+  position: absolute;
+  width: min(44vw, 520px);
+  height: min(44vw, 520px);
+  right: -5%;
+  bottom: -10%;
+  pointer-events: none;
+}
+#loginView #orbital-canvas-container { z-index: 1; }
+#loginView .brand-stage > :not(#orbital-canvas-container) {
+  position: relative;
+  z-index: 2;
+}
+#loginView #orbital-canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#loginView .login-panel {
+  position: relative;
+  z-index: 3;
+  padding: clamp(26px, 3vw, 38px);
+  border: 1px solid var(--ov-glass-line);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(22, 29, 43, .88), var(--ov-glass));
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, .42),
+    inset 0 1px 0 rgba(255, 255, 255, .07);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
+}
+#loginView .oc-mark {
+  width: 42px; height: 42px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff, #b9caff 68%, #8ce8f2);
+  box-shadow: 0 8px 28px rgba(140, 174, 255, .18);
+}
+#loginView .panel-top > span {
+  color: rgba(195, 208, 230, .58);
+  font-size: 9px;
+  letter-spacing: .17em;
+}
+#loginView .login-panel h2 {
+  margin-top: 32px;
+  color: #f7f9ff;
+  font-size: clamp(25px, 2.5vw, 30px);
+  font-weight: 620;
+  letter-spacing: -.045em;
+}
+#loginView .login-panel .muted {
+  color: rgba(183, 196, 218, .65);
+  font-size: 12px;
+}
+#loginView .login-panel label {
+  color: rgba(188, 201, 222, .68);
+  font-size: 9px;
+  letter-spacing: .15em;
+}
+#loginView .login-panel input {
+  min-height: 51px;
+  border: 1px solid rgba(211, 225, 255, .12);
+  border-radius: 13px;
+  background: rgba(4, 8, 15, .52);
+  color: #f7f9ff;
+  transition: border-color .22s ease, box-shadow .22s ease, background .22s ease;
+}
+#loginView .login-panel input::placeholder { color: rgba(167, 181, 204, .42); }
+#loginView .login-panel input:focus {
+  border-color: rgba(151, 183, 255, .66);
+  background: rgba(7, 12, 22, .82);
+  box-shadow: 0 0 0 4px rgba(125, 158, 255, .10), 0 0 24px rgba(111, 153, 255, .08);
+}
+#loginView .primary-btn {
+  min-height: 52px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 14px;
+  background: linear-gradient(110deg, #f8faff, #dce6ff 60%, #c6f4f7);
+  color: #101827;
+  font-size: 11px;
+  letter-spacing: .055em;
+  box-shadow: 0 12px 35px rgba(119, 157, 255, .13);
+  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+#loginView .primary-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.035);
+  box-shadow: 0 18px 42px rgba(119, 157, 255, .22);
+}
+#loginView .primary-btn:active { transform: translateY(0) scale(.99); }
+#loginView #clientLoginBtn {
+  min-height: 48px;
+  border-color: rgba(166, 194, 255, .20) !important;
+  border-radius: 13px !important;
+  background: rgba(255, 255, 255, .035) !important;
+  color: #dce8ff !important;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+#loginView #clientLoginBtn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(166, 194, 255, .42) !important;
+  background: rgba(255, 255, 255, .07) !important;
+}
+#loginView .error { color: #ff9ca8; }
+#loginView .login-panel a:focus-visible,
+#loginView button:focus-visible,
+#loginView input:focus-visible {
+  outline: 2px solid var(--ov-cyan);
+  outline-offset: 3px;
+}
+@media (max-width: 1050px) {
+  #loginView .login-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    max-width: 760px;
+    padding: 44px 28px;
+  }
+  #loginView .brand-stage { min-height: 360px; }
+  #loginView .orbit-stage,
+  #loginView #orbital-canvas-container {
+    width: min(58vw, 420px);
+    height: min(58vw, 420px);
+    right: -2%;
+    bottom: -22%;
+    opacity: .7;
+  }
+  #loginView .login-panel { max-width: 520px; width: 100%; justify-self: center; }
+}
+@media (max-width: 560px) {
+  #loginView .login-layout { padding: 34px 18px 28px; gap: 12px; }
+  #loginView .brand-stage { min-height: 280px; }
+  #loginView .brand-stage h1 { font-size: clamp(56px, 17vw, 78px); margin: 23px 0 14px; }
+  #loginView .brand-stage > p { max-width: 340px; font-size: 13px; }
+  #loginView .system-line { margin-top: 18px; font-size: 8px; }
+  #loginView .orbit-stage,
+  #loginView #orbital-canvas-container {
+    width: 74vw; height: 74vw; right: -25%; bottom: -32%; opacity: .45;
+  }
+  #loginView .login-panel { padding: 23px 20px; border-radius: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #loginView .primary-btn,
+  #loginView #clientLoginBtn,
+  #loginView .login-panel input { transition: none !important; }
+}
