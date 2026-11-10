@@ -402,9 +402,11 @@
         crystal.rotation.x += delta * 1.4;
         crystal.rotation.y += delta * 1.8;
       }
-      gyro1.rotation.z -= delta * .9;
-      gyro2.rotation.x += delta * .75;
-      halo.rotation.z += delta * .3;
+      if (!reducedMotion) {
+        gyro1.rotation.z -= delta * .9;
+        gyro2.rotation.x += delta * .75;
+        halo.rotation.z += delta * .3;
+      }
 
       masterGroup.rotation.y += (state.targetRotY - masterGroup.rotation.y) * .055;
       masterGroup.rotation.x += (state.targetRotX - masterGroup.rotation.x) * .055;
@@ -425,7 +427,7 @@
       camera.position.y += (targetY - camera.position.y) * .05;
       camera.lookAt(0, letterO.position.y * .5, 0);
 
-      orbits.rotation.y += delta * .09;
+      if (!reducedMotion) orbits.rotation.y += delta * .09;
       nodeMeshes.forEach(function (item, index) {
         const data = item.data;
         if (!reducedMotion) data.angle += data.speed * (delta * 60);
