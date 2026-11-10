@@ -721,6 +721,12 @@
     document.body.appendChild(overlay);
     const form = overlay.querySelector('form');
     hydrateForm(form, config.fields, item || {});
+    if (!isEdit && ['services', 'shop-products'].includes(config.key)) {
+      if (form.elements.status) form.elements.status.value = 'Published';
+      if (form.elements.priceType) form.elements.priceType.value = 'Starting at';
+      if (form.elements.currency) form.elements.currency.value = 'INR';
+      if (form.elements.showPrice) form.elements.showPrice.checked = true;
+    }
     form.addEventListener('input', () => setDirty(true));
     form.querySelector('[data-close]').onclick = () => overlay.remove();
     if (config.media) wireMediaPreview(form);
