@@ -142,6 +142,7 @@ $('checkoutForm').onsubmit=async e=>{
           email:user.email||payload.email,
           items:payload.items,
           total:payload.estimatedTotal,
+          currency:payload.currency,
           requirements:payload.projectDescription,
           agreementVersion:payload.agreementVersion,
           agreementAcceptedAt:payload.agreementAcceptedAt
