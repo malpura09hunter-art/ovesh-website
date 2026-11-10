@@ -463,7 +463,7 @@
       module.fields.forEach((field) => {
         const input = form.elements[field.name];
         if (!input) return;
-        if (field.type === 'checkbox') input.checked = field.name === 'showPrice' ? data[field.name] !== false : !!data[field.name];
+        if (field.type === 'checkbox') input.checked = !!data[field.name];
         else input.value = valueToText(data[field.name]);
       });
       setDirty(false);
