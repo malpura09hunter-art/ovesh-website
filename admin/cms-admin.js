@@ -375,7 +375,7 @@
     if (!root) return;
     root.innerHTML = shell('Central Pricing Manager', 'Manage Shop and Services pricing from the existing Firebase collections.', `
       <div class="cms-toolbar"><div class="cms-actions"><span class="cms-pill">FIREBASE CONNECTED</span><span class="cms-muted">Shop · Services</span></div>
-      <button class="cms-secondary" type="button" id="pricingReload">Refresh prices</button></div>
+      <div class="cms-actions"><button class="cms-primary" type="button" id="pricingAddService">Add service</button><button class="cms-primary" type="button" id="pricingAddProduct">Add Shop product</button><button class="cms-secondary" type="button" id="pricingReload">Refresh prices</button></div></div>
       <div class="panel"><div class="cms-table-wrap"><table><thead><tr><th>Item</th><th>Section</th><th>Price</th><th>Sale Price</th><th>Visibility</th><th>Status</th><th></th></tr></thead>
       <tbody id="pricingRows"><tr><td colspan="7" class="loading">Loading pricing…</td></tr></tbody></table></div></div>`);
     const body = byId('pricingRows');
@@ -402,6 +402,8 @@
       } catch (error) { body.innerHTML = '<tr><td colspan="7" class="empty">' + esc(friendlyError(error)) + '</td></tr>'; }
     };
     byId('pricingReload').onclick = load;
+    byId('pricingAddService').onclick = () => openItemEditor(listModules.find(x => x.key === 'services'));
+    byId('pricingAddProduct').onclick = () => openItemEditor(listModules.find(x => x.key === 'shop-products'));
     await load();
   }
   function renderCmsOverview() {
