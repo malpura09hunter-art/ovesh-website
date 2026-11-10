@@ -714,11 +714,11 @@
     form.onsubmit = async (event) => {
       event.preventDefault();
       if (!validateForm(form, config.fields)) return;
-      if (config.key === 'shop-products') {
+      if (['services', 'shop-products'].includes(config.key)) {
         const price = Number(form.elements.price && form.elements.price.value || 0);
         const sale = Number(form.elements.salePrice && form.elements.salePrice.value || 0);
         if (price < 0 || sale < 0) { toast('Price cannot be negative.', 'error'); return; }
-        if (sale > 0 && price > 0 && sale >= price) { toast('Sale price must be lower than the starting price.', 'error'); return; }
+        if (sale > 0 && price > 0 && sale >= price) { toast('Sale price must be lower than the regular price.', 'error'); return; }
       }
       setFormDisabled(form, true);
       const payload = {};
@@ -739,6 +739,7 @@
         overlay.remove();
         toast(config.title + ' saved.');
         loadList(config);
+        if (byId('cmsPricingRoot')) renderPricingManager();
       } catch (error) {
         toast(friendlyError(error), 'error');
         setFormDisabled(form, false);
