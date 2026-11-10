@@ -1,21 +1,24 @@
 /* OV CLOUD — authenticated dashboard orbital identity layer
-   Visual-only treatment. The existing orbital renderer is reparented after login;
-   no authentication, database, storage, or navigation code is changed.
+   Keep the signature 3D O clearly visible after login without intercepting UI input.
+   Visual-only: authentication, database, storage and navigation remain untouched.
 */
-.main{position:relative;isolation:isolate}
+.main{position:relative;isolation:isolate;overflow:hidden}
 .main>.dashboard-orbital-stage{
   position:absolute!important;
-  top:0!important;
+  top:12px!important;
   right:0!important;
-  width:min(42vw,540px)!important;
-  height:390px!important;
+  width:min(48vw,620px)!important;
+  height:min(48vw,620px)!important;
+  min-width:420px;
+  min-height:420px;
   z-index:0!important;
-  opacity:.32;
-  overflow:hidden;
+  opacity:.92!important;
+  overflow:visible!important;
   pointer-events:none!important;
   contain:layout paint;
-  -webkit-mask-image:linear-gradient(135deg,#000 0%,rgba(0,0,0,.82) 48%,transparent 100%);
-  mask-image:linear-gradient(135deg,#000 0%,rgba(0,0,0,.82) 48%,transparent 100%);
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  filter:drop-shadow(0 0 24px rgba(0,220,255,.12));
 }
 .main>.dashboard-orbital-stage canvas{
   display:block;
@@ -28,20 +31,26 @@
 }
 @media(max-width:900px){
   .main>.dashboard-orbital-stage{
-    width:340px!important;
-    height:300px!important;
-    opacity:.22;
-    right:-36px!important;
+    width:460px!important;
+    height:460px!important;
+    min-width:0;
+    min-height:0;
+    opacity:.78!important;
+    right:-45px!important;
+    top:30px!important;
   }
 }
 @media(max-width:560px){
   .main>.dashboard-orbital-stage{
-    width:250px!important;
-    height:230px!important;
-    opacity:.18;
-    right:-50px!important;
+    width:360px!important;
+    height:360px!important;
+    min-width:0;
+    min-height:0;
+    opacity:.68!important;
+    right:-100px!important;
+    top:28px!important;
   }
 }
 @media(prefers-reduced-motion:reduce){
-  .main>.dashboard-orbital-stage{opacity:.14}
+  .main>.dashboard-orbital-stage{opacity:.55!important}
 }
