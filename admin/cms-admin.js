@@ -887,7 +887,7 @@
     fields.forEach((field) => {
       const input = form.elements[field.name];
       if (!input) return;
-      if (field.type === 'checkbox') input.checked = !!data[field.name];
+      if (field.type === 'checkbox') input.checked = field.name === 'showPrice' ? data[field.name] !== false : !!data[field.name];
       else if (field.type === 'rich') {
         const editor = form.querySelector('[data-rich-name="' + field.name + '"]');
         editor.innerHTML = data[field.name] || '';
