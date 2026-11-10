@@ -657,8 +657,8 @@
       body.innerHTML = filtered.map((item) => `
         <tr>
           <td><strong>${esc(item.name || item.id)}</strong><br><span class="cms-muted">${esc(item.slug || '')}</span></td>
-          <td><strong>₹${Number(item.price || 0).toLocaleString('en-IN')}</strong></td>
-          <td>${Number(item.salePrice || 0) > 0 ? '<strong>₹' + Number(item.salePrice).toLocaleString('en-IN') + '</strong>' : '—'}</td>
+          <td><strong>${item.currency === 'USD' ? 'USD ' + Number(item.price || 0).toLocaleString('en-US') : '₹' + Number(item.price || 0).toLocaleString('en-IN')}</strong></td>
+          <td>${Number(item.salePrice || 0) > 0 ? '<strong>' + (item.currency === 'USD' ? 'USD ' + Number(item.salePrice).toLocaleString('en-US') : '₹' + Number(item.salePrice).toLocaleString('en-IN')) + '</strong>' : '—'}</td>
           <td>${esc(item.category || '—')}</td>
           <td><span class="status-pill status-${esc((item.status || 'Published').replace(/\s/g, '-'))}">${esc(item.status || 'Published')}</span></td>
           <td>${item.featured ? 'Yes' : 'No'}</td>
