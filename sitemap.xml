@@ -18,6 +18,11 @@
       <image:title>Ovesh Malpura Cyber Labs - Portfolio</image:title>
       <image:caption>Portfolio banner for Ovesh Malpura Cyber Labs</image:caption>
     </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/ovesh-malpura-founder.jpg</image:loc>
+      <image:title>Ovesh Malpura - Founder portrait</image:title>
+      <image:caption>Official photograph of Ovesh Malpura, founder of Ovesh Malpura Cyber Labs</image:caption>
+    </image:image>
   </url>
   <url><loc>https://oveshmalpura.tech/blog</loc></url>
   <url><loc>https://oveshmalpura.tech/compiler.html</loc></url>
