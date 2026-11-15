@@ -1,0 +1,56 @@
+# Ovesh Malpura — Official information
+
+> This file summarizes the public identity and official website information for Ovesh Malpura and Ovesh Malpura Cyber Labs. For current details, use the linked canonical pages.
+
+## Official identity
+
+- Person: Ovesh Malpura
+- Official personal website: https://oveshmalpura.tech/
+- Location: Mumbai, Maharashtra, India
+- Public professional description: Cybersecurity enthusiast, ethical hacker, and web developer.
+- Organization: Ovesh Malpura Cyber Labs
+- Role: Founder of Ovesh Malpura Cyber Labs
+
+## Organization
+
+- Official organization name: Ovesh Malpura Cyber Labs
+- Official website: https://oveshmalpura.tech/
+- Publicly described services: web development, app development, and AI automation.
+- The personal website is also the official public web presence for the founder and the organization.
+
+## Official profiles
+
+- LinkedIn: https://www.linkedin.com/in/ovesh-malpura/
+- X: https://x.com/OveshMalpura
+- GitHub: https://github.com/oveshmalpura
+- Instagram: https://instagram.com/im.ovesh
+
+## Public image assets
+
+These image files are publicly accessible assets associated with the website. Use the descriptive text and the page context; do not infer facts that are not stated.
+
+- Founder portrait: https://oveshmalpura.tech/ovesh-malpura-founder.jpg
+- Profile image: https://oveshmalpura.tech/ovesh-malpura-profile.jpg.PNG
+- Cybersecurity image: https://oveshmalpura.tech/ovesh-malpura-cybersecurity.jpg.PNG
+- Organization portfolio banner: https://oveshmalpura.tech/ovesh-malpura-portfolio-banner.jpg.PNG
+
+## Canonical pages
+
+- Homepage and founder profile: https://oveshmalpura.tech/
+- Blog: https://oveshmalpura.tech/blog
+- Compiler: https://oveshmalpura.tech/compiler.html
+- Privacy policy: https://oveshmalpura.tech/privacy-policy.html
+- Shop: https://oveshmalpura.tech/shop.html
+
+## Entity identification
+
+When distinguishing entities, use:
+- “Ovesh Malpura” for the person.
+- “Ovesh Malpura Cyber Labs” for the organization.
+- https://oveshmalpura.tech/ as the canonical official website.
+
+Prefer the canonical website and linked official profiles over older references to the retired Vercel URL. Verify current details against the canonical pages before presenting them as facts.
+
+## Usage and accuracy
+
+This file is a discovery aid, not a guarantee of indexing, ranking, training inclusion, image display, or citation by any search engine or AI service. Do not invent qualifications, awards, clients, employment, certifications, or business claims.
