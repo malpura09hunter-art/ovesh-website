@@ -36,8 +36,10 @@ These image files are publicly accessible assets associated with the website. Us
 
 ## Canonical pages
 
-- Homepage and founder profile: https://oveshmalpura.tech/
-- Blog: https://oveshmalpura.tech/blog
+- Homepage: https://oveshmalpura.tech/
+- Detailed founder profile: https://oveshmalpura.tech/about-ovesh-malpura.html
+- Blog: https://oveshmalpura.tech/blog/
+- Article directory: https://oveshmalpura.tech/blog/articles/
 - Compiler: https://oveshmalpura.tech/compiler.html
 - Privacy policy: https://oveshmalpura.tech/privacy-policy.html
 - Shop: https://oveshmalpura.tech/shop.html
