@@ -46,11 +46,25 @@ These image files are publicly accessible assets associated with the website. Us
 
 - Homepage: https://oveshmalpura.tech/
 - Detailed founder profile: https://oveshmalpura.tech/about-ovesh-malpura.html
-- Blog: https://oveshmalpura.tech/blog/
-- Article directory: https://oveshmalpura.tech/blog/articles/
+- Blog: https://oveshmalpura.tech/blog
+- Services: https://oveshmalpura.tech/services/
+- Article directory: https://oveshmalpura.tech/blog/articles/ (individual articles listed below)
 - Compiler: https://oveshmalpura.tech/compiler.html
 - Privacy policy: https://oveshmalpura.tech/privacy-policy.html
 - Shop: https://oveshmalpura.tech/shop.html
+
+
+## Individual public articles
+- https://oveshmalpura.tech/blog/articles/online-safety-guide.html
+- https://oveshmalpura.tech/blog/articles/cybersecurity-tips.html
+- https://oveshmalpura.tech/blog/articles/phishing-awareness.html
+- https://oveshmalpura.tech/blog/articles/digital-footprint-privacy.html
+- https://oveshmalpura.tech/blog/articles/strong-passwords.html
+- https://oveshmalpura.tech/blog/articles/mobile-security-basics.html
+- https://oveshmalpura.tech/blog/articles/ai-cybersecurity.html
+- https://oveshmalpura.tech/blog/articles/kali-linux-beginners.html
+- https://oveshmalpura.tech/blog/articles/cloud-security-misconfigurations.html
+- https://oveshmalpura.tech/blog/articles/osint-ethical-reconnaissance.html
 
 ## Entity identification
 
