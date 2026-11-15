@@ -18,6 +18,14 @@
 - Publicly described services: web development, app development, and AI automation.
 - The personal website is also the official public web presence for the founder and the organization.
 
+## Official contact emails
+
+These addresses are publicly published contact channels for Ovesh Malpura Cyber Labs:
+
+- Proton Mail: team.oveshmalpuracyberlabs@protonmail.com
+- Zoho Mail: info.oveshmalpuracyberlab@zohomail.in
+- Gmail: oveshmalpuracyberlab@gmail.com
+
 ## Official profiles
 
 - LinkedIn: https://www.linkedin.com/in/ovesh-malpura/
