@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://oveshmalpura.tech/</loc>
+    <loc>https://oveshmalpura.tech/</loc><lastmod>2026-11-15</lastmod>
     <image:image>
       <image:loc>https://oveshmalpura.tech/ovesh-malpura-profile.jpg.PNG</image:loc>
       <image:title>Ovesh Malpura - Founder of Ovesh Malpura Cyber Labs</image:title>
@@ -24,12 +24,11 @@
       <image:caption>Official photograph of Ovesh Malpura, founder of Ovesh Malpura Cyber Labs</image:caption>
     </image:image>
   </url>
-  <url><loc>https://oveshmalpura.tech/blog</loc></url>
-  <url><loc>https://oveshmalpura.tech/compiler.html</loc></url>
-  <url><loc>https://oveshmalpura.tech/privacy-policy.html</loc></url>
-  <url><loc>https://oveshmalpura.tech/shop.html</loc></url>
-  <url><loc>https://oveshmalpura.tech/services/</loc></url>
-  <url><loc>https://oveshmalpura.tech/ovesh/compiler/compiler.html</loc></url>
+  <url><loc>https://oveshmalpura.tech/blog</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://oveshmalpura.tech/compiler.html</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://oveshmalpura.tech/privacy-policy.html</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://oveshmalpura.tech/shop.html</loc><lastmod>2026-11-15</lastmod></url>
+  <url><loc>https://oveshmalpura.tech/services/</loc><lastmod>2026-11-15</lastmod></url>
   <url><loc>https://oveshmalpura.tech/about-ovesh-malpura.html</loc></url>
   <url><loc>https://oveshmalpura.tech/blog/articles/online-safety-guide.html</loc></url>
   <url><loc>https://oveshmalpura.tech/blog/articles/cybersecurity-tips.html</loc></url>
