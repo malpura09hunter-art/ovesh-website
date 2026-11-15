@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://oveshmalpura.tech/</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://oveshmalpura.tech/</loc>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/ovesh-malpura-profile.jpg.PNG</image:loc>
+      <image:title>Ovesh Malpura - Founder of Ovesh Malpura Cyber Labs</image:title>
+      <image:caption>Official founder portrait of Ovesh Malpura, cybersecurity enthusiast and web developer in Mumbai, India</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/ovesh-malpura-cybersecurity.jpg.PNG</image:loc>
+      <image:title>Ovesh Malpura - Cybersecurity</image:title>
+      <image:caption>Ovesh Malpura cybersecurity profile image</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/ovesh-malpura-portfolio-banner.jpg.PNG</image:loc>
+      <image:title>Ovesh Malpura Cyber Labs - Portfolio</image:title>
+      <image:caption>Portfolio banner for Ovesh Malpura Cyber Labs</image:caption>
+    </image:image>
+  </url>
   <url><loc>https://oveshmalpura.tech/blog</loc></url>
   <url><loc>https://oveshmalpura.tech/compiler.html</loc></url>
   <url><loc>https://oveshmalpura.tech/privacy-policy.html</loc></url>
