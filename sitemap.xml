@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://oveshmalpura.tech/</loc><lastmod>2026-11-15</lastmod>
+    <loc>https://oveshmalpura.tech/</loc><lastmod>2026-11-18</lastmod>
     <image:image>
       <image:loc>https://oveshmalpura.tech/ovesh-malpura-profile.jpg.PNG</image:loc>
       <image:title>Ovesh Malpura - Founder of Ovesh Malpura Cyber Labs</image:title>
@@ -22,6 +22,50 @@
       <image:loc>https://oveshmalpura.tech/ovesh-malpura-founder.jpg</image:loc>
       <image:title>Ovesh Malpura - Founder portrait</image:title>
       <image:caption>Official photograph of Ovesh Malpura, founder of Ovesh Malpura Cyber Labs</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://oveshmalpura.tech/images</loc>
+    <lastmod>2026-11-18</lastmod>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-professional-blazer-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura professional blazer portrait</image:title>
+      <image:caption>Professional portrait of Ovesh Malpura, founder of Ovesh Malpura Cyber Labs, in grey blazer outdoors</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-professional-outdoor-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura professional outdoor portrait</image:title>
+      <image:caption>Ovesh Malpura leaning against a brick wall outdoors in navy shirt</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-professional-event-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura professional event portrait</image:title>
+      <image:caption>Ovesh Malpura smiling at an indoor event in light purple shirt</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-traditional-kurta-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura traditional kurta portrait</image:title>
+      <image:caption>Close-up portrait of Ovesh Malpura in white traditional embroidered kurta</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-outdoor-glasses-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura outdoor glasses portrait</image:title>
+      <image:caption>Outdoor portrait of Ovesh Malpura wearing glasses and black shirt</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-casual-outdoor-portrait.webp</image:loc>
+      <image:title>Ovesh Malpura casual outdoor portrait</image:title>
+      <image:caption>Casual outdoor portrait of Ovesh Malpura near flowering bushes</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-personal-selfie-white-polo.webp</image:loc>
+      <image:title>Ovesh Malpura personal selfie white polo</image:title>
+      <image:caption>Mirror selfie of Ovesh Malpura in white polo shirt with glasses</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://oveshmalpura.tech/images/ovesh-malpura-personal-mirror-selfie.webp</image:loc>
+      <image:title>Ovesh Malpura personal mirror selfie</image:title>
+      <image:caption>Mirror selfie of Ovesh Malpura in white long-sleeve shirt</image:caption>
     </image:image>
   </url>
   <url><loc>https://oveshmalpura.tech/blog</loc><lastmod>2026-11-15</lastmod></url>
