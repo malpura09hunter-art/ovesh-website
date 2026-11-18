@@ -1,0 +1,75 @@
+{
+  "project": "Ovesh Malpura Personal Image Gallery",
+  "person": "Ovesh Malpura",
+  "organization": "Ovesh Malpura Cyber Labs",
+  "gallery_url": "https://oveshmalpura.tech/images",
+  "generated": "2026-11-18",
+  "total_images": 8,
+  "images": [
+    {
+      "id": "ovesh-malpura-professional-blazer-portrait",
+      "optimized_filename_webp": "ovesh-malpura-professional-blazer-portrait.webp",
+      "category": "Professional Portraits",
+      "alt": "Ovesh Malpura, founder of Ovesh Malpura Cyber Labs, professional portrait in grey blazer outdoors",
+      "caption": "Professional portrait of Ovesh Malpura in formal attire.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-blazer-portrait.webp",
+      "featured": true
+    },
+    {
+      "id": "ovesh-malpura-professional-outdoor-portrait",
+      "optimized_filename_webp": "ovesh-malpura-professional-outdoor-portrait.webp",
+      "category": "Professional Portraits",
+      "alt": "Ovesh Malpura professional outdoor portrait leaning on brick wall in navy shirt",
+      "caption": "Confident outdoor portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-outdoor-portrait.webp"
+    },
+    {
+      "id": "ovesh-malpura-professional-event-portrait",
+      "optimized_filename_webp": "ovesh-malpura-professional-event-portrait.webp",
+      "category": "Professional Portraits",
+      "alt": "Ovesh Malpura smiling at an indoor event in light purple shirt",
+      "caption": "Ovesh Malpura at a professional event.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-event-portrait.webp"
+    },
+    {
+      "id": "ovesh-malpura-traditional-kurta-portrait",
+      "optimized_filename_webp": "ovesh-malpura-traditional-kurta-portrait.webp",
+      "category": "Personal Photographs",
+      "alt": "Ovesh Malpura close-up portrait in white traditional embroidered kurta",
+      "caption": "Traditional attire portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-traditional-kurta-portrait.webp"
+    },
+    {
+      "id": "ovesh-malpura-outdoor-glasses-portrait",
+      "optimized_filename_webp": "ovesh-malpura-outdoor-glasses-portrait.webp",
+      "category": "Personal Photographs",
+      "alt": "Ovesh Malpura outdoor portrait with glasses and black shirt",
+      "caption": "Natural light outdoor portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-outdoor-glasses-portrait.webp"
+    },
+    {
+      "id": "ovesh-malpura-casual-outdoor-portrait",
+      "optimized_filename_webp": "ovesh-malpura-casual-outdoor-portrait.webp",
+      "category": "Personal Photographs",
+      "alt": "Ovesh Malpura casual outdoor portrait smiling near pink flowers",
+      "caption": "Casual outdoor moment of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-casual-outdoor-portrait.webp"
+    },
+    {
+      "id": "ovesh-malpura-personal-selfie-white-polo",
+      "optimized_filename_webp": "ovesh-malpura-personal-selfie-white-polo.webp",
+      "category": "Personal Photographs",
+      "alt": "Ovesh Malpura personal mirror selfie in white polo shirt with glasses",
+      "caption": "Personal mirror selfie of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-personal-selfie-white-polo.webp"
+    },
+    {
+      "id": "ovesh-malpura-personal-mirror-selfie",
+      "optimized_filename_webp": "ovesh-malpura-personal-mirror-selfie.webp",
+      "category": "Personal Photographs",
+      "alt": "Ovesh Malpura personal mirror selfie in white long-sleeve shirt",
+      "caption": "Personal indoor mirror selfie of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-personal-mirror-selfie.webp"
+    }
+  ]
+}
