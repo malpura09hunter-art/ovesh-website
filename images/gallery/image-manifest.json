@@ -1,0 +1,179 @@
+{
+  "project": "Ovesh Malpura Personal Image Gallery",
+  "person": "Ovesh Malpura",
+  "organization": "Ovesh Malpura Cyber Labs",
+  "gallery_url": "https://oveshmalpura.tech/images",
+  "generated": "2026-11-17",
+  "total_images": 8,
+  "video_excluded": "VIDEO-2026-11-07-23-06-04.mp4 (not a photograph)",
+  "images": [
+    {
+      "id": "ovesh-malpura-professional-blazer-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-10-11.jpg",
+      "optimized_filename_webp": "ovesh-malpura-professional-blazer-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-professional-blazer-portrait.jpg",
+      "original_dimensions": "828x1422",
+      "optimized_dimensions": "828x1422",
+      "aspect_ratio": 0.582,
+      "category": "Professional Portraits",
+      "description": "Ovesh Malpura standing outdoors in a grey blazer over a black shirt, smiling confidently with hands relaxed, green foliage in the background.",
+      "alt": "Ovesh Malpura, founder of Ovesh Malpura Cyber Labs, professional portrait in grey blazer outdoors",
+      "caption": "Professional portrait of Ovesh Malpura in formal attire.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-blazer-portrait.webp",
+      "featured": true,
+      "variants": {
+        "full_webp": "ovesh-malpura-professional-blazer-portrait.webp",
+        "full_jpg": "ovesh-malpura-professional-blazer-portrait.jpg",
+        "800_webp": "ovesh-malpura-professional-blazer-portrait-800.webp",
+        "400_webp": "ovesh-malpura-professional-blazer-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-professional-outdoor-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-20-37.jpg",
+      "optimized_filename_webp": "ovesh-malpura-professional-outdoor-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-professional-outdoor-portrait.jpg",
+      "original_dimensions": "960x1280",
+      "optimized_dimensions": "960x1280",
+      "aspect_ratio": 0.75,
+      "category": "Professional Portraits",
+      "description": "Ovesh Malpura leaning against a brick wall outdoors, wearing a navy blue shirt and light grey trousers, smiling with one leg bent.",
+      "alt": "Ovesh Malpura professional outdoor portrait leaning on brick wall in navy shirt",
+      "caption": "Confident outdoor portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-outdoor-portrait.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-professional-outdoor-portrait.webp",
+        "full_jpg": "ovesh-malpura-professional-outdoor-portrait.jpg",
+        "800_webp": "ovesh-malpura-professional-outdoor-portrait-800.webp",
+        "400_webp": "ovesh-malpura-professional-outdoor-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-professional-event-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-07-01.jpg",
+      "optimized_filename_webp": "ovesh-malpura-professional-event-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-professional-event-portrait.jpg",
+      "original_dimensions": "896x1195",
+      "optimized_dimensions": "896x1195",
+      "aspect_ratio": 0.75,
+      "category": "Professional Portraits",
+      "description": "Ovesh Malpura smiling indoors at an event venue, wearing a light purple button-up shirt and black trousers, hands in pockets, with string lights and people in the background.",
+      "alt": "Ovesh Malpura smiling at an indoor event in light purple shirt",
+      "caption": "Ovesh Malpura at a professional event.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-professional-event-portrait.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-professional-event-portrait.webp",
+        "full_jpg": "ovesh-malpura-professional-event-portrait.jpg",
+        "800_webp": "ovesh-malpura-professional-event-portrait-800.webp",
+        "400_webp": "ovesh-malpura-professional-event-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-traditional-kurta-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-26-10.jpg",
+      "optimized_filename_webp": "ovesh-malpura-traditional-kurta-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-traditional-kurta-portrait.jpg",
+      "original_dimensions": "1060x863",
+      "optimized_dimensions": "1060x863",
+      "aspect_ratio": 1.228,
+      "category": "Personal Photographs",
+      "description": "Close-up portrait of Ovesh Malpura wearing a white embroidered traditional kurta, looking directly at the camera with a neutral expression.",
+      "alt": "Ovesh Malpura close-up portrait in white traditional embroidered kurta",
+      "caption": "Traditional attire portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-traditional-kurta-portrait.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-traditional-kurta-portrait.webp",
+        "full_jpg": "ovesh-malpura-traditional-kurta-portrait.jpg",
+        "800_webp": "ovesh-malpura-traditional-kurta-portrait-800.webp",
+        "400_webp": "ovesh-malpura-traditional-kurta-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-outdoor-glasses-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-27-26.jpg",
+      "optimized_filename_webp": "ovesh-malpura-outdoor-glasses-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-outdoor-glasses-portrait.jpg",
+      "original_dimensions": "864x1096",
+      "optimized_dimensions": "864x1096",
+      "aspect_ratio": 0.788,
+      "category": "Personal Photographs",
+      "description": "Ovesh Malpura outdoors near a vehicle, wearing rectangular glasses and a black shirt, looking toward the camera in natural light.",
+      "alt": "Ovesh Malpura outdoor portrait with glasses and black shirt",
+      "caption": "Natural light outdoor portrait of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-outdoor-glasses-portrait.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-outdoor-glasses-portrait.webp",
+        "full_jpg": "ovesh-malpura-outdoor-glasses-portrait.jpg",
+        "800_webp": "ovesh-malpura-outdoor-glasses-portrait-800.webp",
+        "400_webp": "ovesh-malpura-outdoor-glasses-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-casual-outdoor-portrait",
+      "original_filename": "PHOTO-2026-11-07-23-24-06.jpg",
+      "optimized_filename_webp": "ovesh-malpura-casual-outdoor-portrait.webp",
+      "optimized_filename_jpg": "ovesh-malpura-casual-outdoor-portrait.jpg",
+      "original_dimensions": "828x1470",
+      "optimized_dimensions": "828x1470",
+      "aspect_ratio": 0.563,
+      "category": "Personal Photographs",
+      "description": "Ovesh Malpura standing outdoors with arms crossed, wearing a dark sweatshirt with white lettering, smiling and looking to the side near flowering bushes.",
+      "alt": "Ovesh Malpura casual outdoor portrait smiling near pink flowers",
+      "caption": "Casual outdoor moment of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-casual-outdoor-portrait.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-casual-outdoor-portrait.webp",
+        "full_jpg": "ovesh-malpura-casual-outdoor-portrait.jpg",
+        "800_webp": "ovesh-malpura-casual-outdoor-portrait-800.webp",
+        "400_webp": "ovesh-malpura-casual-outdoor-portrait-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-personal-selfie-white-polo",
+      "original_filename": "PHOTO-2026-11-07-23-08-56.jpg",
+      "optimized_filename_webp": "ovesh-malpura-personal-selfie-white-polo.webp",
+      "optimized_filename_jpg": "ovesh-malpura-personal-selfie-white-polo.jpg",
+      "original_dimensions": "828x1471",
+      "optimized_dimensions": "828x1471",
+      "aspect_ratio": 0.563,
+      "category": "Personal Photographs",
+      "description": "Mirror selfie of Ovesh Malpura wearing glasses and a white polo shirt, holding a phone with an Attack on Titan case.",
+      "alt": "Ovesh Malpura personal mirror selfie in white polo shirt with glasses",
+      "caption": "Personal mirror selfie of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-personal-selfie-white-polo.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-personal-selfie-white-polo.webp",
+        "full_jpg": "ovesh-malpura-personal-selfie-white-polo.jpg",
+        "800_webp": "ovesh-malpura-personal-selfie-white-polo-800.webp",
+        "400_webp": "ovesh-malpura-personal-selfie-white-polo-400.webp"
+      }
+    },
+    {
+      "id": "ovesh-malpura-personal-mirror-selfie",
+      "original_filename": "PHOTO-2026-11-07-23-23-12.jpg",
+      "optimized_filename_webp": "ovesh-malpura-personal-mirror-selfie.webp",
+      "optimized_filename_jpg": "ovesh-malpura-personal-mirror-selfie.jpg",
+      "original_dimensions": "764x1183",
+      "optimized_dimensions": "764x1183",
+      "aspect_ratio": 0.646,
+      "category": "Personal Photographs",
+      "description": "Mirror selfie of Ovesh Malpura in a white long-sleeve shirt and glasses, holding a black smartphone.",
+      "alt": "Ovesh Malpura personal mirror selfie in white long-sleeve shirt",
+      "caption": "Personal indoor mirror selfie of Ovesh Malpura.",
+      "public_url": "https://oveshmalpura.tech/images/ovesh-malpura-personal-mirror-selfie.webp",
+      "featured": false,
+      "variants": {
+        "full_webp": "ovesh-malpura-personal-mirror-selfie.webp",
+        "full_jpg": "ovesh-malpura-personal-mirror-selfie.jpg",
+        "800_webp": "ovesh-malpura-personal-mirror-selfie-800.webp",
+        "400_webp": "ovesh-malpura-personal-mirror-selfie-400.webp"
+      }
+    }
+  ]
+}
