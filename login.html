@@ -231,6 +231,120 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 
 /* Route overlay (post-login choice) */
 .route-overlay{position:fixed;inset:0;z-index:1000;background:rgba(3,10,3,.94);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility .3s ease}.route-overlay.active{opacity:1;visibility:visible;pointer-events:auto}.route-card{width:min(520px,100%);background:#060f06;border:1px solid rgba(0,255,65,.22);border-radius:14px;padding:34px;box-shadow:0 0 45px rgba(0,255,65,.12);transform:translateY(12px) scale(.98);transition:transform .35s cubic-bezier(.22,1,.36,1)}.route-overlay.active .route-card{transform:none}.route-card h2{font-family:'Orbitron',sans-serif;color:#39ff14;font-size:26px;margin:6px 0 8px}.route-card>p{color:#7fa389;margin:0 0 24px}.route-options{display:grid;gap:12px}.route-option{width:100%;display:flex;align-items:center;gap:16px;text-align:left;background:rgba(0,255,65,.035);border:1px solid rgba(0,255,65,.16);border-radius:10px;padding:16px;color:#c8ffd4;cursor:pointer;transition:transform .2s ease,border-color .2s ease,background .2s ease}.route-option:hover{transform:translateY(-2px);border-color:rgba(0,255,65,.45);background:rgba(0,255,65,.08)}.route-icon{font-size:27px;width:38px;text-align:center}.route-option strong{display:block;font-family:'Rajdhani',sans-serif;font-size:17px}.route-option small{display:block;color:#6f8d74;font-size:13px;margin-top:3px}@media(max-width:520px){.route-card{padding:26px 20px}.route-option{padding:14px}}
+
+/* ===== Premium Cyber Labs authentication refresh ===== */
+:root{
+  --bg:#050807;--bg2:rgba(10,17,14,.88);--bg3:#101b15;
+  --neon:#55f28a;--neon2:#22cf70;--neon3:#a2ffc0;--dim:#78a88a;
+  --text:#effff4;--muted:#91a99a;--border:rgba(129,232,164,.18);
+  --glow:0 28px 90px rgba(0,0,0,.55),0 0 70px rgba(37,208,111,.10);
+}
+html{min-height:100%;background:#050807}
+body{
+  min-height:100svh;padding:100px 22px 44px;
+  background:
+    radial-gradient(ellipse at 16% 22%,rgba(29,177,100,.16),transparent 36%),
+    radial-gradient(ellipse at 88% 78%,rgba(33,118,91,.13),transparent 34%),
+    linear-gradient(135deg,#050807 0%,#08110d 52%,#050908 100%);
+  isolation:isolate;
+}
+body::before{
+  background-image:linear-gradient(rgba(152,255,190,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(152,255,190,.025) 1px,transparent 1px);
+  background-size:48px 48px;opacity:.55;animation:none;
+  mask-image:linear-gradient(to bottom,black,transparent 92%);
+}
+body::after{
+  content:"";position:fixed;width:min(680px,90vw);height:min(680px,90vw);
+  border:1px solid rgba(101,230,151,.075);border-radius:50%;
+  box-shadow:0 0 0 54px rgba(101,230,151,.018),0 0 0 108px rgba(101,230,151,.012);
+  left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:-1;
+}
+.logo-link{
+  position:fixed;top:28px;left:34px;display:inline-flex;align-items:center;gap:10px;
+  padding:11px 15px;border:1px solid rgba(137,230,167,.13);border-radius:999px;
+  background:rgba(9,18,13,.58);backdrop-filter:blur(14px);
+  color:#c8fbd7;font-size:11px;letter-spacing:1.8px;text-shadow:none;
+}
+.logo-link::before{
+  content:"";width:8px;height:8px;border-radius:50%;background:#54ef8a;
+  box-shadow:0 0 12px rgba(84,239,138,.85);
+}
+.logo-link:hover{transform:translateY(-1px);border-color:rgba(137,230,167,.34);text-shadow:none}
+main{width:min(100%,470px);position:relative;z-index:2}
+.card{
+  max-width:none;padding:clamp(30px,5vw,46px);
+  border:1px solid rgba(145,235,174,.19);border-radius:22px;
+  background:linear-gradient(145deg,rgba(13,24,18,.96),rgba(7,14,10,.96));
+  box-shadow:0 32px 100px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.018) inset,0 0 70px rgba(40,214,115,.08);
+  backdrop-filter:blur(24px);overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,transparent,#4ee88b 28%,#a7ffc3 50%,#25c978 72%,transparent);
+  opacity:.9;
+}
+.card::after{
+  content:"SECURE ACCESS  •  ENCRYPTED SESSION";
+  display:block;margin-top:25px;padding-top:16px;border-top:1px solid rgba(145,235,174,.10);
+  color:#668675;font:10px 'Share Tech Mono',monospace;letter-spacing:2px;text-align:center;
+}
+.eyebrow{font-size:10px;letter-spacing:3.2px;color:#7fe9a4;margin-bottom:11px}
+h1{font-size:clamp(23px,4vw,29px);letter-spacing:-.7px;color:#d9ffe5;margin-bottom:25px;text-shadow:0 0 26px rgba(80,238,139,.13)}
+.tabs{padding:5px;gap:5px;border:1px solid rgba(145,235,174,.09);border-radius:11px;background:rgba(0,0,0,.19)}
+.tab-btn{padding:11px;border-radius:8px;color:#8ba595}
+.tab-btn.active{background:linear-gradient(135deg,rgba(77,221,133,.19),rgba(32,164,92,.10));color:#baffcd;box-shadow:0 0 0 1px rgba(107,231,153,.17) inset}
+.field{margin-bottom:19px}
+.field label{font-size:11px;letter-spacing:1.5px;color:#9bb6a4;margin-bottom:8px}
+.field input{
+  min-height:48px;padding:13px 15px;border-radius:9px;
+  border:1px solid rgba(145,235,174,.16);background:rgba(2,8,5,.48);
+  color:#f0fff4;font-size:16px;
+}
+.field input:hover{border-color:rgba(145,235,174,.30)}
+.field input:focus{border-color:#50d989;box-shadow:0 0 0 3px rgba(80,217,137,.10),0 8px 24px rgba(0,0,0,.16);transform:none;background:rgba(5,16,10,.85)}
+.btn-primary{
+  min-height:49px;border-radius:9px;padding:14px;
+  background:linear-gradient(110deg,#a6ffc0 0%,#57ed91 38%,#20c875 100%);
+  color:#052111;font-size:12px;letter-spacing:1.35px;
+  box-shadow:0 10px 28px rgba(30,203,111,.17),inset 0 1px 0 rgba(255,255,255,.45);
+}
+.btn-primary:hover{background:linear-gradient(110deg,#bdffd0,#70f5a2 45%,#37d987);box-shadow:0 14px 34px rgba(30,203,111,.25);transform:translateY(-2px)}
+.link-row{margin-top:15px}
+.link-row a,.link-row button{color:#91cba5}
+.divider-row{margin:22px 0 16px}
+.divider-row::before,.divider-row::after{background:rgba(145,235,174,.13)}
+.divider-row span{font-size:9px;letter-spacing:2.2px;color:#799887}
+.btn-google{
+  min-height:48px;border-radius:9px;border-color:rgba(255,255,255,.72);
+  font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;
+  box-shadow:0 5px 18px rgba(0,0,0,.14);
+}
+.btn-google:hover{background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.24);transform:translateY(-2px)}
+.msg{border-radius:9px;padding:12px 14px}
+.route-card{
+  border:1px solid rgba(145,235,174,.20);border-radius:20px;
+  background:linear-gradient(145deg,rgba(13,24,18,.98),rgba(6,13,9,.98));
+  box-shadow:0 32px 100px rgba(0,0,0,.6),0 0 65px rgba(40,214,115,.09);
+  padding:clamp(26px,5vw,42px);
+}
+.route-card h2{color:#d9ffe5;font-size:clamp(23px,4vw,29px)}
+.route-option{
+  border-radius:12px;padding:18px;background:rgba(88,213,135,.045);
+  border-color:rgba(145,235,174,.15);
+}
+.route-option:hover{background:rgba(88,213,135,.09);border-color:rgba(120,240,164,.42);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.route-option strong{font-size:18px;color:#e5ffed}
+.route-option small{font-size:14px;color:#91ab9a}
+@media(max-width:520px){
+  body{padding:88px 16px 28px;align-items:center}
+  .logo-link{top:18px;left:16px;font-size:9px;padding:9px 12px}
+  .card{padding:30px 22px;border-radius:18px}
+  .card::after{font-size:9px;letter-spacing:1.4px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
