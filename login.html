@@ -354,6 +354,9 @@ h1 { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700; col
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script>
+// Resolve the post-authentication chooser explicitly; do not rely on browser named globals.
+const routeOverlay = document.getElementById('routeOverlay');
+
 function switchTab(paneId, btn) {
   document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
