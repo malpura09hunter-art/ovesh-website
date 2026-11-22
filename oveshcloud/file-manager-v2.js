@@ -6,7 +6,7 @@ const type=n=>{const e=ext(n);if(['jpg','jpeg','png','gif','webp','svg','avif'].
 const icon=t=>({image:'▣',pdf:'▤',video:'▶',audio:'♫',text:'≡',document:'▧',spreadsheet:'▧',archive:'▦',file:'◫'})[t]||'◫';
 let state={q:'',type:'all',sort:'newest',view:localStorage.getItem('oveshCloudFileView')||'list',favorites:new Set(JSON.parse(localStorage.getItem('oveshCloudFavorites')||'[]'))};
 let lastCount=-1,enhancing=false;
-function files(){return Array.isArray(window.OVESH_STORAGE?.files)?window.OVESH_STORAGE.files:[]}
+function files(){return Array.isArray(window.OVESH_STORAGE?.files)?window.OVESH_STORAGE.files.filter(f=>!String(f?.objectKey||f?.id||'').endsWith('/.ovesh-folder')):[]}
 function key(f){return String(f?.objectKey||f?.id||'')}
 function saveFav(){localStorage.setItem('oveshCloudFavorites',JSON.stringify([...state.favorites]))}
 function style(){if(document.getElementById('ocFileManagerStyle'))return;const s=document.createElement('style');s.id='ocFileManagerStyle';s.textContent=`
