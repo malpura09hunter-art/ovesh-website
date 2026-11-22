@@ -1,0 +1,105 @@
+name: Update OV CLOUD B2 S3 CORS
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Confirm adding OV CLOUD website origins to the S3-compatible CORS rules"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  update-cors:
+    if: ${{ inputs.confirm == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Install AWS SDK
+        run: python -m pip install --disable-pip-version-check boto3
+
+      - name: Preserve existing S3 CORS rules and add OV CLOUD origins
+        env:
+          B2_KEY_ID: ${{ secrets.B2_S3_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_S3_APPLICATION_KEY }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          import boto3
+          from botocore.exceptions import ClientError
+
+          bucket = "ovesh-cloud-storage"
+          endpoint = "https://s3.us-east-005.backblazeb2.com"
+          rule_id = "ov-cloud-browser-uploads"
+          origins = [
+              "https://oveshmalpura.tech",
+              "https://www.oveshmalpura.tech",
+              "https://malpuraovesh.vercel.app",
+          ]
+
+          key_id = os.environ.get("B2_KEY_ID", "")
+          app_key = os.environ.get("B2_APPLICATION_KEY", "")
+          if not key_id or not app_key:
+              sys.exit("Missing GitHub secrets B2_S3_KEY_ID or B2_S3_APPLICATION_KEY.")
+
+          s3 = boto3.client(
+              "s3",
+              endpoint_url=endpoint,
+              region_name="us-east-005",
+              aws_access_key_id=key_id,
+              aws_secret_access_key=app_key,
+          )
+
+          rules = []
+          try:
+              current = s3.get_bucket_cors(Bucket=bucket)
+              rules = current.get("CORSRules", [])
+              print(f"Read {len(rules)} existing S3-compatible CORS rule(s).")
+          except ClientError as exc:
+              code = exc.response.get("Error", {}).get("Code", "")
+              status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+              if code not in ("NoSuchCORSConfiguration", "404") and status != 404:
+                  raise
+              print("No existing S3-compatible CORS configuration; creating the first rule.")
+
+          dedicated = next((r for r in rules if r.get("ID") == rule_id), None)
+          if dedicated is None:
+              dedicated = {
+                  "ID": rule_id,
+                  "AllowedOrigins": origins,
+                  "AllowedMethods": ["PUT"],
+                  "AllowedHeaders": ["*"],
+                  "ExposeHeaders": ["ETag"],
+                  "MaxAgeSeconds": 3600,
+              }
+              rules.append(dedicated)
+              print("Added a dedicated PUT rule for the OV CLOUD website origins.")
+          else:
+              dedicated["AllowedOrigins"] = sorted(set(dedicated.get("AllowedOrigins", []) + origins))
+              dedicated["AllowedMethods"] = sorted(set(dedicated.get("AllowedMethods", []) + ["PUT"]))
+              dedicated["AllowedHeaders"] = sorted(set(dedicated.get("AllowedHeaders", []) + ["*"]))
+              dedicated["ExposeHeaders"] = sorted(set(dedicated.get("ExposeHeaders", []) + ["ETag"]))
+              dedicated["MaxAgeSeconds"] = max(dedicated.get("MaxAgeSeconds", 0), 3600)
+              print("Updated the existing OV CLOUD CORS rule without duplicating it.")
+
+          # PutBucketCors replaces the S3 CORS configuration, so submit the
+          # complete configuration read above plus the one additive OV CLOUD rule.
+          s3.put_bucket_cors(
+              Bucket=bucket,
+              CORSConfiguration={"CORSRules": rules},
+          )
+
+          verified = s3.get_bucket_cors(Bucket=bucket).get("CORSRules", [])
+          match = next((r for r in verified if r.get("ID") == rule_id), None)
+          if not match or not set(origins).issubset(set(match.get("AllowedOrigins", []))) or "PUT" not in match.get("AllowedMethods", []):
+              sys.exit("Verification failed: the OV CLOUD PUT CORS rule was not returned as expected.")
+
+          print("SUCCESS: S3-compatible CORS rules were updated and read back successfully.")
+          print(f"Verified origins: {', '.join(origins)}")
+          print(f"Verified methods: {', '.join(match.get('AllowedMethods', []))}")
+          print(f"Total S3-compatible CORS rules now: {len(verified)}")
+          PY
