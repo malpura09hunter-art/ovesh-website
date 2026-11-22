@@ -216,7 +216,7 @@ function speak(text,thenListen=true){
   setTimeout(run,400);
  }else run();
 }
-function announceUpload(message){const text=String(message||'').trim();if(!text||!window.speechSynthesis||typeof SpeechSynthesisUtterance==='undefined')return false;try{const synth=window.speechSynthesis;refreshVoices();const u=new SpeechSynthesisUtterance(speechFriendlyText(text)||text);const v=voice();if(v){u.voice=v;u.lang=v.lang||'en-IN'}else u.lang='en-IN';u.rate=.94;u.pitch=1;u.volume=1;u.onstart=()=>{const node=$('#orionGlobalDock');if(node)node.dataset.uploadAnnouncement='speaking'};u.onend=u.onerror=()=>{const node=$('#orionGlobalDock');if(node)delete node.dataset.uploadAnnouncement};synth.speak(u);if(synth.paused)synth.resume();return true}catch(error){console.warn('ORION upload announcement unavailable',error);return false}}
+function announceUpload(message){const text=String(message||'').trim();if(!text||!window.speechSynthesis||typeof SpeechSynthesisUtterance==='undefined')return false;try{const node=$('#orionGlobalDock');if(node)node.dataset.uploadAnnouncement='queued';refreshVoices();speak(text,false);return true}catch(error){if(node)delete node.dataset.uploadAnnouncement;console.warn('ORION upload announcement unavailable',error);return false}}
 async function loadShopOrders(){
  const response=await fetch('/api/oveshcloud-auth?action=shop-orders',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
  const data=await response.json().catch(()=>({}));
