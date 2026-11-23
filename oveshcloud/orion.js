@@ -216,7 +216,7 @@ function speak(text,thenListen=true){
   setTimeout(run,400);
  }else run();
 }
-function announceUpload(message){const text=String(message||'').trim();if(!text||!window.speechSynthesis||typeof SpeechSynthesisUtterance==='undefined')return false;try{const node=$('#orionGlobalDock');if(node)node.dataset.uploadAnnouncement='queued';refreshVoices();speak(text,false);return true}catch(error){if(node)delete node.dataset.uploadAnnouncement;console.warn('ORION upload announcement unavailable',error);return false}}
+function announceUpload(message){const text=String(message||'').trim();if(!text||!window.speechSynthesis||typeof SpeechSynthesisUtterance==='undefined')return false;let node=null;try{node=$('#orionGlobalDock');if(node)node.dataset.uploadAnnouncement='queued';refreshVoices();speak(text,false);return true}catch(error){if(node)delete node.dataset.uploadAnnouncement;console.warn('ORION upload announcement unavailable',error);return false}}
 async function loadShopOrders(){
  const response=await fetch('/api/oveshcloud-auth?action=shop-orders',{method:'GET',credentials:'same-origin',headers:{'Accept':'application/json','Cache-Control':'no-cache'}});
  const data=await response.json().catch(()=>({}));
