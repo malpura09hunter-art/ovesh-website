@@ -18,7 +18,7 @@ async function getStorageUsage(s3,bucket,uid){
   const page=await s3.send(new ListObjectsV2Command({Bucket:bucket,Prefix:prefix,ContinuationToken:token,MaxKeys:1000}));
   for(const item of page.Contents||[]){
    const key=String(item.Key||'');
-   if(!key||key===prefix||key.startsWith(prefix+'.ovesh-trash/')||key.endsWith('/.ovesh-folder'))continue;
+   if(!key||key===prefix||key.endsWith('/.ovesh-folder'))continue;
    usedBytes+=Number(item.Size||0);fileCount++;
   }
   token=page.IsTruncated?page.NextContinuationToken:undefined;
