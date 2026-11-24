@@ -9,9 +9,7 @@ module.exports=async function handler(req,res){
  try{
   const body=req.body||{},action=String(body.action||'');
   // Owner-only client administration shares this function to stay within Vercel Hobby's function cap.
-  if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files'].includes(action))return clientAdminHandler(req,res);
-  if(req.method!=='POST')throw httpError(405,'Method not allowed.');
-  if(req.method==='GET'&&action==='public-share-open'){
+  if(req.method==='GET'&&String(req.query?.action||'')==='public-share-open'){
    const token=String(req.query?.token||'');if(!/^[a-f0-9]{64}$/.test(token))throw httpError(404,'This client share link is invalid.');
    const hash=crypto.createHash('sha256').update(token).digest('hex'),snap=await require('../lib/oveshcloud-alerts.js').getDb().collection('oveshCloudClientShares').where('tokenHash','==',hash).limit(1).get();
    if(snap.empty)throw httpError(404,'This client share link is invalid.');
@@ -21,7 +19,22 @@ module.exports=async function handler(req,res){
    const downloadUrl=await getSignedUrl(s3,command,{expiresIn:300});
    return res.status(200).json({ok:true,name,contentType:share.contentType||mimeForName(name),downloadUrl,expiresAt:share.expiresAt||null});
   }
+  if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files'].includes(action))return clientAdminHandler(req,res);
+  if(req.method!=='POST')throw httpError(405,'Method not allowed.');
   const c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
+  if(action==='notifications-list'){
+   const snap=await accountRef.collection('notifications').orderBy('createdAt','desc').limit(50).get();
+   return res.status(200).json({ok:true,notifications:snap.docs.map(d=>{const n=d.data()||{};return{id:d.id,title:n.title||'Update',message:n.message||'',type:n.type||'info',fileId:n.fileId||null,read:n.read===true,createdAt:n.createdAt?.toDate?n.createdAt.toDate().toISOString():n.createdAt||null}})});
+  }
+  if(action==='notification-read'||action==='notification-read-all'){
+   if(action==='notification-read'){
+    const id=String(body.id||'');if(!/^[A-Za-z0-9_-]{1,150}$/.test(id))throw httpError(400,'Invalid notification reference.');
+    const ref=accountRef.collection('notifications').doc(id),snap=await ref.get();if(!snap.exists)throw httpError(404,'Notification not found.');await ref.update({read:true,readAt:new Date()});
+   }else{
+    const snap=await accountRef.collection('notifications').where('read','==',false).limit(200).get();const batch=db.batch();snap.docs.forEach(d=>batch.update(d.ref,{read:true,readAt:new Date()}));if(!snap.empty)await batch.commit();
+   }
+   return res.status(200).json({ok:true});
+  }
   if(action==='profile'){return res.status(200).json({ok:true,profile:{name:c.account.name||'',email:c.email,company:c.account.company||'',status:c.account.status||'active'}})}
   if(action==='finish-setup'){
    // Kept for compatibility with existing clients; no forced password-setup gate.
@@ -62,7 +75,7 @@ module.exports=async function handler(req,res){
    if(Number(head.ContentLength)!==Number(r.size))throw httpError(400,'Uploaded file size does not match the reservation.');
    const fileRef=accountRef.collection('files').doc(id);
    await db.runTransaction(async tx=>{const [ar,rrs]=await Promise.all([tx.get(accountRef),tx.get(rr)]);if(!rrs.exists||rrs.data().status!=='pending')throw httpError(409,'Upload reservation has already been processed.');const a=ar.data()||{},used=Number(a.usedBytes||0),reserved=Number(a.reservedBytes||0),quota=Number(a.quotaBytes||10*GB);if(used+Number(head.ContentLength||0)>quota)throw httpError(413,'Storage quota was exceeded.');tx.update(accountRef,{usedBytes:used+Number(head.ContentLength||0),reservedBytes:Math.max(0,reserved-Number(r.size||0)),updatedAt:new Date()});tx.create(fileRef,{id,name:r.name,objectKey:r.objectKey,size:Number(head.ContentLength||0),contentType:r.contentType,createdAt:new Date(),uploadedBy:c.uid});tx.update(rr,{status:'complete',finishedAt:new Date()})});
-   await accountRef.collection('audit').add({event:'file_uploaded',fileId:id,name:r.name,size:Number(head.ContentLength||0),actor:c.uid,createdAt:new Date()});
+   await Promise.all([accountRef.collection('audit').add({event:'file_uploaded',fileId:id,name:r.name,size:Number(head.ContentLength||0),actor:c.uid,createdAt:new Date()}),accountRef.collection('notifications').add({title:'File uploaded',message:'Your file “'+r.name+'” is now available in your workspace.',type:'upload',fileId:id,read:false,createdAt:new Date()})]);
    return res.status(200).json({ok:true,file:{id,name:r.name,size:Number(head.ContentLength||0)}});
   }
   if(action==='view'){
@@ -77,6 +90,7 @@ module.exports=async function handler(req,res){
    const snap=await accountRef.collection('files').doc(id).get();if(!snap.exists)throw httpError(404,'File not found.');
    const f=snap.data(),token=crypto.randomBytes(32).toString('hex'),tokenHash=crypto.createHash('sha256').update(token).digest('hex'),shareId=crypto.randomUUID(),expiresAt=Date.now()+days*86400000;
    await db.collection('oveshCloudClientShares').doc(shareId).set({shareId,tokenHash,uid:c.uid,fileId:id,objectKey:f.objectKey,name:f.name||'File',contentType:f.contentType||mimeForName(f.name),createdAt:new Date(),expiresAt,revoked:false});
+   await accountRef.collection('notifications').add({title:'Share link created',message:'A secure share link was created for “'+(f.name||'File')+'”. It expires in '+days+' day(s).',type:'share',fileId:id,read:false,createdAt:new Date()});
    const base=(req.headers['x-forwarded-proto']||'https')+'://'+req.headers.host;
    return res.status(200).json({ok:true,shareId,shareUrl:base+'/client-share.html?token='+encodeURIComponent(token),expiresAt});
   }
