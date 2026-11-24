@@ -31,6 +31,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <button type="button" data-orion-say="Open cloud storage"><span class="orion-command-icon blue">▤</span><span><b>Cloud Storage</b><small>Files and folders</small></span><i>↗</i></button>
 <button type="button" data-orion-say="Show my client projects"><span class="orion-command-icon teal">◇</span><span><b>Client Projects</b><small>Project workspace</small></span><i>↗</i></button>
 <button type="button" data-orion-say="Open security"><span class="orion-command-icon amber">⬡</span><span><b>Security Center</b><small>Login and security activity</small></span><i>↗</i></button>
+<button type="button" data-orion-say="Open Business Desk"><span class="orion-command-icon teal">＄</span><span><b>Business Desk</b><small>Quotations and currencies</small></span><i>↗</i></button>
 </div>
 <div class="orion-routing"><div class="orion-panel-head"><div><small>INTELLIGENCE FLOW</small><h2>How ORION works</h2></div><span class="orion-flow-live">● READY</span></div>
 <div class="orion-flow-3d" aria-label="ORION three-dimensional workflow: voice input, AI reasoning, cloud action, response"><div class="orion-flow-scene"><div class="orion-flow-grid"></div><div class="orion-flow-path"></div><div class="orion-flow-nodes"><div class="orion-flow-node"><i>◉</i><span>Listen</span><small>Voice input</small></div><div class="orion-flow-node"><i>✧</i><span>Understand</span><small>AI reasoning</small></div><div class="orion-flow-node"><i>⌘</i><span>Operate</span><small>Cloud tools</small></div><div class="orion-flow-node"><i>↗</i><span>Respond</span><small>Verified result</small></div></div></div></div>
@@ -474,6 +475,17 @@ async function replyTo(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
+ if(/\b(?:open|go to|show|launch|visit)\b.{0,30}\b(?:business desk|quotation generator|quote generator|currency converter)\b/i.test(original)){
+  window.location.href='/oveshcloud/business-tools.html';return;
+ }
+ const currencyNames={dollars:'USD',dollar:'USD',usd:'USD',rupees:'INR',rupee:'INR',inr:'INR',euros:'EUR',euro:'EUR',eur:'EUR',pounds:'GBP',pound:'GBP',gbp:'GBP',dirhams:'AED',dirham:'AED',aed:'AED',singapore:'SGD',sgd:'SGD',aud:'AUD',cad:'CAD',yen:'JPY',jpy:'JPY'};
+ const currencyMatch=original.match(/\b(?:convert|exchange|calculate|how much is|what is)\s+([\d,.]+)\s+(USD|INR|EUR|GBP|AED|SGD|AUD|CAD|JPY|dollars?|rupees?|euros?|pounds?|dirhams?|yen)\s+(?:to|into|in)\s+(USD|INR|EUR|GBP|AED|SGD|AUD|CAD|JPY|dollars?|rupees?|euros?|pounds?|dirhams?|yen)\b/i);
+ if(currencyMatch){
+  const amount=Number(currencyMatch[1].replace(/,/g,'')),from=currencyNames[currencyMatch[2].toLowerCase()],to=currencyNames[currencyMatch[3].toLowerCase()];
+  if(Number.isFinite(amount)&&amount>=0&&from&&to){
+   try{const response=await fetch('/api/oveshcloud-business?action=convert&from='+from+'&to='+to+'&amount='+encodeURIComponent(amount),{credentials:'same-origin',cache:'no-store'});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Rate lookup failed');const result=new Intl.NumberFormat('en-IN',{style:'currency',currency:to,maximumFractionDigits:2}).format(data.converted);const rate=Number(data.rate).toFixed(6);const msg=amount.toLocaleString('en-IN')+' '+from+' is approximately '+result+'. The reference rate is 1 '+from+' to '+rate+' '+to+(data.date?' as of '+data.date:'')+'. Rates are indicative and may differ from bank settlement rates.';if(speakResponse)speak(msg,true);else transcript('',msg);return;}catch(e){const msg='I could not retrieve the exchange rate. '+e.message;if(speakResponse)speak(msg,true);else transcript('',msg);return;}
+  }
+ }
  if(Array.isArray(chatHistory)){const last=chatHistory[chatHistory.length-1];if(!(last?.role==='user'&&last.content===original.slice(0,1800)))chatHistory.push({role:'user',content:original.slice(0,1800)});chatHistory=chatHistory.slice(-14)}
  // Mission Control is the read-only operational tool. Natural status and overview
  // questions should invoke real owner-session data instead of asking the model to guess.
