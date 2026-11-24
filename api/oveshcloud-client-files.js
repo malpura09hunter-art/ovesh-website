@@ -48,7 +48,7 @@ async function meetingHandler(req,res,action){
   if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
   const apiKey=String(process.env.LIVEKIT_API_KEY||''),secret=String(process.env.LIVEKIT_API_SECRET||''),url=String(process.env.LIVEKIT_URL||'');
   if(!apiKey||!secret||!url)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
-  return res.status(200).json({ok:true,token:meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,recordingEnabled:false});
+  return res.status(200).json({ok:true,token:meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:owner||meeting.hostUid===uid,recordingEnabled:false});
  }
  if(action==='meeting-end'){
   const roomCode=String(req.body?.roomCode||'').trim().toUpperCase(),ref=rooms.doc(roomCode),snap=await ref.get();
