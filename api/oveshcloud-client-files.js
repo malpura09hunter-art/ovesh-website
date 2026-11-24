@@ -25,8 +25,10 @@ async function meetingJwt(apiKey,secret,identity,name,roomName){
 }
 async function meetingHandler(req,res,action){
  if(req.method!=='POST')throw httpError(405,'Meeting requests must use POST.');
- let actor,owner=false,db;
- try{actor=requireOwner(req);owner=true;db=getDb()}catch(e){actor=await requireClient(req);db=actor.db}
+ let actor,owner=false,guest=false,db;
+ const guestToken=String(req.body?.guestToken||'');
+ if(action==='meeting-token'&&guestToken){db=getDb();guest=true;actor={uid:'guest-'+crypto.randomUUID(),email:'',account:{name:String(req.body?.guestName||'Guest').trim().slice(0,60)||'Guest'}}}
+ else{try{actor=requireOwner(req);owner=true;db=getDb()}catch(e){actor=await requireClient(req);db=actor.db}}
  const uid=owner?'__owner__':actor.uid,email=owner?'owner@oveshmalpura.tech':String(actor.email||'').toLowerCase(),name=owner?'OV CLOUD Owner':String(actor.account?.name||actor.email||'Client');
  const rooms=db.collection('oveshCloudMeetings');
  if(action==='meeting-list'){
@@ -46,19 +48,21 @@ async function meetingHandler(req,res,action){
   if(missing.length)throw httpError(400,'These email addresses are not active OV CLOUD client accounts: '+missing.join(', '));
   const members=[{uid,email,name}],seen=new Set([uid]);
   for(const x of invited){if(!seen.has(x.uid)){members.push({uid:x.uid,email:String(x.data.email||'').toLowerCase(),name:String(x.data.name||x.data.email||'Client')});seen.add(x.uid)}}
-  const roomCode=crypto.randomBytes(6).toString('hex').toUpperCase(),roomName='ovc-'+roomCode.toLowerCase(),ref=rooms.doc(roomCode);
-  await ref.create({roomCode,roomName,title,hostUid:uid,hostName:name,hostEmail:email,members,memberUids:members.map(m=>m.uid),status:'active',recordingEnabled:false,createdAt:new Date()});
-  return res.status(201).json({ok:true,meeting:{roomCode,title,status:'active',members:members.map(m=>({name:m.name,email:m.email})),createdAt:new Date().toISOString()}});
+  const roomCode=crypto.randomBytes(6).toString('hex').toUpperCase(),roomName='ovc-'+roomCode.toLowerCase(),ref=rooms.doc(roomCode),publicGuestToken=crypto.randomBytes(32).toString('hex'),guestTokenHash=crypto.createHash('sha256').update(publicGuestToken).digest('hex');
+  await ref.create({roomCode,roomName,title,hostUid:uid,hostName:name,hostEmail:email,members,memberUids:members.map(m=>m.uid),guestTokenHash,guestAccess:true,status:'active',recordingEnabled:false,createdAt:new Date()});
+  const base=(req.headers['x-forwarded-proto']||'https')+'://'+req.headers.host,shareUrl=base+'/oveshcloud/meetings.html?code='+encodeURIComponent(roomCode)+'&guest='+encodeURIComponent(publicGuestToken);
+  return res.status(201).json({ok:true,meeting:{roomCode,title,status:'active',members:members.map(m=>({name:m.name,email:m.email})),shareUrl,createdAt:new Date().toISOString()}});
  }
  if(action==='meeting-token'){
   const roomCode=String(req.body?.roomCode||'').trim().toUpperCase();
   if(!/^[A-F0-9]{12}$/.test(roomCode))throw httpError(400,'Enter a valid 12-character meeting code.');
   const snap=await rooms.doc(roomCode).get();if(!snap.exists)throw httpError(404,'Meeting not found.');
   const meeting=snap.data()||{};if(meeting.status!=='active')throw httpError(410,'This meeting has ended.');
-  if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
+  if(guest){const suppliedHash=crypto.createHash('sha256').update(guestToken).digest('hex');if(!meeting.guestAccess||!meeting.guestTokenHash||suppliedHash!==meeting.guestTokenHash)throw httpError(403,'This public meeting link is invalid or has been revoked.');}
+  else if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
   const apiKey=String(process.env.LIVEKIT_API_KEY||''),secret=String(process.env.LIVEKIT_API_SECRET||''),url=String(process.env.LIVEKIT_URL||'');
   if(!apiKey||!secret||!url)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
-  return res.status(200).json({ok:true,token:await meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:owner||meeting.hostUid===uid,recordingEnabled:false});
+  return res.status(200).json({ok:true,token:await meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:!guest&&(owner||meeting.hostUid===uid),recordingEnabled:false});
  }
  if(action==='meeting-end'){
   const roomCode=String(req.body?.roomCode||'').trim().toUpperCase(),ref=rooms.doc(roomCode),snap=await ref.get();
