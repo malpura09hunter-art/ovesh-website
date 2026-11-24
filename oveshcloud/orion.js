@@ -31,7 +31,7 @@ const panel=()=>`<section class="orion-shell orion-command-center" aria-labelled
 <button type="button" data-orion-say="Open cloud storage"><span class="orion-command-icon blue">▤</span><span><b>Cloud Storage</b><small>Files and folders</small></span><i>↗</i></button>
 <button type="button" data-orion-say="Show my client projects"><span class="orion-command-icon teal">◇</span><span><b>Client Projects</b><small>Project workspace</small></span><i>↗</i></button>
 <button type="button" data-orion-say="Open security"><span class="orion-command-icon amber">⬡</span><span><b>Security Center</b><small>Login and security activity</small></span><i>↗</i></button>
-<button type="button" data-orion-say="Open Business Desk"><span class="orion-command-icon teal">＄</span><span><b>Business Desk</b><small>Quotations and currencies</small></span><i>↗</i></button>
+<button type="button" data-orion-say="Open business operations"><span class="orion-command-icon teal">＄</span><span><b>Business Operations</b><small>Quotations and currencies</small></span><i>↗</i></button>
 </div>
 <div class="orion-routing"><div class="orion-panel-head"><div><small>INTELLIGENCE FLOW</small><h2>How ORION works</h2></div><span class="orion-flow-live">● READY</span></div>
 <div class="orion-flow-3d" aria-label="ORION three-dimensional workflow: voice input, AI reasoning, cloud action, response"><div class="orion-flow-scene"><div class="orion-flow-grid"></div><div class="orion-flow-path"></div><div class="orion-flow-nodes"><div class="orion-flow-node"><i>◉</i><span>Listen</span><small>Voice input</small></div><div class="orion-flow-node"><i>✧</i><span>Understand</span><small>AI reasoning</small></div><div class="orion-flow-node"><i>⌘</i><span>Operate</span><small>Cloud tools</small></div><div class="orion-flow-node"><i>↗</i><span>Respond</span><small>Verified result</small></div></div></div></div>
@@ -462,6 +462,7 @@ const workspaceAliases=[
  {page:'security',label:'Security',terms:/\b(?:security center|security logs|login events|sign in activity)\b/},
  {page:'college',label:'College',terms:/\b(?:study workspace|college|subjects|practicals|assignments)\b/},
  {page:'client-cloud',label:'Client Cloud',terms:/\b(?:manage clients|client management|customer accounts|client accounts|my customers)\b/},
+ {page:'business',label:'Business Operations',terms:/\b(?:business desk|business operations|quotations?|invoices?|currency converter|convert currency|exchange rates|foreign exchange)\b/},
  {page:'shop-orders',label:'Shop Orders',terms:/\b(?:store orders|shop orders|sales orders|orders)\b/}
 ];
 function smartNavigation(raw,speakResponse=true){
