@@ -69,16 +69,41 @@ const $=s=>document.querySelector(s), money=(n,c)=>{try{return new Intl.NumberFo
 const notice=(id,msg,error=false)=>{const el=$(id);el.textContent=msg;el.className='notice'+(error?' error':'')};
 let authenticated=false;
 const countryCurrency={'India':'INR','United States':'USD','United Kingdom':'GBP','United Arab Emirates':'AED','Canada':'CAD','Australia':'AUD','Singapore':'SGD','Germany':'EUR','France':'EUR','Netherlands':'EUR','Saudi Arabia':'SAR'};
+const shopFallback=[
+{id:"cloud-security",name:"Cloud Security",price:15000,category:"Cybersecurity",description:"Comprehensive cloud security assessments, configuration reviews, IAM hardening and risk reduction across modern cloud environments.",features:["Cloud Security Assessment","IAM Review","Storage & Database Security","Network Hardening","Misconfiguration Detection","Risk Assessment"],quote:true},
+{id:"penetration-testing",name:"Penetration Testing",price:25000,category:"Cybersecurity",description:"Authorized penetration testing for web applications, APIs, networks and infrastructure with detailed findings and remediation guidance.",features:["Web App Testing","API Security Testing","Network Testing","Privilege Escalation","Auth Testing","Detailed Report"],quote:true},
+{id:"vulnerability-assessment",name:"Vulnerability Assessment",price:10000,category:"Cybersecurity",description:"Identify, analyze and prioritize vulnerabilities across websites, applications, networks and infrastructure with actionable remediation guidance.",features:["Vulnerability Scanning","Manual Verification","OWASP Top 10","CVE Identification","Risk Prioritization","Security Reports"],quote:true},
+{id:"security-consulting",name:"Security Consulting",price:5000,category:"Cybersecurity",description:"Practical cybersecurity guidance tailored to your organization, infrastructure, technology decisions and risk profile.",features:["Security Strategy","Risk Assessment","Architecture Review","Compliance Guidance","Vendor Advisory","Incident Response Planning"],quote:true},
+{id:"security-audits",name:"Security Audits",price:15000,category:"Cybersecurity",description:"Comprehensive audits of applications, infrastructure, configurations and security controls against recognized best practices and standards.",features:["Configuration Review","Infrastructure Assessment","Compliance Gap Analysis","Control Evaluation","Risk Assessment","Executive Report"],quote:true},
+{id:"secure-website-development",name:"Secure Website Development",price:20000,category:"Websites",description:"Fast, responsive and secure websites built with modern technologies, security best practices, SEO foundations and long-term scalability.",features:["Responsive Design","Secure Coding","Performance Optimization","SEO-Friendly Development","Security Hardening","Maintenance & Support"],quote:true},
+{id:"ai-development",name:"AI Development",price:30000,category:"AI",description:"Custom AI applications, assistants and intelligent systems using modern LLMs, machine learning and secure integrations.",features:["Custom AI Apps","AI Assistants","LLM Integration","AI Automation","Prompt Engineering","Secure AI Deployment"],quote:true},
+{id:"seo-optimization",name:"SEO Optimization Services",price:8000,category:"SEO",description:"Data-driven SEO services covering technical audits, keyword strategy, on-page optimization, performance and search visibility.",features:["Technical SEO Audit","Keyword Research","On-Page SEO","Schema Markup","Search Console Setup","Performance Tracking"],quote:true},
+{id:"ai-automation",name:"AI Automation",price:20000,category:"AI",description:"Streamline repetitive business processes with intelligent AI-powered workflows, integrations and automation systems.",features:["Workflow Automation","AI Chatbots","Document & Data Processing","CRM Automation","Email & Task Automation","Custom API Integrations"],quote:true},
+{id:"website-security",name:"Website Security",price:7500,category:"Cybersecurity",description:"Strengthen website defenses through security hardening, vulnerability mitigation, malware remediation and ongoing monitoring.",features:["Security Hardening","Vulnerability Mitigation","Malware Remediation","Security Headers","Monitoring","Risk Reduction"],quote:true},
+{id:"osint-solutions",name:"OSINT Solutions",price:10000,category:"Cybersecurity",description:"Ethical open-source intelligence solutions for digital footprint analysis, exposure assessment, investigations and security intelligence.",features:["Digital Footprint Analysis","Exposure Detection","Domain Intelligence","Threat Intelligence","SOCMINT","OSINT Reports"],quote:true},
+{id:"digital-investigation",name:"Digital Investigation",price:15000,category:"Cybersecurity",description:"Evidence-based digital investigations for cyber incidents, online fraud, data breaches and suspicious digital activity.",features:["Incident Investigation","Digital Evidence Collection","Timeline Reconstruction","Fraud Investigation","Log Analysis","Confidential Reports"],quote:true},
+{id:"api-security",name:"API Security",price:15000,category:"Cybersecurity",description:"Security assessment, testing and hardening for REST, GraphQL and other APIs against modern threats.",features:["REST API Testing","GraphQL Assessment","Authentication & Authorization Review","OWASP API Security Top 10","Rate Limiting","Input Validation"],quote:true},
+{id:"custom-software-development",name:"Custom Software Development",price:35000,category:"Software",description:"Secure, scalable and high-performance software tailored to business requirements, including web applications, systems, automation tools and dashboards.",features:["Custom Web Applications","Business Systems","Secure API Development","Database Integration","Automation Solutions","Admin Dashboards & CMS"],quote:true},
+{id:"ai-assistant",name:"AI Assistant",price:10000,category:"AI",description:"A practical AI assistant for FAQs, lead capture and customer support.",features:["Prompt Design","Knowledge Setup","Lead Capture"],quote:true},
+{id:"premium-website",name:"Premium Business Website",price:30000,category:"Websites",description:"A fast, premium business website built around your goals and brand.",features:["Responsive UI","Deployment","Basic Security"],quote:true},
+{id:"security-review",name:"Website Security Review",price:7500,category:"Cybersecurity",description:"A structured review of common web security risks and hardening opportunities.",features:["Security Review","Findings Report","Hardening Guidance"],quote:true},
+{id:"automation-system",name:"Business Automation System",price:25000,category:"Automation",description:"Connect forms, notifications, data and workflows into one operating system.",features:["Workflow Mapping","Integrations","Testing"],quote:true}
+];
 let shopServices=[];
 async function loadShopServices(){
  const select=$('#serviceSelect'),status=$('#catalogStatus');
+ let remote=[],catalogError=null;
  try{
   if(typeof db==='undefined')throw new Error('Shop catalogue connection is unavailable.');
   const snap=await db.collection('shop_products').where('status','==','Published').get();
-  shopServices=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.name);
-  select.innerHTML='<option value="">Choose a published Shop service</option>'+shopServices.map(p=>'<option value="'+String(p.id).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+String(p.name).replace(/</g,'&lt;')+'</option>').join('');
-  status.textContent=shopServices.length+' published Shop services loaded. Selecting one fills its current catalogue price.';
- }catch(e){select.innerHTML='<option value="">Shop prices unavailable — add item manually</option>';status.textContent='Could not fetch published Shop prices. You can still add and enter a price manually.';status.classList.add('error')}
+  remote=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.name);
+ }catch(e){catalogError=e;console.warn('Quotation catalogue using the same fallback catalogue as Shop:',e)}
+ const remoteKeys=new Set(remote.flatMap(p=>[p.id,p.slug,String(p.name||'').trim().toLowerCase()].filter(Boolean)));
+ shopServices=[...remote,...shopFallback.filter(p=>!remoteKeys.has(p.id)&&!remoteKeys.has(p.slug)&&!remoteKeys.has(String(p.name||'').trim().toLowerCase()))];
+ select.innerHTML='<option value="">Choose a Shop service</option>'+shopServices.map(p=>'<option value="'+String(p.id).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+String(p.name).replace(/</g,'&lt;')+'</option>').join('');
+ status.classList.remove('error');
+ status.textContent=shopServices.length+' Shop services available ('+remote.length+' live catalogue, '+(shopServices.length-remote.length)+' Shop defaults). Selecting one fills its current listed price; you can edit it.';
+ if(catalogError)status.textContent+=' Live catalogue could not be reached, so the Shop default list is shown.';
 }
 function applyService(){
  const p=shopServices.find(x=>x.id===$('#serviceSelect').value);if(!p)return;
