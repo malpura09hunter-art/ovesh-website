@@ -19,7 +19,7 @@ module.exports=async function handler(req,res){
    const downloadUrl=await getSignedUrl(s3,command,{expiresIn:300});
    return res.status(200).json({ok:true,name,contentType:share.contentType||mimeForName(name),downloadUrl,expiresAt:share.expiresAt||null});
   }
-  if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files','notify'].includes(action))return clientAdminHandler(req,res);
+  if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files','notify','prepare-owner-upload','complete-owner-upload'].includes(action))return clientAdminHandler(req,res);
   if(req.method!=='POST')throw httpError(405,'Method not allowed.');
   const c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
   if(action==='notifications-list'){
