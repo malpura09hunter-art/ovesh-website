@@ -216,7 +216,7 @@ async function handleOrionTranscribe(req,res){
   res.setHeader('Vary','Cookie');
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed.'});
   try{
-    requireCloudSession(req);
+    await requireCloudSession(req);
     const apiKey=String(process.env.GROQ_API_KEY||'').trim();
     if(!apiKey)return res.status(503).json({ok:false,error:'ORION voice transcription is not configured.'});
     const audio=String(req.body?.audio||'');
@@ -433,6 +433,8 @@ module.exports = async function handler(req,res){
   }
   const action=String(req.query?.action||'');
   if(action==='security-events')return listSecurityEvents(req,res);
+  if(action==='sessions')return listCloudSessions(req,res);
+  if(action==='revoke-sessions')return revokeCloudSessions(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
   if(req.method==='GET'&&action==='session'){try{const session=await requireCloudSession(req);return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}catch(e){return res.status(401).json({ok:false,authenticated:false,error:e.message})}}
