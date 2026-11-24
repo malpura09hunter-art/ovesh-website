@@ -227,15 +227,6 @@ module.exports = async function handler(req, res) {
         }
       }
       const pdf = await buildPdf(q);
-        const transporter = nodemailer.createTransport({ host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.in', port: 465, secure: true, auth: { user, pass }, connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000 });
-        const subject = 'Project Quotation ' + q.quoteId + ' — ' + q.projectTitle;
-        const text = 'Dear ' + q.clientName + ',\n\nThank you for considering Ovesh Malpura Cyber Labs. Please find attached our quotation for ' + q.projectTitle + '.\n\nQuotation reference: ' + q.quoteId + '\nTotal: ' + money(q.total, q.currency) + '\nValidity: ' + q.validUntil + '\n\nPlease reply to this email if you would like to discuss the scope or proceed.\n\nRegards,\nOvesh Malpura\nOvesh Malpura Cyber Labs';
-        const esc = value => String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        const html = '<div style="font-family:Arial,sans-serif;color:#17251d;line-height:1.65;max-width:640px"><p>Dear ' + esc(q.clientName) + ',</p><p>Thank you for considering <strong>Ovesh Malpura Cyber Labs</strong>. Please find attached our professional quotation for <strong>' + esc(q.projectTitle) + '</strong>.</p><div style="background:#f1f7f2;border:1px solid #dce9df;border-radius:10px;padding:18px"><div>Quotation reference: <strong>' + esc(q.quoteId) + '</strong></div><div>Total: <strong>' + esc(money(q.total,q.currency)) + '</strong></div><div>Valid until: ' + esc(q.validUntil) + '</div></div><p>Please reply to this email if you would like to discuss the scope or proceed.</p><p>Regards,<br><strong>Ovesh Malpura</strong><br>Ovesh Malpura Cyber Labs</p></div>';
-        const sent = await transporter.sendMail({ from: '"Ovesh Malpura Cyber Labs" <' + user + '>', to: q.clientEmail, subject, text, html, attachments: [{ filename: 'Quotation-' + q.quoteId + '.pdf', content: pdf, contentType: 'application/pdf' }] });
-        return res.status(200).json({ ok: true, sent: true, quoteId: q.quoteId, to: q.clientEmail, messageId: sent.messageId, total: q.total, currency: q.currency });
-      }
-      const pdf = await buildPdf(q);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="Quotation-' + q.quoteId + '.pdf"');
       res.setHeader('Content-Length', String(pdf.length));
