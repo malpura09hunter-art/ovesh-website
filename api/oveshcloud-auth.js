@@ -30,7 +30,7 @@ const isoDate=v=>{
 function b2ForAgreements(){const endpoint=String(process.env.B2_ENDPOINT||'').trim().replace(/\/$/,'');const region=String(process.env.B2_REGION||'').trim();const bucket=String(process.env.B2_BUCKET||'').trim();const keyId=String(process.env.B2_KEY_ID||'').trim();const applicationKey=String(process.env.B2_APPLICATION_KEY||'').trim();if(!endpoint||!region||!bucket||!keyId||!applicationKey)throw Error('Agreement storage is not configured');return{bucket,s3:new S3Client({region,endpoint,forcePathStyle:false,credentials:{accessKeyId:keyId,secretAccessKey:applicationKey}})}}
 async function shopAgreementPdf(req,res){if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});try{await requireCloudSession(req)}catch(e){return res.status(401).json({ok:false,error:e.message})}const orderId=String(req.query?.orderId||'');if(!/^SHOP-\d{8}$/.test(orderId))return res.status(400).json({ok:false,error:'Invalid request reference'});try{const snap=await getAdminDb().collection('service_requests').where('orderId','==',orderId).limit(1).get();if(snap.empty)return res.status(404).json({ok:false,error:'Service request not found'});const x=snap.docs[0].data()||{},key=String(x.agreementStorageKey||'');if(!key)return res.status(404).json({ok:false,error:'Agreement PDF has not been stored yet'});if(!key.startsWith('client-agreements/')||key.includes('..'))return res.status(403).json({ok:false,error:'Invalid agreement storage key'});const {bucket,s3}=b2ForAgreements(),out=await s3.send(new GetObjectCommand({Bucket:bucket,Key:key}));const chunks=[];for await(const chunk of out.Body)chunks.push(Buffer.from(chunk));const pdf=Buffer.concat(chunks);res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename="Ovesh-Client-Agreement-'+orderId+'.pdf"');res.setHeader('Content-Length',String(pdf.length));res.setHeader('Cache-Control','private, no-store, max-age=0');return res.status(200).send(pdf)}catch(e){console.error('OVESH SHOP AGREEMENT PDF FAILED:',e.message);return res.status(500).json({ok:false,error:'Unable to retrieve agreement PDF'})}}
 async function shopOrders(req,res){
-  if(req.method!=='GET'||!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});
+  if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});try{await requireCloudSession(req)}catch(e){return res.status(401).json({ok:false,error:e.message})}
   try{
     const snap=await getAdminDb().collection('service_requests').where('source','==','shop').limit(500).get();
     const orders=snap.docs.map(d=>{
@@ -165,8 +165,8 @@ async function listCloudSessions(req,res){
  if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
  try{
   const current=await requireTrackedCloudSession(req);
-  const snap=await getAdminDb().collection('oveshCloudSessions').where('username','==',current.u).where('active','==',true).limit(100).get();
-  const sessions=snap.docs.map(doc=>{const x=doc.data()||{};return{id:doc.id,current:doc.id===String(current.nonce),device:x.device||'Unknown device',browser:x.browser||null,os:x.os||null,ip:x.ip||null,location:x.location||null,createdAt:x.createdAt?.toDate?.().toISOString?.()||null,lastSeenAt:x.lastSeenAt?.toDate?.().toISOString?.()||null}}).sort((a,b)=>Number(b.current)-Number(a.current));
+  const snap=await getAdminDb().collection('oveshCloudSessions').where('username','==',current.u).limit(100).get();
+  const sessions=snap.docs.filter(doc=>(doc.data()||{}).active===true).map(doc=>{const x=doc.data()||{};return{id:doc.id,current:doc.id===String(current.nonce),device:x.device||'Unknown device',browser:x.browser||null,os:x.os||null,ip:x.ip||null,location:x.location||null,createdAt:x.createdAt?.toDate?.().toISOString?.()||null,lastSeenAt:x.lastSeenAt?.toDate?.().toISOString?.()||null}}).sort((a,b)=>Number(b.current)-Number(a.current));
   return res.status(200).json({ok:true,count:sessions.length,sessions});
  }catch(e){return res.status(Number(e.statusCode)||500).json({ok:false,error:e.message||'Unable to load active sessions'})}
 }
@@ -178,8 +178,9 @@ async function revokeCloudSessions(req,res){
   const db=getAdminDb(),col=db.collection('oveshCloudSessions');
   let targets=[];
   if(allOther){
-   const snap=await col.where('username','==',current.u).where('active','==',true).limit(100).get();
-   targets=snap.docs.filter(d=>d.id!==String(current.nonce));
+   const snap=await col.where('username','==',current.u).limit(100).get();
+   targets=snap.docs.filter(d=>(d.data()||{}).active===true&&d.id!==String(current.nonce));
+   /*(d=>d.id!==String(current.nonce));
   }else{
    targets=await Promise.all(ids.filter(id=>id!==String(current.nonce)).map(id=>col.doc(id).get()));
    targets=targets.filter(d=>d.exists&&(d.data()||{}).username===current.u&&(d.data()||{}).active===true);
