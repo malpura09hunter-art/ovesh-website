@@ -435,7 +435,7 @@ module.exports = async function handler(req,res){
   if(action==='security-events')return listSecurityEvents(req,res);\n  if(action==='sessions')return listCloudSessions(req,res);\n  if(action==='revoke-sessions')return revokeCloudSessions(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
-  if(action==='sessions')return listCloudSessions(req,res);if(action==='revoke-sessions')return revokeCloudSessions(req,res);if(req.method==='GET'&&action==='session'){try{const session=await requireCloudSession(req);return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}catch(e){return res.status(401).json({ok:false,authenticated:false,error:e.message})}}
+  if(req.method==='GET'&&action==='session'){try{const session=await requireCloudSession(req);return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}catch(e){return res.status(401).json({ok:false,authenticated:false,error:e.message})}}
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
