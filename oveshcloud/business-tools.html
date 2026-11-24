@@ -18,7 +18,7 @@ body.embedded{background:transparent}body.embedded .wrap{max-width:none;padding:
 <div id="desk" class="grid hidden">
 <main class="card">
 <h3>Create a quotation</h3><p class="sub">Prepare a tailored agency proposal using published Shop pricing, country-aware currency defaults and editable line items.</p>
-<form id="quoteForm">
+<form id="quoteForm">\n<div class="actions" style="position:sticky;top:10px;z-index:20;background:rgba(8,25,17,.97);padding:12px;border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.25)"><button class="btn secondary" id="saveDraftBtn" type="button">Save draft</button><button class="btn primary" id="downloadBtn" type="button">Generate & download PDF</button><button class="btn secondary" id="sendBtn" type="button">Review & send securely</button></div>
 <div class="formgrid">
 <div class="field"><label for="clientName">CLIENT NAME *</label><input id="clientName" maxlength="120" required placeholder="Client contact name"></div>
 <div class="field"><label for="clientCompany">COMPANY</label><input id="clientCompany" maxlength="160" placeholder="Company / organisation"></div>
@@ -41,7 +41,7 @@ body.embedded{background:transparent}body.embedded .wrap{max-width:none;padding:
 <div class="item"><input class="description" maxlength="180" required placeholder="Service / deliverable"><input class="quantity" type="number" min=".01" step=".01" value="1" aria-label="Quantity"><input class="rate" type="number" min="0" step=".01" placeholder="Rate" aria-label="Rate"><button class="remove" type="button" aria-label="Remove item">×</button></div>
 </div>
 <div class="totals"><div class="totalrow"><span>Subtotal</span><b id="subtotal">₹0.00</b></div><div class="totalrow"><span>Tax</span><b id="tax">₹0.00</b></div><div class="totalrow final"><span>Total</span><b id="total">₹0.00</b></div></div>
-<div class="actions"><button class="btn secondary" id="saveDraftBtn" type="button">Save draft</button><button class="btn primary" id="downloadBtn" type="button">Generate & download PDF</button><button class="btn secondary" id="sendBtn" type="button">Review & send securely</button></div>
+
 <div class="notice" id="quoteNotice" role="status"></div><section style="border-top:1px solid var(--line);margin-top:22px;padding-top:18px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><h3>Quotation tracking</h3><p class="sub" style="margin:4px 0 12px">Monitor drafts, sent quotations, client views and final decisions.</p></div><button class="btn secondary smallbtn" id="refreshQuotes" type="button">Refresh</button></div><div id="quotationList" style="display:grid;gap:8px"><div class="sub">Loading quotation history…</div></div></section>
 </form>
 <div class="security">Email delivery uses the existing Zoho SMTP configuration. Sending is never automatic: the owner must approve each client email.</div>
@@ -100,13 +100,16 @@ async function loadShopServices(){
  }catch(e){catalogError=e;console.warn('Quotation catalogue using the same fallback catalogue as Shop:',e)}
  const remoteKeys=new Set(remote.flatMap(p=>[p.id,p.slug,String(p.name||'').trim().toLowerCase()].filter(Boolean)));
  shopServices=[...remote,...shopFallback.filter(p=>!remoteKeys.has(p.id)&&!remoteKeys.has(p.slug)&&!remoteKeys.has(String(p.name||'').trim().toLowerCase()))];
- select.innerHTML='<option value="">Choose a Shop service</option>'+shopServices.map(p=>'<option value="'+String(p.id).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+String(p.name).replace(/</g,'&lt;')+'</option>').join('');
+ select.innerHTML='<option value="">Choose a Shop service</option>'+shopServices.map((p,i)=>'<option value="'+i+'" data-index="'+i+'">'+String(p.name||'Unnamed service').replace(/[<>&"]/g,'')+'</option>').join('');
  status.classList.remove('error');
  status.textContent=shopServices.length+' Shop services available ('+remote.length+' live catalogue, '+(shopServices.length-remote.length)+' Shop defaults). Selecting one fills its current listed price; you can edit it.';
  if(catalogError)status.textContent+=' Live catalogue could not be reached, so the Shop default list is shown.';
 }
 function applyService(){
- const p=shopServices.find(x=>x.id===$('#serviceSelect').value);if(!p)return;
+ const selected=$('#serviceSelect').selectedOptions[0];
+ const index=selected?Number(selected.dataset.index):NaN;
+ const p=Number.isInteger(index)?shopServices[index]:null;
+ if(!p){$('#catalogStatus').textContent='Choose one of the listed services to load its price and scope.';return;}
  $('#projectTitle').value=$('#projectTitle').value||p.name;
  const row=$('#items').querySelector('.item');
  row.querySelector('.description').value=p.name;
@@ -119,7 +122,7 @@ function applyService(){
  $('#catalogStatus').textContent=hasPrice?'Shop price loaded: '+money(price,c)+'. You can edit it manually.':'This service is custom-priced. Enter your agreed amount manually.';
  updateTotals();
 }
-$('#serviceSelect').addEventListener('change',applyService);
+$('#serviceSelect').addEventListener('change',applyService);$('#serviceSelect').addEventListener('input',applyService);
 $('#clientCountry').addEventListener('change',()=>{const v=$('#clientCountry').value;$('#customCountryWrap').classList.toggle('hidden',v!=='Other');if(countryCurrency[v]&&[...$('#currency').options].some(o=>o.value===countryCurrency[v]))$('#currency').value=countryCurrency[v];updateTotals()});
 async function init(){try{const r=await fetch('/api/oveshcloud-auth?action=session',{credentials:'same-origin',cache:'no-store'});if(!r.ok)throw new Error('Please sign in to your OV CLOUD owner account first.');const d=await r.json();if(d.ok!==true||d.authenticated!==true)throw new Error('Owner authentication is required.');authenticated=true;$('#authNotice').classList.add('hidden');$('#desk').classList.remove('hidden');await loadShopServices();updateTotals()}catch(e){$('#authNotice').textContent=e.message+' Return to OV CLOUD and sign in.'}}
 function items(){return [...$('#items').querySelectorAll('.item')].map(row=>({description:row.querySelector('.description').value.trim(),quantity:Number(row.querySelector('.quantity').value),rate:Number(row.querySelector('.rate').value)}))}
