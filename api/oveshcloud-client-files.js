@@ -8,14 +8,16 @@ const GB=1024*1024*1024,MAX_FILE=2*GB;
 
 function b64url(value){return Buffer.from(value).toString('base64url')}
 function normalizeLiveKitUrl(value){
- const raw=String(value||'').trim().replace(/\\/+$/,'');
+ const raw=String(value||'').trim();
  if(!raw)throw httpError(503,'LIVEKIT_URL is empty. Add the LiveKit project WebSocket URL in Vercel Production.');
  let url;
  try{url=new URL(raw)}catch{throw httpError(503,'LIVEKIT_URL is invalid. Use the wss:// URL shown in your LiveKit project settings.')}
  if(url.protocol==='wss:')url.protocol='https:';
  else if(url.protocol==='ws:')url.protocol='http:';
  else if(url.protocol!=='https:'&&url.protocol!=='http:')throw httpError(503,'LIVEKIT_URL must use wss:// (or https://).');
- return {serverUrl:url.toString().replace(/\\/+$/,''),websocketUrl:url.toString().replace(/^https:/i,'wss:').replace(/^http:/i,'ws:').replace(/\\/+$/,'')};
+ const serverUrl=url.origin;
+ const websocketUrl=(url.protocol==='https:'?'wss:':'ws:')+'//'+url.host;
+ return {serverUrl,websocketUrl};
 }
 async function validateLiveKitCredentials(serverUrl,apiKey,secret,roomName){
  const {RoomServiceClient}=require('livekit-server-sdk');
