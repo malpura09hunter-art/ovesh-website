@@ -379,7 +379,7 @@ async function cloudCommand(raw,speakResponse=true){
    say('I opened the sharing options for '+f.name+'. Pick how you want to share it and for how long.');
    return true;
   }
-  if(/\b(?:show|list|open|check)\b.{0,25}\b(?:trash|recycle bin|deleted files)\b|\b(?:trash|recycle bin)\b/i.test(q)){
+  if(/\b(?:show|list|open|check)\b.{0,25}\b(?:trash|recycle bin|deleted files)\b/i.test(q)){
     const result=await storage.api({action:'trash-list'}),items=Array.isArray(result.items)?result.items:[];
     showStorage();
     if(!items.length){say('Your OV CLOUD Trash is empty.');return true}
