@@ -379,7 +379,45 @@ async function cloudCommand(raw,speakResponse=true){
    say('I opened the sharing options for '+f.name+'. Pick how you want to share it and for how long.');
    return true;
   }
-  m=q.match(/^(?:create|make|add)\s+(?:a\s+)?folder\s+(?:called\s+|named\s+)?(.+)$/i);
+  if(/\b(?:show|list|open|check)\b.{0,25}\b(?:trash|recycle bin|deleted files)\b|\b(?:trash|recycle bin)\b/i.test(q)){
+    const result=await storage.api({action:'trash-list'}),items=Array.isArray(result.items)?result.items:[];
+    showStorage();
+    if(!items.length){say('Your OV CLOUD Trash is empty.');return true}
+    say('I found '+items.length+' deleted item'+(items.length===1?'':'s')+': '+items.slice(0,10).map(x=>x.name+' deleted '+(x.deletedAt?new Date(x.deletedAt).toLocaleDateString():'recently')).join('. ')+(items.length>10?'. There are '+(items.length-10)+' more.':'')+'. You can ask me to restore an item by name.');
+    return true;
+   }
+   m=q.match(/^(?:restore|recover)\s+(?:the\s+)?(?:file\s+|folder\s+)?(.+)$/i);
+   if(m){
+    const result=await storage.api({action:'trash-list'}),items=Array.isArray(result.items)?result.items:[];
+    const needle=m[1].trim().replace(/^["']|["']$/g,'').toLowerCase();
+    const item=items.find(x=>String(x.name||'').toLowerCase()===needle)||items.find(x=>String(x.name||'').toLowerCase().includes(needle));
+    if(!item){say('I could not find that item in OV CLOUD Trash.');return true}
+    if(!confirm('Restore '+item.name+' to its original location?'))return true;
+    const restored=await storage.api({action:'restore-trash',trashId:item.trashId});
+    await refresh();showStorage();
+    say(restored.restored?'Restored '+item.name+' to its original location.':'I could not restore '+item.name+'. '+(restored.error||''));
+    return true;
+   }
+   m=q.match(/^(?:permanently delete|delete forever)\s+(?:the\s+)?(?:file\s+|folder\s+)?(.+)$/i);
+   if(m){
+    const result=await storage.api({action:'trash-list'}),items=Array.isArray(result.items)?result.items:[];
+    const needle=m[1].trim().replace(/^["']|["']$/g,'').toLowerCase();
+    const item=items.find(x=>String(x.name||'').toLowerCase()===needle)||items.find(x=>String(x.name||'').toLowerCase().includes(needle));
+    if(!item){say('I could not find that item in OV CLOUD Trash.');return true}
+    if(!confirm('Permanently delete '+item.name+'? This cannot be undone.'))return true;
+    const removed=await storage.api({action:'delete-trash',trashId:item.trashId});
+    say(removed.permanentlyDeleted?'Permanently deleted '+item.name+'. This action cannot be undone.':'I could not permanently delete that item.');
+    return true;
+   }
+   if(/\b(?:empty|clear)\s+(?:the\s+)?(?:trash|recycle bin)\b/i.test(q)){
+    const result=await storage.api({action:'trash-list'}),count=Number(result.count||0);
+    if(!count){say('Your OV CLOUD Trash is already empty.');return true}
+    if(!confirm('Permanently delete all '+count+' items in OV CLOUD Trash? This cannot be undone.'))return true;
+    const emptied=await storage.api({action:'empty-trash'});
+    say(emptied.emptied?'Trash emptied. '+Number(emptied.count||count)+' stored objects were permanently deleted.':'I could not empty Trash.');
+    return true;
+   }
+   m=q.match(/^(?:create|make|add)\s+(?:a\s+)?folder\s+(?:called\s+|named\s+)?(.+)$/i);
   if(m){const folder=m[1].trim().replace(/^["']|["']$/g,'');if(!folder||folder.length>100||/[\\\0]/.test(folder)){say('That folder name is not valid.');return true}if(!confirm('Create this folder in your private OV CLOUD storage?\n\n'+folder))return true;const result=await storage.api({action:'create-folder',folder});await refresh();showStorage();say(result.ok?'Folder '+folder+' has been created.':'I could not create that folder.');return true}
   m=q.match(/^(?:move)\s+(?:the\s+)?file\s+(.+?)\s+to\s+(?:folder\s+)?(.+)$/i);
   if(m){await refresh();const f=findFile(m[1]);if(!f){say('I could not find the source file.');return true}const dest=m[2].trim().replace(/^["']|["']$/g,'').replace(/^\/+|\/+$/g,'');if(!dest||dest.includes('..')){say('That destination folder is not valid.');return true}const leaf=String(f.objectKey||f.id).split('/').pop();const ownerPrefix=String(f.objectKey||f.id).split('/').slice(0,2).join('/')+'/';const destinationKey=ownerPrefix+dest+'/'+leaf;if(!confirm('Move '+f.name+' to '+dest+'? The original object will be removed after the move succeeds.'))return true;await storage.moveRemote(f.objectKey||f.id,destinationKey,'file');await refresh();showStorage();say('The move request for '+f.name+' completed.');return true}
