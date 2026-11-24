@@ -7,9 +7,30 @@ const clientAdminHandler=require('../lib/oveshcloud-client-admin-handler.js');
 const GB=1024*1024*1024,MAX_FILE=2*GB;
 
 function b64url(value){return Buffer.from(value).toString('base64url')}
+function normalizeLiveKitUrl(value){
+ const raw=String(value||'').trim().replace(/\\/+$/,'');
+ if(!raw)throw httpError(503,'LIVEKIT_URL is empty. Add the LiveKit project WebSocket URL in Vercel Production.');
+ let url;
+ try{url=new URL(raw)}catch{throw httpError(503,'LIVEKIT_URL is invalid. Use the wss:// URL shown in your LiveKit project settings.')}
+ if(url.protocol==='wss:')url.protocol='https:';
+ else if(url.protocol==='ws:')url.protocol='http:';
+ else if(url.protocol!=='https:'&&url.protocol!=='http:')throw httpError(503,'LIVEKIT_URL must use wss:// (or https://).');
+ return {serverUrl:url.toString().replace(/\\/+$/,''),websocketUrl:url.toString().replace(/^https:/i,'wss:').replace(/^http:/i,'ws:').replace(/\\/+$/,'')};
+}
+async function validateLiveKitCredentials(serverUrl,apiKey,secret,roomName){
+ const {RoomServiceClient}=require('livekit-server-sdk');
+ const service=new RoomServiceClient(serverUrl,apiKey,secret);
+ try{await service.listRooms([roomName]);}
+ catch(error){
+  const status=Number(error?.status||error?.statusCode||error?.response?.status||0);
+  console.error('OV CLOUD LiveKit credential check failed:',JSON.stringify({status,code:String(error?.code||''),message:String(error?.message||'').slice(0,180)}));
+  if(status===401||/unauthori[sz]ed|invalid (api )?key|invalid token/i.test(String(error?.message||'')))throw httpError(503,'LiveKit rejected the API key/secret for this server URL. In LiveKit Cloud, copy the WebSocket URL, API Key and matching API Secret from the same project, update all three Vercel Production variables, then redeploy.');
+  throw httpError(503,'Could not verify the LiveKit server connection. Check that LIVEKIT_URL is the correct project URL and that the LiveKit service is reachable.');
+ }
+}
 async function meetingJwt(apiKey,secret,identity,name,roomName){
  const {AccessToken}=require('livekit-server-sdk');
- const token=new AccessToken(String(apiKey).trim(),String(secret).trim(),{
+ const token=new AccessToken(apiKey,secret,{
   identity:String(identity),
   name:String(name||identity),
   ttl:'1h'
@@ -60,9 +81,12 @@ async function meetingHandler(req,res,action){
   const meeting=snap.data()||{};if(meeting.status!=='active')throw httpError(410,'This meeting has ended.');
   if(guest){const suppliedHash=crypto.createHash('sha256').update(guestToken).digest('hex');if(!meeting.guestAccess||!meeting.guestTokenHash||suppliedHash!==meeting.guestTokenHash)throw httpError(403,'This public meeting link is invalid or has been revoked.');}
   else if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
-  const apiKey=String(process.env.LIVEKIT_API_KEY||''),secret=String(process.env.LIVEKIT_API_SECRET||''),url=String(process.env.LIVEKIT_URL||'');
-  if(!apiKey||!secret||!url)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
-  return res.status(200).json({ok:true,token:await meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:!guest&&(owner||meeting.hostUid===uid),recordingEnabled:false});
+  const apiKey=String(process.env.LIVEKIT_API_KEY||'').trim(),secret=String(process.env.LIVEKIT_API_SECRET||'').trim(),rawUrl=String(process.env.LIVEKIT_URL||'').trim();
+  if(!apiKey||!secret||!rawUrl)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel Production environment variables.');
+  const livekit=normalizeLiveKitUrl(rawUrl);
+  await validateLiveKitCredentials(livekit.serverUrl,apiKey,secret,meeting.roomName);
+  const token=await meetingJwt(apiKey,secret,uid,name,meeting.roomName);
+  return res.status(200).json({ok:true,token,url:livekit.websocketUrl,title:meeting.title,roomCode,identity:uid,isHost:!guest&&(owner||meeting.hostUid===uid),recordingEnabled:false});
  }
  if(action==='meeting-end'){
   const roomCode=String(req.body?.roomCode||'').trim().toUpperCase(),ref=rooms.doc(roomCode),snap=await ref.get();
