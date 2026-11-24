@@ -25,6 +25,7 @@ async function meetingHandler(req,res,action){
   return res.status(200).json({ok:true,meetings});
  }
  if(action==='meeting-create'){
+  if(!process.env.LIVEKIT_URL||!process.env.LIVEKIT_API_KEY||!process.env.LIVEKIT_API_SECRET)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
   const title=String(req.body?.title||'').trim().slice(0,100)||'OV CLOUD Meeting';
   const emails=[...new Set(String(req.body?.inviteEmails||'').split(/[;,\s]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))].slice(0,20);
   if(!emails.length)throw httpError(400,'Enter at least one registered client email to invite.');
