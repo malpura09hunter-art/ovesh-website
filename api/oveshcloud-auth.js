@@ -28,7 +28,7 @@ const isoDate=v=>{
   return null;
 };
 function b2ForAgreements(){const endpoint=String(process.env.B2_ENDPOINT||'').trim().replace(/\/$/,'');const region=String(process.env.B2_REGION||'').trim();const bucket=String(process.env.B2_BUCKET||'').trim();const keyId=String(process.env.B2_KEY_ID||'').trim();const applicationKey=String(process.env.B2_APPLICATION_KEY||'').trim();if(!endpoint||!region||!bucket||!keyId||!applicationKey)throw Error('Agreement storage is not configured');return{bucket,s3:new S3Client({region,endpoint,forcePathStyle:false,credentials:{accessKeyId:keyId,secretAccessKey:applicationKey}})}}
-async function shopAgreementPdf(req,res){if(req.method!=='GET'||!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});const orderId=String(req.query?.orderId||'');if(!/^SHOP-\d{8}$/.test(orderId))return res.status(400).json({ok:false,error:'Invalid request reference'});try{const snap=await getAdminDb().collection('service_requests').where('orderId','==',orderId).limit(1).get();if(snap.empty)return res.status(404).json({ok:false,error:'Service request not found'});const x=snap.docs[0].data()||{},key=String(x.agreementStorageKey||'');if(!key)return res.status(404).json({ok:false,error:'Agreement PDF has not been stored yet'});if(!key.startsWith('client-agreements/')||key.includes('..'))return res.status(403).json({ok:false,error:'Invalid agreement storage key'});const {bucket,s3}=b2ForAgreements(),out=await s3.send(new GetObjectCommand({Bucket:bucket,Key:key}));const chunks=[];for await(const chunk of out.Body)chunks.push(Buffer.from(chunk));const pdf=Buffer.concat(chunks);res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename="Ovesh-Client-Agreement-'+orderId+'.pdf"');res.setHeader('Content-Length',String(pdf.length));res.setHeader('Cache-Control','private, no-store, max-age=0');return res.status(200).send(pdf)}catch(e){console.error('OVESH SHOP AGREEMENT PDF FAILED:',e.message);return res.status(500).json({ok:false,error:'Unable to retrieve agreement PDF'})}}
+async function shopAgreementPdf(req,res){if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});try{await requireCloudSession(req)}catch(e){return res.status(401).json({ok:false,error:e.message})}const orderId=String(req.query?.orderId||'');if(!/^SHOP-\d{8}$/.test(orderId))return res.status(400).json({ok:false,error:'Invalid request reference'});try{const snap=await getAdminDb().collection('service_requests').where('orderId','==',orderId).limit(1).get();if(snap.empty)return res.status(404).json({ok:false,error:'Service request not found'});const x=snap.docs[0].data()||{},key=String(x.agreementStorageKey||'');if(!key)return res.status(404).json({ok:false,error:'Agreement PDF has not been stored yet'});if(!key.startsWith('client-agreements/')||key.includes('..'))return res.status(403).json({ok:false,error:'Invalid agreement storage key'});const {bucket,s3}=b2ForAgreements(),out=await s3.send(new GetObjectCommand({Bucket:bucket,Key:key}));const chunks=[];for await(const chunk of out.Body)chunks.push(Buffer.from(chunk));const pdf=Buffer.concat(chunks);res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename="Ovesh-Client-Agreement-'+orderId+'.pdf"');res.setHeader('Content-Length',String(pdf.length));res.setHeader('Cache-Control','private, no-store, max-age=0');return res.status(200).send(pdf)}catch(e){console.error('OVESH SHOP AGREEMENT PDF FAILED:',e.message);return res.status(500).json({ok:false,error:'Unable to retrieve agreement PDF'})}}
 async function shopOrders(req,res){
   if(req.method!=='GET'||!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});
   try{
@@ -57,18 +57,7 @@ async function shopOrders(req,res){
 function parseCookies(req){
   return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));
 }
-function requireCloudSession(req){
-  const token=parseCookies(req).ovesh_cloud_session||String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
-  const [payload,sig]=String(token).split('.');
-  const secret=process.env.OVESH_CLOUD_SESSION_SECRET||process.env.OVESH_CLOUD_PASSWORD;
-  if(!payload||!sig||!secret)throw Object.assign(new Error('Secure OVESH CLOUD session is unavailable.'),{statusCode:401});
-  const expected=crypto.createHmac('sha256',secret).update(payload).digest('base64url');
-  const a=Buffer.from(sig),b=Buffer.from(expected);
-  if(a.length!==b.length||!crypto.timingSafeEqual(a,b))throw Object.assign(new Error('Secure OVESH CLOUD session is invalid.'),{statusCode:401});
-  let data;try{data=JSON.parse(Buffer.from(payload,'base64url').toString('utf8'))}catch{throw Object.assign(new Error('Secure OVESH CLOUD session is invalid.'),{statusCode:401})}
-  if(!data.exp||Date.now()>Number(data.exp))throw Object.assign(new Error('Secure OVESH CLOUD session has expired.'),{statusCode:401});
-  return data;
-}
+async function requireCloudSession(req){return requireTrackedCloudSession(req)}
 function config(){
   const raw=String(process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON||'').trim();
   if(!raw)throw Object.assign(new Error('Google Drive is not configured. Add GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON and GOOGLE_DRIVE_FOLDER_ID in Vercel.'),{statusCode:503});
@@ -114,7 +103,7 @@ async function handleGoogleDrive(req,res){
   res.setHeader('Cache-Control','private, no-store, max-age=0');
   try{
     if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
-    requireCloudSession(req);
+    await requireCloudSession(req);
     const {sa,folderId}=config();
     const token=await accessToken(sa);
     const action=String(req.query?.action||'list');
@@ -157,6 +146,50 @@ function readCloudSessionData(req){
   if(a.length!==b.length||!crypto.timingSafeEqual(a,b))return null;
   try{const data=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));return data.u===(process.env.OVESH_CLOUD_USERNAME||'OVESH')&&Number(data.exp)>Date.now()?data:null}catch{return null}
 }
+async function requireTrackedCloudSession(req){
+ const data=readCloudSessionData(req);
+ if(!data||!data.nonce)throw Object.assign(new Error('OVESH CLOUD session required. Please sign in again.'),{statusCode:401});
+ const ref=getAdminDb().collection('oveshCloudSessions').doc(String(data.nonce));
+ const snap=await ref.get();
+ if(!snap.exists){
+  const ua=String(req.headers['user-agent']||'').slice(0,500);
+  const ip=String(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').split(',')[0].trim()||null;
+  await ref.create({username:data.u,active:true,createdAt:new Date(Number(data.iat)||Date.now()),lastSeenAt:new Date(),ip,userAgent:ua,device:detectDevice(ua),browser:detectBrowser(ua),os:detectOS(ua),location:[req.headers['x-vercel-ip-city'],req.headers['x-vercel-ip-country']].filter(Boolean).join(', ')||null,expiresAt:new Date(Number(data.exp))});
+  return data;
+ }
+ const session=snap.data()||{};
+ if(session.active!==true||Number(data.exp)<=Date.now())throw Object.assign(new Error('This OVESH CLOUD session has been signed out. Please sign in again.'),{statusCode:401});
+ return data;
+}
+async function listCloudSessions(req,res){
+ if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
+ try{
+  const current=await requireTrackedCloudSession(req);
+  const snap=await getAdminDb().collection('oveshCloudSessions').where('username','==',current.u).where('active','==',true).limit(100).get();
+  const sessions=snap.docs.map(doc=>{const x=doc.data()||{};return{id:doc.id,current:doc.id===String(current.nonce),device:x.device||'Unknown device',browser:x.browser||null,os:x.os||null,ip:x.ip||null,location:x.location||null,createdAt:x.createdAt?.toDate?.().toISOString?.()||null,lastSeenAt:x.lastSeenAt?.toDate?.().toISOString?.()||null}}).sort((a,b)=>Number(b.current)-Number(a.current));
+  return res.status(200).json({ok:true,count:sessions.length,sessions});
+ }catch(e){return res.status(Number(e.statusCode)||500).json({ok:false,error:e.message||'Unable to load active sessions'})}
+}
+async function revokeCloudSessions(req,res){
+ if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
+ try{
+  const current=await requireTrackedCloudSession(req),body=req.body||{},allOther=body.allOther===true;
+  const ids=Array.isArray(body.sessionIds)?[...new Set(body.sessionIds.map(x=>String(x)).filter(x=>/^[a-f0-9]{32}$/.test(x)))].slice(0,100):[];
+  const db=getAdminDb(),col=db.collection('oveshCloudSessions');
+  let targets=[];
+  if(allOther){
+   const snap=await col.where('username','==',current.u).where('active','==',true).limit(100).get();
+   targets=snap.docs.filter(d=>d.id!==String(current.nonce));
+  }else{
+   targets=await Promise.all(ids.filter(id=>id!==String(current.nonce)).map(id=>col.doc(id).get()));
+   targets=targets.filter(d=>d.exists&&(d.data()||{}).username===current.u&&(d.data()||{}).active===true);
+  }
+  const batch=db.batch();for(const doc of targets)batch.update(doc.ref,{active:false,revokedAt:new Date(),revokedBy:String(current.nonce)});
+  if(targets.length)await batch.commit();
+  return res.status(200).json({ok:true,revoked:targets.length,currentSessionPreserved:true});
+ }catch(e){return res.status(Number(e.statusCode)||500).json({ok:false,error:e.message||'Unable to sign out selected sessions'})}
+}
+
 async function recordSecurityEvent(event){
   try{
     await getAdminDb().collection('oveshCloudSecurityEvents').add({...event,ip:event.ip||null,userAgent:String(event.userAgent||'').slice(0,500),path:String(event.path||'').slice(0,160),createdAt:new Date()});
@@ -168,7 +201,7 @@ async function recordSecurityEvent(event){
 }
 async function listSecurityEvents(req,res){
   if(req.method!=='GET')return res.status(405).json({ok:false,error:'Method not allowed'});
-  if(!readCloudSession(req))return res.status(401).json({ok:false,error:'OVESH CLOUD session required'});
+  try{await requireCloudSession(req)}catch(e){return res.status(401).json({ok:false,error:e.message})}
   try{
     const snap=await getAdminDb().collection('oveshCloudSecurityEvents').orderBy('createdAt','desc').limit(100).get();
     const events=snap.docs.map(doc=>{const x=doc.data()||{};return{id:doc.id,eventType:x.eventType||'security_event',severity:x.severity||'info',outcome:x.outcome||'recorded',reason:x.reason||null,ip:x.ip||null,isp:x.isp||null,organization:x.organization||null,asn:x.asn||null,connectionDomain:x.connectionDomain||null,browser:x.browser||null,os:x.os||null,device:x.device||null,userAgent:x.userAgent||null,method:x.method||null,path:x.path||null,host:x.host||null,vercelRequestId:x.vercelRequestId||null,protocol:x.protocol||null,timestamp:x.timestamp||x.createdAt?.toDate?.().toISOString?.()||null,location:x.location||null,city:x.city||null,region:x.region||null,country:x.country||null,countryCode:x.countryCode||null,postalCode:x.postalCode||null,timezone:x.timezone||null,latitude:x.latitude??null,longitude:x.longitude??null,ipType:x.ipType||null}});
@@ -398,10 +431,10 @@ module.exports = async function handler(req,res){
     return handleGoogleDrive(mapped,res);
   }
   const action=String(req.query?.action||'');
-  if(action==='security-events')return listSecurityEvents(req,res);
+  if(action==='security-events')return listSecurityEvents(req,res);\n  if(action==='sessions')return listCloudSessions(req,res);\n  if(action==='revoke-sessions')return revokeCloudSessions(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
-  if(req.method==='GET'&&action==='session'){const session=readCloudSessionData(req);if(!session)return res.status(401).json({ok:false,authenticated:false,error:'OVESH CLOUD session required'});return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}
+  if(action==='sessions')return listCloudSessions(req,res);if(action==='revoke-sessions')return revokeCloudSessions(req,res);if(req.method==='GET'&&action==='session'){try{const session=await requireCloudSession(req);return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}catch(e){return res.status(401).json({ok:false,authenticated:false,error:e.message})}}
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed'});
   const{username,password,location}=req.body||{};const u=process.env.OVESH_CLOUD_USERNAME||'OVESH',p=process.env.OVESH_CLOUD_PASSWORD;
   if(!p)return res.status(500).json({ok:false,error:'OVESH_CLOUD_PASSWORD is not configured in Vercel'});
@@ -412,11 +445,11 @@ module.exports = async function handler(req,res){
     return res.status(401).json({ok:false,error:username===u?'WRONG PASSWORD':'ACCESS DENIED',securityEventRecorded});
   }
   const ip=(req.headers['x-forwarded-for']||req.headers['x-real-ip']||'').toString().split(',')[0].trim()||null,ua=req.headers['user-agent']||'',timestamp=new Date().toISOString();
-  const secret=process.env.OVESH_CLOUD_SESSION_SECRET||p,payload=Buffer.from(JSON.stringify({u,iat:Date.now(),exp:Date.now()+1000*60*60*12,nonce:crypto.randomBytes(16).toString('hex')})).toString('base64url'),signature=crypto.createHmac('sha256',secret).update(payload).digest('base64url'),token=`${payload}.${signature}`;
+  const secret=process.env.OVESH_CLOUD_SESSION_SECRET||p,sessionData={u,iat:Date.now(),exp:Date.now()+1000*60*60*12,nonce:crypto.randomBytes(16).toString('hex')},payload=Buffer.from(JSON.stringify(sessionData)).toString('base64url'),signature=crypto.createHmac('sha256',secret).update(payload).digest('base64url'),token=`${payload}.${signature}`;
   const ipInfo=await lookupIp(ip);const os=detectOS(ua),browser=detectBrowser(ua),device=detectDevice(ua),finalLocation=ipInfo.location||location||null;
   const details={timestamp,ip,isp:ipInfo.isp||'Not available',os,browser,device,userAgent:ua||'Not available',location:finalLocation,time:new Date(timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'})+' IST'};
   const securityEventRecorded=await recordSecurityEvent({eventType:'authentication_success',severity:'info',outcome:'allowed',reason:'VALID_CREDENTIALS',ip,isp:ipInfo.isp||null,organization:ipInfo.organization||null,asn:ipInfo.asn||null,connectionDomain:ipInfo.connectionDomain||null,location:finalLocation,city:ipInfo.city||null,region:ipInfo.region||null,country:ipInfo.country||null,countryCode:ipInfo.countryCode||null,postalCode:ipInfo.postalCode||null,timezone:ipInfo.timezone||null,latitude:ipInfo.latitude??null,longitude:ipInfo.longitude??null,ipType:ipInfo.ipType||null,browser,os,device,userAgent:ua,method:req.method,path:'/api/oveshcloud-auth',host:String(req.headers['x-forwarded-host']||req.headers.host||'').slice(0,180),vercelRequestId:String(req.headers['x-vercel-id']||'').slice(0,180)||null,protocol:String(req.headers['x-forwarded-proto']||'').slice(0,20)||null,timestamp});
-  res.setHeader('Set-Cookie',`ovesh_cloud_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
+  await getAdminDb().collection('oveshCloudSessions').doc(sessionData.nonce).set({username:u,active:true,createdAt:new Date(sessionData.iat),lastSeenAt:new Date(sessionData.iat),ip, userAgent:String(ua||'').slice(0,500),device,browser,os,location:finalLocation,expiresAt:new Date(sessionData.exp)});\n  res.setHeader('Set-Cookie',`ovesh_cloud_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
   // Alerts are deliberately best-effort: a notification outage must never block a valid Cloud login.
   const alerts=await sendLoginAlerts(details).catch(err=>{console.error('OVESH login alert pipeline failed',err);return[]});
   return res.status(200).json({ok:true,token,security:{...details,locationStatus:finalLocation?'IP lookup/browser location available':'Location unavailable',eventRecorded:securityEventRecorded},alerts});
