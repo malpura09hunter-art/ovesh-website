@@ -11,6 +11,16 @@ module.exports=async function handler(req,res){
   // Owner-only client administration shares this function to stay within Vercel Hobby's function cap.
   if(req.method==='GET'||req.method==='PATCH'||['create','reset','status','files'].includes(action))return clientAdminHandler(req,res);
   if(req.method!=='POST')throw httpError(405,'Method not allowed.');
+  if(req.method==='GET'&&action==='public-share-open'){
+   const token=String(req.query?.token||'');if(!/^[a-f0-9]{64}$/.test(token))throw httpError(404,'This client share link is invalid.');
+   const hash=crypto.createHash('sha256').update(token).digest('hex'),snap=await require('../lib/oveshcloud-alerts.js').getDb().collection('oveshCloudClientShares').where('tokenHash','==',hash).limit(1).get();
+   if(snap.empty)throw httpError(404,'This client share link is invalid.');
+   const share=snap.docs[0].data()||{};if(share.revoked)throw httpError(410,'This client share link has been revoked.');
+   if(share.expiresAt&&Number(share.expiresAt)<Date.now())throw httpError(410,'This client share link has expired.');
+   const {bucket,s3}=b2(),name=safeName(share.name||'shared-file'),command=new GetObjectCommand({Bucket:bucket,Key:share.objectKey,ResponseContentDisposition:'inline; filename="'+name+'"',ResponseContentType:share.contentType||mimeForName(name)});
+   const downloadUrl=await getSignedUrl(s3,command,{expiresIn:300});
+   return res.status(200).json({ok:true,name,contentType:share.contentType||mimeForName(name),downloadUrl,expiresAt:share.expiresAt||null});
+  }
   const c=await requireClient(req,{allowSetup:action==='finish-setup'||action==='google-linked'||action==='profile'}),accountRef=c.ref,db=c.db;
   if(action==='profile'){return res.status(200).json({ok:true,profile:{name:c.account.name||'',email:c.email,company:c.account.company||'',status:c.account.status||'active'}})}
   if(action==='finish-setup'){
@@ -54,6 +64,26 @@ module.exports=async function handler(req,res){
    await db.runTransaction(async tx=>{const [ar,rrs]=await Promise.all([tx.get(accountRef),tx.get(rr)]);if(!rrs.exists||rrs.data().status!=='pending')throw httpError(409,'Upload reservation has already been processed.');const a=ar.data()||{},used=Number(a.usedBytes||0),reserved=Number(a.reservedBytes||0),quota=Number(a.quotaBytes||10*GB);if(used+Number(head.ContentLength||0)>quota)throw httpError(413,'Storage quota was exceeded.');tx.update(accountRef,{usedBytes:used+Number(head.ContentLength||0),reservedBytes:Math.max(0,reserved-Number(r.size||0)),updatedAt:new Date()});tx.create(fileRef,{id,name:r.name,objectKey:r.objectKey,size:Number(head.ContentLength||0),contentType:r.contentType,createdAt:new Date(),uploadedBy:c.uid});tx.update(rr,{status:'complete',finishedAt:new Date()})});
    await accountRef.collection('audit').add({event:'file_uploaded',fileId:id,name:r.name,size:Number(head.ContentLength||0),actor:c.uid,createdAt:new Date()});
    return res.status(200).json({ok:true,file:{id,name:r.name,size:Number(head.ContentLength||0)}});
+  }
+  if(action==='view'){
+   const id=String(body.id||'');if(!/^[a-f0-9-]{36}$/i.test(id))throw httpError(400,'Invalid file reference.');
+   const snap=await accountRef.collection('files').doc(id).get();if(!snap.exists)throw httpError(404,'File not found.');
+   const f=snap.data(),{bucket,s3}=b2(),name=safeName(f.name),command=new GetObjectCommand({Bucket:bucket,Key:f.objectKey,ResponseContentDisposition:'inline; filename="'+name+'"',ResponseContentType:f.contentType||mimeForName(name)});
+   return res.status(200).json({ok:true,viewUrl:await getSignedUrl(s3,command,{expiresIn:300}),expiresIn:300});
+  }
+  if(action==='create-share'){
+   const id=String(body.id||''),days=Number(body.days||7);if(!/^[a-f0-9-]{36}$/i.test(id))throw httpError(400,'Invalid file reference.');
+   if(![1,7,30].includes(days))throw httpError(400,'Choose a 1, 7 or 30 day share duration.');
+   const snap=await accountRef.collection('files').doc(id).get();if(!snap.exists)throw httpError(404,'File not found.');
+   const f=snap.data(),token=crypto.randomBytes(32).toString('hex'),tokenHash=crypto.createHash('sha256').update(token).digest('hex'),shareId=crypto.randomUUID(),expiresAt=Date.now()+days*86400000;
+   await db.collection('oveshCloudClientShares').doc(shareId).set({shareId,tokenHash,uid:c.uid,fileId:id,objectKey:f.objectKey,name:f.name||'File',contentType:f.contentType||mimeForName(f.name),createdAt:new Date(),expiresAt,revoked:false});
+   const base=(req.headers['x-forwarded-proto']||'https')+'://'+req.headers.host;
+   return res.status(200).json({ok:true,shareId,shareUrl:base+'/client-share.html?token='+encodeURIComponent(token),expiresAt});
+  }
+  if(action==='revoke-share'){
+   const shareId=String(body.shareId||'');if(!/^[a-f0-9-]{36}$/i.test(shareId))throw httpError(400,'Invalid share reference.');
+   const ref=db.collection('oveshCloudClientShares').doc(shareId),snap=await ref.get();if(!snap.exists||snap.data().uid!==c.uid)throw httpError(404,'Share not found.');
+   await ref.set({revoked:true,revokedAt:new Date()},{merge:true});return res.status(200).json({ok:true,revoked:true});
   }
   if(action==='download'){
    const id=String(body.id||'');if(!/^[a-f0-9-]{36}$/i.test(id))throw httpError(400,'Invalid file reference.');
