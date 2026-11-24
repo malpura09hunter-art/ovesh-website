@@ -47,7 +47,7 @@ module.exports=async function handler(req,res){
   }
   if(action==='list'){
    const snap=await accountRef.collection('files').orderBy('createdAt','desc').limit(1000).get();
-   const files=snap.docs.map(d=>{const f=d.data()||{};return{id:d.id,name:f.name||'File',size:Number(f.size||0),contentType:f.contentType||mimeForName(f.name),createdAt:f.createdAt?.toDate?f.createdAt.toDate().toISOString():f.createdAt||null}});
+   const files=snap.docs.map(d=>{const f=d.data()||{};return{id:d.id,name:f.name||'File',size:Number(f.size||0),contentType:f.contentType||mimeForName(f.name),uploadedBy:f.uploadedBy||'CLIENT',createdAt:f.createdAt?.toDate?f.createdAt.toDate().toISOString():f.createdAt||null}});
    const used=Number(c.account.usedBytes||files.reduce((n,f)=>n+f.size,0)),quotaBytes=Number(c.account.quotaBytes||10*GB);
    return res.status(200).json({ok:true,files,usage:{usedBytes:used,quotaBytes,remainingBytes:Math.max(0,quotaBytes-used),fileCount:files.length}});
   }
