@@ -72,8 +72,8 @@ function startConversationListening(){
   let sum=0;for(let i=0;i<conversationBuffer.length;i++){const v=(conversationBuffer[i]-128)/128;sum+=v*v}
   const rms=Math.sqrt(sum/conversationBuffer.length);
   if(!conversationRecorder){
-   if(rms>0.014)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
-   if(conversationSpeechFrames>=4){
+   if(rms>0.009)conversationSpeechFrames++;else conversationSpeechFrames=Math.max(0,conversationSpeechFrames-1);
+   if(conversationSpeechFrames>=3){
     try{
      const mime=preferredAudioMime();
      conversationRecorder=mime?new MediaRecorder(conversationStream,{mimeType:mime,audioBitsPerSecond:48000}):new MediaRecorder(conversationStream,{audioBitsPerSecond:48000});
@@ -84,8 +84,8 @@ function startConversationListening(){
     }catch(error){conversationRecorder=null;status('Microphone recording unavailable');transcript('','I could not start voice capture. Please check your browser microphone settings.')}
    }
   }else{
-   if(rms>0.014)conversationLastVoice=Date.now();
-   if(Date.now()-conversationLastVoice>850||Date.now()-conversationStartedAt>14000){
+   if(rms>0.009)conversationLastVoice=Date.now();
+   if(Date.now()-conversationLastVoice>1100||Date.now()-conversationStartedAt>20000){
     const rec=conversationRecorder;conversationRecorder=null;
     try{if(rec.state==='recording')rec.stop()}catch{}
    }
@@ -152,8 +152,8 @@ async function startBargeWatch(){
   if(!speaking||!stream.active||!recording&&(!started||manualStop)){bargeFrame=0;return}
   analyser.getByteTimeDomainData(buffer);let sum=0;for(let i=0;i<buffer.length;i++){const x=(buffer[i]-128)/128;sum+=x*x}const rms=Math.sqrt(sum/buffer.length);
   if(!recording){
-   if(rms>0.035)above++;else above=Math.max(0,above-1);
-   if(above>=5){
+   if(rms>0.018)above++;else above=Math.max(0,above-1);
+   if(above>=3){
     recording=true;bargeRecording=true;conversationReplying=true;try{window.speechSynthesis?.cancel()}catch{}speaking=false;status('Interrupted · listening','listening');
     try{
      const mime=preferredAudioMime();
@@ -164,8 +164,8 @@ async function startBargeWatch(){
     }catch(error){bargeRecording=false;conversationReplying=false;recording=false;status('Interruption capture unavailable');if(started&&!manualStop)startConversationListening();return}
    }
   }else{
-   if(rms>0.02)lastVoice=Date.now();
-   if(Date.now()-lastVoice>1100||Date.now()-bargeSince>10000){cleanup();return}
+   if(rms>0.012)lastVoice=Date.now();
+   if(Date.now()-lastVoice>1200||Date.now()-bargeSince>12000){cleanup();return}
   }
   bargeFrame=requestAnimationFrame(tick);
  };
