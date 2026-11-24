@@ -296,7 +296,20 @@ async function cloudCommand(raw,speakResponse=true){
    }
    say('Your Shop Orders summary: '+stats.total+' total. '+stats.pending+' pending, '+stats.reviewing+' reviewing, '+stats.inProgress+' in progress, '+stats.completed+' completed, and '+stats.rejected+' rejected or cancelled. Recorded estimated order value: '+money(stats.value)+'. This is not confirmed collected revenue.');return true;
   }
- const findFile=(name)=>{const needle=String(name||'').trim().replace(/^["']|["']$/g,'').toLowerCase();if(!needle)return null;const all=files();return all.find(f=>String(f.name||'').toLowerCase()===needle)||all.find(f=>String(f.name||'').toLowerCase().includes(needle))||null};
+ const normalizeFileName=value=>String(value||'').toLowerCase().replace(/\\.[a-z0-9]{2,8}$/i,'').replace(/[_\\-]+/g,' ').replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
+ const findFile=(name)=>{
+  const needle=normalizeFileName(name);if(!needle)return null;
+  const normalized=files().filter(f=>f&&f.name).map(file=>({file,name:normalizeFileName(file.name)}));
+  const exact=normalized.find(x=>x.name===needle);if(exact)return exact.file;
+  const phrase=normalized.find(x=>x.name.includes(needle));if(phrase)return phrase.file;
+  const tokens=needle.split(' ').filter(x=>x.length>1);
+  if(tokens.length>=2){
+   const matches=normalized.map(x=>({...x,score:tokens.filter(t=>x.name.includes(t)).length/tokens.length}))
+    .filter(x=>x.score===1).sort((x,y)=>x.name.length-y.name.length);
+   if(matches.length)return matches[0].file;
+  }
+  return null;
+ };
  const showStorage=()=>{if(typeof window.render==='function')window.render('storage')};
  try{
   // Natural storage status
@@ -531,6 +544,10 @@ async function replyToInternal(raw,speakResponse=true){
  const cloudOverviewIntent=/\b(?:how(?:s| is) (?:my )?(?:ov ?cloud|cloud|workspace|system|everything|things) (?:doing|looking|running)|how are (?:things|we) (?:doing|looking)|give me (?:a |the )?(?:cloud |workspace |system )?(?:summary|overview|briefing|status)|summari[sz]e (?:my )?(?:ov ?cloud|cloud|workspace|system)|overall (?:cloud|workspace|system) (?:status|health)|(?:cloud|workspace|system) (?:status|health|overview|summary)|what needs attention|anything (?:wrong|unusual|needs attention)|what(?:s| is) happening in (?:my )?(?:cloud|workspace)|check (?:my )?(?:ov ?cloud|cloud|workspace) (?:overall|status|health)|how is my ov cloud doing)\b/i.test(q);
  if(cloudOverviewIntent||/\b(?:scan|check|audit|inspect|review|run)\b.{0,70}\b(?:cloud|workspace|ov cloud|ovesh cloud|storage|health|costs?|billing|accounts?|security|everything|all systems)\b|\b(?:cloud|workspace|storage)\s+(?:health|cost|security)\s+(?:scan|check|report)\b|\b(?:mission control|daily briefing|brief me|what needs attention|anything unusual|full cloud report|quick scan|health and cost scan|health & cost scan)\b/i.test(original)){
   try{await runMissionControl(speakResponse)}catch(error){const msg='Mission scan could not complete. '+(error?.message||'Please try again.');if(speakResponse)speak(msg,true);else{transcript('',msg);status('Mission scan failed')}}return;
+ }
+ // Resolve named files before workspace aliases so “open … project report” opens the PDF.
+ if(/\\b(?:open|preview|view|pull up|bring up)\\b/i.test(original)&&/\\b(?:file|document|pdf|report|project)\\b/i.test(original)){
+  if(await cloudCommand(original,speakResponse))return;
  }
  if(smartNavigation(original,speakResponse))return;
  // Resolve workspace navigation before data commands or AI so phrases like
