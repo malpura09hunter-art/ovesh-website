@@ -432,7 +432,7 @@ module.exports = async function handler(req,res){
     return handleGoogleDrive(mapped,res);
   }
   const action=String(req.query?.action||'');
-  if(action==='security-events')return listSecurityEvents(req,res);\n  if(action==='sessions')return listCloudSessions(req,res);\n  if(action==='revoke-sessions')return revokeCloudSessions(req,res);
+  if(action==='security-events')return listSecurityEvents(req,res);
   if(req.method==='GET'&&action==='shop-orders')return shopOrders(req,res);
   if(req.method==='GET'&&action==='shop-agreement-pdf')return shopAgreementPdf(req,res);
   if(req.method==='GET'&&action==='session'){try{const session=await requireCloudSession(req);return res.status(200).json({ok:true,authenticated:true,expiresAt:Number(session.exp),username:session.u});}catch(e){return res.status(401).json({ok:false,authenticated:false,error:e.message})}}
@@ -450,7 +450,8 @@ module.exports = async function handler(req,res){
   const ipInfo=await lookupIp(ip);const os=detectOS(ua),browser=detectBrowser(ua),device=detectDevice(ua),finalLocation=ipInfo.location||location||null;
   const details={timestamp,ip,isp:ipInfo.isp||'Not available',os,browser,device,userAgent:ua||'Not available',location:finalLocation,time:new Date(timestamp).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'})+' IST'};
   const securityEventRecorded=await recordSecurityEvent({eventType:'authentication_success',severity:'info',outcome:'allowed',reason:'VALID_CREDENTIALS',ip,isp:ipInfo.isp||null,organization:ipInfo.organization||null,asn:ipInfo.asn||null,connectionDomain:ipInfo.connectionDomain||null,location:finalLocation,city:ipInfo.city||null,region:ipInfo.region||null,country:ipInfo.country||null,countryCode:ipInfo.countryCode||null,postalCode:ipInfo.postalCode||null,timezone:ipInfo.timezone||null,latitude:ipInfo.latitude??null,longitude:ipInfo.longitude??null,ipType:ipInfo.ipType||null,browser,os,device,userAgent:ua,method:req.method,path:'/api/oveshcloud-auth',host:String(req.headers['x-forwarded-host']||req.headers.host||'').slice(0,180),vercelRequestId:String(req.headers['x-vercel-id']||'').slice(0,180)||null,protocol:String(req.headers['x-forwarded-proto']||'').slice(0,20)||null,timestamp});
-  await getAdminDb().collection('oveshCloudSessions').doc(sessionData.nonce).set({username:u,active:true,createdAt:new Date(sessionData.iat),lastSeenAt:new Date(sessionData.iat),ip, userAgent:String(ua||'').slice(0,500),device,browser,os,location:finalLocation,expiresAt:new Date(sessionData.exp)});\n  res.setHeader('Set-Cookie',`ovesh_cloud_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
+  await getAdminDb().collection('oveshCloudSessions').doc(sessionData.nonce).set({username:u,active:true,createdAt:new Date(sessionData.iat),lastSeenAt:new Date(sessionData.iat),ip, userAgent:String(ua||'').slice(0,500),device,browser,os,location:finalLocation,expiresAt:new Date(sessionData.exp)});
+  res.setHeader('Set-Cookie',`ovesh_cloud_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`);
   // Alerts are deliberately best-effort: a notification outage must never block a valid Cloud login.
   const alerts=await sendLoginAlerts(details).catch(err=>{console.error('OVESH login alert pipeline failed',err);return[]});
   return res.status(200).json({ok:true,token,security:{...details,locationStatus:finalLocation?'IP lookup/browser location available':'Location unavailable',eventRecorded:securityEventRecorded},alerts});
