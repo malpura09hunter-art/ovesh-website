@@ -102,7 +102,7 @@ async function processConversationAudio(blob){
  try{
   const reader=new FileReader();
   const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read microphone audio.'));reader.readAsDataURL(blob)});
-  const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0].toLowerCase()})});
+  const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0].toLowerCase()}),signal:AbortSignal.timeout(35000)});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||'Voice transcription failed.');
   const words=String(data.text||'').trim();
@@ -142,7 +142,7 @@ async function startBargeWatch(){
    const reader=new FileReader();
    const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read audio'));reader.readAsDataURL(blob)});
    const mime=(blob.type||'audio/webm').split(';')[0].toLowerCase();
-   const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:mime})});
+   const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:mime}),signal:AbortSignal.timeout(35000)});
    const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Voice transcription failed');
    const words=String(data.text||'').trim();if(!words)throw new Error('I did not catch that. Please say it again.');
    transcript(words,'');bargeRecording=false;conversationReplying=true;await replyTo(words,true);
@@ -439,7 +439,7 @@ async function askAI(raw,speakResponse=true){
   status('Thinking','thinking');
   // Keep previous reply visible; only the status LED shows thinking — more human
   try{
-    const response=await fetch('/api/oveshcloud-auth?action=orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
+    const response=await fetch('/api/oveshcloud-auth?action=orion-chat',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory}),signal:AbortSignal.timeout(120000)});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'ORION could not get an AI response.');
     const answer=String(data.reply||'').trim();
@@ -510,7 +510,7 @@ async function runMissionControl(speakResponse=true){
  renderMissionResult(headline,details,speakResponse);
  return{headline,details,alerts,unavailable};
 }
-async function replyTo(raw,speakResponse=true){
+async function replyToInternal(raw,speakResponse=true){
  const original=String(raw||'').trim();
  const q=original.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
  if(!q){if(speakResponse)speak('I did not catch that. Please repeat your command.',true);else transcript('','I did not catch that. Please repeat your command.');return}
@@ -560,6 +560,20 @@ async function replyTo(raw,speakResponse=true){
  }
  if(await cloudCommand(original,speakResponse))return;
  await askAI(original,speakResponse);
+}
+let orionReplyInFlight=false;
+async function replyTo(raw,speakResponse=true){
+ if(orionReplyInFlight){transcript('','I’m still working on your previous request. Give me a moment.');return}
+ orionReplyInFlight=true;
+ try{await replyToInternal(raw,speakResponse)}
+ catch(error){
+  const message='I hit a problem while handling that request. '+(error?.name==='TimeoutError'?'The request took too long. Please try again.':(error?.message||'Please try again.'));
+  if(speakResponse)speak(message,true);else{transcript('',message);status('Request failed')}
+ }
+ finally{
+  orionReplyInFlight=false;
+  if(started&&!manualStop&&!speaking&&!conversationUploading&&!bargeRecording){conversationReplying=false;startConversationListening()}
+ }
 }
 let wakeBuffer='',wakeBufferAt=0,conversationMode=true;
 function handleSpeech(raw){transcript(raw,'');const clean=raw.trim();if(!clean)return;if(awaitingCommand){awaitingCommand=false;replyTo(clean);return}if(conversationMode){replyTo(clean);return}
@@ -623,7 +637,7 @@ async function toggleVoiceRecording(){
    try{
     const reader=new FileReader();
     const encoded=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');reader.onerror=()=>reject(new Error('Could not read the voice recording.'));reader.readAsDataURL(blob)});
-    const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0]})});
+    const response=await fetch('/api/oveshcloud-auth?action=orion-transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio:encoded,mimeType:(blob.type||'audio/webm').split(';')[0]}),signal:AbortSignal.timeout(35000)});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.error||'Voice transcription failed.');
     const words=String(data.text||'').trim();if(!words)throw new Error('I could not hear clear words. Please try again.');
