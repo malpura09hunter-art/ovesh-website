@@ -44,6 +44,10 @@ function quoteData(body) {
   const revisions = clean(body.revisions, 500);
   const exclusions = String(body.exclusions || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').trim().slice(0, 1200);
   const terms = clean(body.terms || '50% advance and 50% on project completion.', 1000);
+  const template=['premium','corporate','international','minimal'].includes(body.template)?body.template:'premium';
+  const billingAddress=clean(body.billingAddress,500);
+  const milestones=Array.isArray(body.milestones)?body.milestones.slice(0,10).map((m,i)=>({label:clean(m.label||('Milestone '+(i+1)),100),percent:Number(m.percent),status:['Pending','Paid','Invoiced'].includes(m.status)?m.status:'Pending'})):[];
+  if(milestones.some(m=>!m.label||!Number.isFinite(m.percent)||m.percent<0||m.percent>100)||(milestones.length&&Math.abs(milestones.reduce((n,m)=>n+m.percent,0)-100)>.01))throw Object.assign(new Error('Payment milestone percentages must be valid and total 100%.'),{statusCode:400});
   if (!clientName || !projectTitle) throw Object.assign(new Error('Client name and project title are required.'), { statusCode: 400 });
   if (!CURRENCIES.has(currency)) throw Object.assign(new Error('Unsupported quotation currency.'), { statusCode: 400 });
   if (!Number.isFinite(taxRate) || taxRate < 0 || taxRate > 40) throw Object.assign(new Error('Tax rate must be between 0 and 40 percent.'), { statusCode: 400 });
@@ -62,7 +66,7 @@ function quoteData(body) {
   return {
     quoteId: 'OMCL-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + crypto.randomBytes(3).toString('hex').toUpperCase(),
     createdAt: new Date(), clientName, clientCompany, clientEmail, clientCountry, projectTitle, currency, taxRate,
-    validUntil: validUntil || '7 days from issue', timeline, scope, revisions, exclusions, terms, items, subtotal, tax, total: subtotal + tax
+    validUntil: validUntil || '7 days from issue', timeline, scope, revisions, exclusions, terms, template, billingAddress, milestones:milestones.map(m=>({...m,amount:(subtotal+tax)*m.percent/100})), items, subtotal, tax, total: subtotal + tax
   };
 }
 function money(value, currency) {
@@ -78,9 +82,10 @@ function buildPdf(q) {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
       const left = 48, right = 547, width = right - left;
-      doc.rect(0, 0, 595, 155).fill('#08130f');
-      doc.fillColor('#6ee7a2').font('Helvetica-Bold').fontSize(10).text('OVESH MALPURA CYBER LABS', left, 43, { characterSpacing: 1.2 });
-      doc.fillColor('#ffffff').fontSize(25).text('QUOTATION', left, 68);
+      const themes={premium:{dark:'#08130f',accent:'#6ee7a2'},corporate:{dark:'#10233f',accent:'#8db8ff'},international:{dark:'#20202b',accent:'#e0c58b'},minimal:{dark:'#f0f3f0',accent:'#183b2a'}};const theme=themes[q.template]||themes.premium;
+      doc.rect(0, 0, 595, 155).fill(theme.dark);
+      doc.fillColor(theme.accent).font('Helvetica-Bold').fontSize(10).text('OVESH MALPURA CYBER LABS', left, 43, { characterSpacing: 1.2 });
+      doc.fillColor(theme.dark==='#f0f3f0'?'#17251d':'#ffffff').fontSize(25).text(q.documentType||'QUOTATION', left, 68);
       doc.fillColor('#a8c7b6').font('Helvetica').fontSize(9).text('Professional services proposal', left, 105);
       doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(10).text(q.quoteId, 390, 72, { width: 157, align: 'right' });
       doc.fillColor('#a8c7b6').font('Helvetica').fontSize(9).text('ISSUED ' + q.createdAt.toLocaleDateString('en-IN'), 390, 91, { width: 157, align: 'right' });
@@ -122,7 +127,8 @@ function buildPdf(q) {
       const section=(heading,content)=>{if(!content)return;if(y>690){doc.addPage();y=58;}doc.fillColor('#18251e').font('Helvetica-Bold').fontSize(9).text(heading.toUpperCase(),left,y);y+=16;doc.fillColor('#526158').font('Helvetica').fontSize(9).text(content,left,y,{width,lineGap:3});y+=doc.heightOfString(content,{width,lineGap:3})+15;};
       section('Scope of work & deliverables',q.scope);
       section('Estimated delivery timeline',q.timeline);
-      section('Payment milestones',q.terms);
+      section('Payment milestones',q.milestones?.length?q.milestones.map(m=>m.label+': '+m.percent+'% — '+money(m.amount,q.currency)).join('\n'):q.terms);
+      section('Billing address',q.billingAddress);
       section('Revision policy',q.revisions);
       section('Exclusions & third-party costs',q.exclusions);
       section('Terms & conditions','This quotation is valid until '+q.validUntil+'. Work begins after written approval and receipt of the agreed advance payment. Any work, features or revisions outside the approved scope require a written change request and may affect fees and delivery dates. Third-party services, licences, hosting, domains, taxes and payment-provider charges are excluded unless expressly listed. The client is responsible for providing accurate content, access and approvals in a timely manner. Delivery and acceptance are assessed against the agreed scope and deliverables.');
@@ -176,19 +182,19 @@ module.exports = async function handler(req, res) {
         return res.status(410).json({ok:false,error:'This quotation has expired.'});
       }
       if (['Accepted','Rejected','Expired'].includes(q.status)) return res.status(409).json({ok:false,error:'A final response has already been recorded for this quotation.'});
-      await doc.ref.set({status:decision,clientResponse:{decision,clientName,note,respondedAt:new Date()},updatedAt:new Date()},{merge:true});
+      const respondedAt=new Date();await doc.ref.set({status:decision,clientResponse:{decision,clientName,note,respondedAt},approvalAudit:{decision,respondent:clientName,note,respondedAt,source:'secure-client-review-link'},updatedAt:respondedAt},{merge:true});
       return res.status(200).json({ok:true,status:decision,message:decision==='Accepted'?'Thank you. Your acceptance has been recorded.':'Your response has been recorded. Ovesh Malpura Cyber Labs will follow up.'});
     }
     if (!ownerSession(req)) return res.status(401).json({ ok: false, error: 'OV CLOUD owner session required.' });
     if (req.method === 'GET' && action === 'list') {
       const snap=await getDb().collection('oveshCloudQuotations').orderBy('createdAt','desc').limit(100).get();
-      return res.status(200).json({ok:true,quotations:snap.docs.map(d=>{const x=d.data()||{};return{id:d.id,quoteId:x.quoteId,clientName:x.clientName,clientCompany:x.clientCompany,projectTitle:x.projectTitle,total:x.total,currency:x.currency,status:x.status||'Draft',createdAt:x.createdAt?.toDate?.()?.toISOString?.()||null,validUntil:x.validUntil,viewCount:x.viewCount||0}})});
+      const quotations=snap.docs.map(d=>{const x=d.data()||{};let status=x.status||'Draft';const expiry=x.expiresAt?.toDate?.()||null;if(expiry&&expiry.getTime()<Date.now()&&!['Accepted','Rejected','Expired'].includes(status)){status='Expired';d.ref.set({status,updatedAt:new Date()},{merge:true}).catch(()=>{});}return{id:d.id,quoteId:x.quoteId,clientName:x.clientName,clientCompany:x.clientCompany,projectTitle:x.projectTitle,total:x.total,currency:x.currency,status,createdAt:x.createdAt?.toDate?.()?.toISOString?.()||null,validUntil:x.validUntil,viewCount:x.viewCount||0,version:x.version||1,invoiceId:x.invoiceId||null}});return res.status(200).json({ok:true,quotations});
     }
     if (req.method === 'POST' && action === 'draft') {
-      const q=quoteData(req.body||{}), db=getDb(), now=new Date();
-      await db.collection('oveshCloudQuotations').doc(q.quoteId).set({...q,createdAt:now,updatedAt:now,status:'Draft',viewCount:0});
-      return res.status(200).json({ok:true,quoteId:q.quoteId,status:'Draft'});
+      const body=req.body||{},q=quoteData(body),db=getDb(),now=new Date(),existingId=clean(body.revisionOf,100);let version=1,revisionHistory=[];if(existingId){const ref=db.collection('oveshCloudQuotations').doc(existingId),snap=await ref.get();if(!snap.exists)return res.status(404).json({ok:false,error:'Quotation to revise was not found.'});const old=snap.data()||{};version=(Number(old.version)||1)+1;revisionHistory=[...(old.revisionHistory||[]),{version:old.version||1,updatedAt:old.updatedAt||old.createdAt,total:old.total,currency:old.currency}];}const id=existingId||q.quoteId;await db.collection('oveshCloudQuotations').doc(id).set({...q,quoteId:id,createdAt:existingId?undefined:now,updatedAt:now,status:'Draft',viewCount:0,version,revisionHistory},{merge:true});return res.status(200).json({ok:true,quoteId:id,status:'Draft',version});
     }
+    if (req.method === 'GET' && action === 'stats') {const snap=await getDb().collection('oveshCloudQuotations').limit(500).get(),rows=snap.docs.map(d=>d.data()||{}),counts={};for(const q of rows){const s=q.status||'Draft';counts[s]=(counts[s]||0)+1;}const accepted=rows.filter(q=>q.status==='Accepted');return res.status(200).json({ok:true,total:rows.length,counts,acceptedValue:accepted.reduce((n,q)=>n+(Number(q.total)||0),0),pendingValue:rows.filter(q=>['Draft','Sent','Viewed'].includes(q.status||'Draft')).reduce((n,q)=>n+(Number(q.total)||0),0),conversionRate:rows.length?accepted.length/rows.length*100:0});}
+    if(req.method==='POST'&&action==='invoice'){const id=clean(req.body?.quoteId,100);if(!id)return res.status(400).json({ok:false,error:'Quotation reference required.'});const ref=getDb().collection('oveshCloudQuotations').doc(id),snap=await ref.get();if(!snap.exists)return res.status(404).json({ok:false,error:'Quotation not found.'});const q=snap.data()||{};if(q.status!=='Accepted')return res.status(409).json({ok:false,error:'Only accepted quotations can become invoices.'});const invoiceId=q.invoiceId||('OMCL-INV-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+crypto.randomBytes(3).toString('hex').toUpperCase());const pdf=await buildPdf({...q,quoteId:invoiceId,documentType:'INVOICE'});await ref.set({invoiceId,invoiceCreatedAt:new Date(),updatedAt:new Date()},{merge:true});res.setHeader('Content-Type','application/pdf');res.setHeader('Content-Disposition','attachment; filename=Invoice-'+invoiceId+'.pdf');return res.status(200).send(pdf);}
     if (req.method === 'GET' && action === 'convert') {
       const from = String(req.query.from || 'USD').toUpperCase();
       const to = String(req.query.to || 'INR').toUpperCase();
