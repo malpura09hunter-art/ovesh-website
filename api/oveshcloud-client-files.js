@@ -1,13 +1,68 @@
 const crypto=require('crypto');
 const {getSignedUrl}=require('@aws-sdk/s3-request-presigner');
-const {requireClient,b2,safeName,mimeForName,jsonError,httpError}=require('../lib/oveshcloud-client-cloud.js');
+const {requireClient,requireOwner,b2,safeName,mimeForName,jsonError,httpError}=require('../lib/oveshcloud-client-cloud.js');
+const {getDb}=require('../lib/oveshcloud-alerts.js');
 const {PutObjectCommand,GetObjectCommand,DeleteObjectCommand,HeadObjectCommand}=require('@aws-sdk/client-s3');
 const clientAdminHandler=require('../lib/oveshcloud-client-admin-handler.js');
 const GB=1024*1024*1024,MAX_FILE=2*GB;
+
+function b64url(value){return Buffer.from(value).toString('base64url')}
+function meetingJwt(apiKey,secret,identity,name,roomName){
+ const now=Math.floor(Date.now()/1000),header=b64url(JSON.stringify({alg:'HS256',typ:'JWT'}));
+ const payload=b64url(JSON.stringify({iss:apiKey,sub:identity,name,nbf:now-5,iat:now,exp:now+3600,video:{roomJoin:true,room:roomName,canPublish:true,canSubscribe:true,canPublishData:true}}));
+ const unsigned=header+'.'+payload,signature=crypto.createHmac('sha256',secret).update(unsigned).digest('base64url');
+ return unsigned+'.'+signature;
+}
+async function meetingHandler(req,res,action){
+ if(req.method!=='POST')throw httpError(405,'Meeting requests must use POST.');
+ let actor,owner=false,db;
+ try{actor=requireOwner(req);owner=true;db=getDb()}catch(e){actor=await requireClient(req);db=actor.db}
+ const uid=owner?'__owner__':actor.uid,email=owner?'owner@oveshmalpura.tech':String(actor.email||'').toLowerCase(),name=owner?'OV CLOUD Owner':String(actor.account?.name||actor.email||'Client');
+ const rooms=db.collection('oveshCloudMeetings');
+ if(action==='meeting-list'){
+  const snap=owner?await rooms.limit(100).get():await rooms.where('memberUids','array-contains',uid).limit(100).get();
+  const meetings=snap.docs.map(d=>{const x=d.data()||{};return{id:d.id,roomCode:x.roomCode,title:x.title||'OV CLOUD Meeting',status:x.status||'active',createdAt:x.createdAt?.toDate?x.createdAt.toDate().toISOString():x.createdAt||null,hostName:x.hostName||'Host',members:(x.members||[]).map(m=>({name:m.name||'Participant',email:m.email||''})),isHost:x.hostUid===uid||owner}}).filter(x=>x.status==='active').sort((x,y)=>String(y.createdAt||'').localeCompare(String(x.createdAt||'')));
+  return res.status(200).json({ok:true,meetings});
+ }
+ if(action==='meeting-create'){
+  const title=String(req.body?.title||'').trim().slice(0,100)||'OV CLOUD Meeting';
+  const emails=[...new Set(String(req.body?.inviteEmails||'').split(/[;,\s]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))].slice(0,20);
+  if(!emails.length)throw httpError(400,'Enter at least one registered client email to invite.');
+  const accounts=await db.collection('client_accounts').limit(1000).get();
+  const invited=accounts.docs.map(d=>({uid:d.id,data:d.data()||{}})).filter(x=>x.data.status==='active'&&emails.includes(String(x.data.email||'').toLowerCase()));
+  const found=new Set(invited.map(x=>String(x.data.email||'').toLowerCase()));
+  const missing=emails.filter(x=>!found.has(x));
+  if(missing.length)throw httpError(400,'These email addresses are not active OV CLOUD client accounts: '+missing.join(', '));
+  const members=[{uid,email,name}],seen=new Set([uid]);
+  for(const x of invited){if(!seen.has(x.uid)){members.push({uid:x.uid,email:String(x.data.email||'').toLowerCase(),name:String(x.data.name||x.data.email||'Client')});seen.add(x.uid)}}
+  const roomCode=crypto.randomBytes(6).toString('hex').toUpperCase(),roomName='ovc-'+roomCode.toLowerCase(),ref=rooms.doc(roomCode);
+  await ref.create({roomCode,roomName,title,hostUid:uid,hostName:name,hostEmail:email,members,memberUids:members.map(m=>m.uid),status:'active',recordingEnabled:false,createdAt:new Date()});
+  return res.status(201).json({ok:true,meeting:{roomCode,title,status:'active',members:members.map(m=>({name:m.name,email:m.email})),createdAt:new Date().toISOString()}});
+ }
+ if(action==='meeting-token'){
+  const roomCode=String(req.body?.roomCode||'').trim().toUpperCase();
+  if(!/^[A-F0-9]{12}$/.test(roomCode))throw httpError(400,'Enter a valid 12-character meeting code.');
+  const snap=await rooms.doc(roomCode).get();if(!snap.exists)throw httpError(404,'Meeting not found.');
+  const meeting=snap.data()||{};if(meeting.status!=='active')throw httpError(410,'This meeting has ended.');
+  if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
+  const apiKey=String(process.env.LIVEKIT_API_KEY||''),secret=String(process.env.LIVEKIT_API_SECRET||''),url=String(process.env.LIVEKIT_URL||'');
+  if(!apiKey||!secret||!url)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
+  return res.status(200).json({ok:true,token:meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,recordingEnabled:false});
+ }
+ if(action==='meeting-end'){
+  const roomCode=String(req.body?.roomCode||'').trim().toUpperCase(),ref=rooms.doc(roomCode),snap=await ref.get();
+  if(!snap.exists)throw httpError(404,'Meeting not found.');
+  const meeting=snap.data()||{};if(!owner&&meeting.hostUid!==uid)throw httpError(403,'Only the meeting host can end this meeting.');
+  await ref.update({status:'ended',endedAt:new Date(),endedBy:uid});return res.status(200).json({ok:true});
+ }
+ throw httpError(400,'Unknown meeting action.');
+}
+
 module.exports=async function handler(req,res){
  res.setHeader('Cache-Control','no-store, private');
  try{
   const body=req.body||{},action=String(body.action||'');
+  if(action.startsWith('meeting-'))return await meetingHandler(req,res,action);
   // Owner-only client administration shares this function to stay within Vercel Hobby's function cap.
   if(req.method==='GET'&&String(req.query?.action||'')==='public-share-open'){
    const token=String(req.query?.token||'');if(!/^[a-f0-9]{64}$/.test(token))throw httpError(404,'This client share link is invalid.');
