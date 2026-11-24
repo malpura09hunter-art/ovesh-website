@@ -323,7 +323,7 @@ async function handleOrionChat(req,res){
   res.setHeader('Vary','Cookie');
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Method not allowed.'});
   try{
-    requireCloudSession(req);
+    await requireCloudSession(req);
     const apiKey=String(process.env.GROQ_API_KEY||'').trim();
     if(!apiKey)return res.status(503).json({ok:false,error:'ORION AI is not configured. Add GROQ_API_KEY to Production and redeploy.'});
     const input=req.body&&typeof req.body==='object'?req.body.messages:null;
