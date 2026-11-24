@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
+const { getDb } = require('../lib/oveshcloud-alerts.js');
 
 const CURRENCIES = new Set(['INR','USD','EUR','GBP','AED','AUD','CAD','CHF','CNY','JPY','SGD','NZD','ZAR','SAR','HKD','SEK','NOK','DKK','THB','MYR','IDR','KRW','BRL','MXN','TRY','PLN','CZK','HUF','ILS','ISK','PHP','RON','BGN']);
 
@@ -143,9 +144,51 @@ async function exchangeRate(from, to) {
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store, max-age=0');
   res.setHeader('Vary', 'Cookie');
-  if (!ownerSession(req)) return res.status(401).json({ ok: false, error: 'OV CLOUD owner session required.' });
   const action = String(req.query?.action || req.body?.action || '');
   try {
+    // Public client review is token-only; it never grants access to the owner workspace.
+    if (req.method === 'GET' && action === 'client-view') {
+      const token = String(req.query?.token || '');
+      if (!/^[a-f0-9]{64}$/.test(token)) return res.status(404).json({ok:false,error:'This quotation link is invalid or unavailable.'});
+      const snap = await getDb().collection('oveshCloudQuotations').where('tokenHash','==',crypto.createHash('sha256').update(token).digest('hex')).limit(1).get();
+      if (snap.empty) return res.status(404).json({ok:false,error:'This quotation link is invalid or unavailable.'});
+      const doc = snap.docs[0], q = doc.data() || {};
+      if (q.expiresAt && q.expiresAt.toDate && q.expiresAt.toDate().getTime() < Date.now()) {
+        await doc.ref.set({status:'Expired',updatedAt:new Date()},{merge:true});
+        return res.status(410).json({ok:false,error:'This quotation has expired. Please contact Ovesh Malpura Cyber Labs.'});
+      }
+      if (!['Accepted','Rejected','Expired'].includes(q.status)) {
+        await doc.ref.set({status:'Viewed',viewedAt:q.viewedAt||new Date(),updatedAt:new Date(),viewCount:(Number(q.viewCount)||0)+1},{merge:true});
+      }
+      const safe = {...q}; delete safe.tokenHash; delete safe.clientEmail;
+      return res.status(200).json({ok:true,quotation:safe});
+    }
+    if (req.method === 'POST' && action === 'client-respond') {
+      const token = String(req.body?.token || ''), decision = String(req.body?.decision || '');
+      const clientName = clean(req.body?.clientName,120), note = clean(req.body?.note,1000);
+      if (!/^[a-f0-9]{64}$/.test(token) || !['Accepted','Rejected'].includes(decision) || !clientName) return res.status(400).json({ok:false,error:'Please provide a valid response and your name.'});
+      const hash = crypto.createHash('sha256').update(token).digest('hex');
+      const snap = await getDb().collection('oveshCloudQuotations').where('tokenHash','==',hash).limit(1).get();
+      if (snap.empty) return res.status(404).json({ok:false,error:'This quotation link is invalid or unavailable.'});
+      const doc=snap.docs[0], q=doc.data()||{};
+      if (q.expiresAt && q.expiresAt.toDate && q.expiresAt.toDate().getTime()<Date.now()) {
+        await doc.ref.set({status:'Expired',updatedAt:new Date()},{merge:true});
+        return res.status(410).json({ok:false,error:'This quotation has expired.'});
+      }
+      if (['Accepted','Rejected','Expired'].includes(q.status)) return res.status(409).json({ok:false,error:'A final response has already been recorded for this quotation.'});
+      await doc.ref.set({status:decision,clientResponse:{decision,clientName,note,respondedAt:new Date()},updatedAt:new Date()},{merge:true});
+      return res.status(200).json({ok:true,status:decision,message:decision==='Accepted'?'Thank you. Your acceptance has been recorded.':'Your response has been recorded. Ovesh Malpura Cyber Labs will follow up.'});
+    }
+    if (!ownerSession(req)) return res.status(401).json({ ok: false, error: 'OV CLOUD owner session required.' });
+    if (req.method === 'GET' && action === 'list') {
+      const snap=await getDb().collection('oveshCloudQuotations').orderBy('createdAt','desc').limit(100).get();
+      return res.status(200).json({ok:true,quotations:snap.docs.map(d=>{const x=d.data()||{};return{id:d.id,quoteId:x.quoteId,clientName:x.clientName,clientCompany:x.clientCompany,projectTitle:x.projectTitle,total:x.total,currency:x.currency,status:x.status||'Draft',createdAt:x.createdAt?.toDate?.()?.toISOString?.()||null,validUntil:x.validUntil,viewCount:x.viewCount||0}})});
+    }
+    if (req.method === 'POST' && action === 'draft') {
+      const q=quoteData(req.body||{}), db=getDb(), now=new Date();
+      await db.collection('oveshCloudQuotations').doc(q.quoteId).set({...q,createdAt:now,updatedAt:now,status:'Draft',viewCount:0});
+      return res.status(200).json({ok:true,quoteId:q.quoteId,status:'Draft'});
+    }
     if (req.method === 'GET' && action === 'convert') {
       const from = String(req.query.from || 'USD').toUpperCase();
       const to = String(req.query.to || 'INR').toUpperCase();
@@ -160,10 +203,30 @@ module.exports = async function handler(req, res) {
       if (action === 'send') {
         if (req.body?.confirmSend !== true) return res.status(400).json({ ok: false, error: 'Explicit send approval is required.' });
         if (!emailValid(q.clientEmail)) return res.status(400).json({ ok: false, error: 'Enter a valid client email address before sending.' });
-        const user = String(process.env.ZOHO_USER || '').trim();
-        const pass = String(process.env.ZOHO_APP_PASSWORD || '').trim();
+        const user = String(process.env.ZOHO_USER || '').trim(), pass = String(process.env.ZOHO_APP_PASSWORD || '').trim();
         if (!user || !pass) return res.status(503).json({ ok: false, error: 'Quotation email is not configured. Zoho SMTP credentials are missing.' });
-        const pdf = await buildPdf(q);
+        const db=getDb(), ref=db.collection('oveshCloudQuotations').doc(q.quoteId);
+        const token=crypto.randomBytes(32).toString('hex'), tokenHash=crypto.createHash('sha256').update(token).digest('hex');
+        const baseUrl='https://'+String(req.headers.host||'oveshmalpura.tech').replace(/[^a-z0-9.:-]/gi,'');
+        const reviewUrl=baseUrl+'/oveshcloud/quotation.html?token='+token;
+        const expiresAt=new Date(Date.now()+30*24*60*60*1000);
+        const pdf=await buildPdf(q);
+        await ref.set({...q,createdAt:q.createdAt,updatedAt:new Date(),status:'Sent',sentAt:new Date(),viewCount:0,tokenHash,reviewUrl,expiresAt,reviewLinkExpiresAt:expiresAt},{merge:true});
+        const transporter = nodemailer.createTransport({ host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.in', port: 465, secure: true, auth: { user, pass }, connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000 });
+        const subject='Project Quotation '+q.quoteId+' — '+q.projectTitle;
+        const esc=value=>String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        const text='Dear '+q.clientName+',\\n\\nThank you for considering Ovesh Malpura Cyber Labs. Review your quotation securely using this private link: '+reviewUrl+'\\n\\nReference: '+q.quoteId+'\\nTotal: '+money(q.total,q.currency)+'\\nValid until: '+q.validUntil+'\\n\\nThis link expires in 30 days.\\n\\nRegards,\\nOvesh Malpura\\nOvesh Malpura Cyber Labs';
+        const html='<div style="font-family:Arial,sans-serif;color:#17251d;line-height:1.65;max-width:640px"><p>Dear '+esc(q.clientName)+',</p><p>Thank you for considering <strong>Ovesh Malpura Cyber Labs</strong>. Your project quotation is ready for secure review.</p><div style="background:#f1f7f2;border:1px solid #dce9df;border-radius:12px;padding:18px"><div>Reference: <strong>'+esc(q.quoteId)+'</strong></div><div>Project: <strong>'+esc(q.projectTitle)+'</strong></div><div>Total: <strong>'+esc(money(q.total,q.currency))+'</strong></div><div>Valid until: '+esc(q.validUntil)+'</div></div><p><a href="'+esc(reviewUrl)+'" style="display:inline-block;background:#10271a;color:#fff;text-decoration:none;padding:13px 20px;border-radius:8px;font-weight:bold">Review quotation securely</a></p><p>You can review the details and accept or decline online. This private link expires in 30 days.</p><p>Regards,<br><strong>Ovesh Malpura</strong><br>Ovesh Malpura Cyber Labs</p></div>';
+        try {
+          const sent=await transporter.sendMail({from:'"Ovesh Malpura Cyber Labs" <'+user+'>',to:q.clientEmail,subject,text,html,attachments:[{filename:'Quotation-'+q.quoteId+'.pdf',content:pdf,contentType:'application/pdf'}]});
+          await ref.set({emailMessageId:sent.messageId||null,updatedAt:new Date()},{merge:true});
+          return res.status(200).json({ok:true,sent:true,quoteId:q.quoteId,to:q.clientEmail,messageId:sent.messageId,reviewUrl,total:q.total,currency:q.currency,status:'Sent'});
+        } catch(mailError) {
+          await ref.set({status:'Draft',sendError:clean(mailError.message,300),updatedAt:new Date()},{merge:true});
+          throw mailError;
+        }
+      }
+      const pdf = await buildPdf(q);
         const transporter = nodemailer.createTransport({ host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.in', port: 465, secure: true, auth: { user, pass }, connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000 });
         const subject = 'Project Quotation ' + q.quoteId + ' — ' + q.projectTitle;
         const text = 'Dear ' + q.clientName + ',\n\nThank you for considering Ovesh Malpura Cyber Labs. Please find attached our quotation for ' + q.projectTitle + '.\n\nQuotation reference: ' + q.quoteId + '\nTotal: ' + money(q.total, q.currency) + '\nValidity: ' + q.validUntil + '\n\nPlease reply to this email if you would like to discuss the scope or proceed.\n\nRegards,\nOvesh Malpura\nOvesh Malpura Cyber Labs';
