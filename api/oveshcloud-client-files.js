@@ -7,11 +7,21 @@ const clientAdminHandler=require('../lib/oveshcloud-client-admin-handler.js');
 const GB=1024*1024*1024,MAX_FILE=2*GB;
 
 function b64url(value){return Buffer.from(value).toString('base64url')}
-function meetingJwt(apiKey,secret,identity,name,roomName){
- const now=Math.floor(Date.now()/1000),header=b64url(JSON.stringify({alg:'HS256',typ:'JWT'}));
- const payload=b64url(JSON.stringify({iss:apiKey,sub:identity,name,nbf:now-5,iat:now,exp:now+3600,video:{roomJoin:true,room:roomName,canPublish:true,canSubscribe:true,canPublishData:true}}));
- const unsigned=header+'.'+payload,signature=crypto.createHmac('sha256',secret).update(unsigned).digest('base64url');
- return unsigned+'.'+signature;
+async function meetingJwt(apiKey,secret,identity,name,roomName){
+ const {AccessToken}=require('livekit-server-sdk');
+ const token=new AccessToken(String(apiKey).trim(),String(secret).trim(),{
+  identity:String(identity),
+  name:String(name||identity),
+  ttl:'1h'
+ });
+ token.addGrant({
+  roomJoin:true,
+  room:String(roomName),
+  canPublish:true,
+  canSubscribe:true,
+  canPublishData:true
+ });
+ return await token.toJwt();
 }
 async function meetingHandler(req,res,action){
  if(req.method!=='POST')throw httpError(405,'Meeting requests must use POST.');
@@ -48,7 +58,7 @@ async function meetingHandler(req,res,action){
   if(!owner&&(!Array.isArray(meeting.memberUids)||!meeting.memberUids.includes(uid)))throw httpError(403,'You were not invited to this meeting.');
   const apiKey=String(process.env.LIVEKIT_API_KEY||''),secret=String(process.env.LIVEKIT_API_SECRET||''),url=String(process.env.LIVEKIT_URL||'');
   if(!apiKey||!secret||!url)throw httpError(503,'Video meetings are not activated yet. Add LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET in Vercel environment variables.');
-  return res.status(200).json({ok:true,token:meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:owner||meeting.hostUid===uid,recordingEnabled:false});
+  return res.status(200).json({ok:true,token:await meetingJwt(apiKey,secret,uid,name,meeting.roomName),url,title:meeting.title,roomCode,identity:uid,isHost:owner||meeting.hostUid===uid,recordingEnabled:false});
  }
  if(action==='meeting-end'){
   const roomCode=String(req.body?.roomCode||'').trim().toUpperCase(),ref=rooms.doc(roomCode),snap=await ref.get();
