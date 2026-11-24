@@ -180,7 +180,6 @@ async function revokeCloudSessions(req,res){
   if(allOther){
    const snap=await col.where('username','==',current.u).limit(100).get();
    targets=snap.docs.filter(d=>(d.data()||{}).active===true&&d.id!==String(current.nonce));
-   /*(d=>d.id!==String(current.nonce));
   }else{
    targets=await Promise.all(ids.filter(id=>id!==String(current.nonce)).map(id=>col.doc(id).get()));
    targets=targets.filter(d=>d.exists&&(d.data()||{}).username===current.u&&(d.data()||{}).active===true);
