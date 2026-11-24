@@ -37,6 +37,11 @@ function quoteData(body) {
   const currency = clean(body.currency || 'INR', 3).toUpperCase();
   const taxRate = Number(body.taxRate || 0);
   const validUntil = clean(body.validUntil, 40);
+  const clientCountry = clean(body.clientCountry, 100);
+  const timeline = clean(body.timeline, 180);
+  const scope = String(body.scope || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').trim().slice(0, 3000);
+  const revisions = clean(body.revisions, 500);
+  const exclusions = String(body.exclusions || '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').trim().slice(0, 1200);
   const terms = clean(body.terms || '50% advance and 50% on project completion.', 1000);
   if (!clientName || !projectTitle) throw Object.assign(new Error('Client name and project title are required.'), { statusCode: 400 });
   if (!CURRENCIES.has(currency)) throw Object.assign(new Error('Unsupported quotation currency.'), { statusCode: 400 });
@@ -55,8 +60,8 @@ function quoteData(body) {
   const tax = subtotal * taxRate / 100;
   return {
     quoteId: 'OMCL-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + crypto.randomBytes(3).toString('hex').toUpperCase(),
-    createdAt: new Date(), clientName, clientCompany, clientEmail, projectTitle, currency, taxRate,
-    validUntil: validUntil || '7 days from issue', terms, items, subtotal, tax, total: subtotal + tax
+    createdAt: new Date(), clientName, clientCompany, clientEmail, clientCountry, projectTitle, currency, taxRate,
+    validUntil: validUntil || '7 days from issue', timeline, scope, revisions, exclusions, terms, items, subtotal, tax, total: subtotal + tax
   };
 }
 function money(value, currency) {
@@ -82,6 +87,7 @@ function buildPdf(q) {
       doc.fillColor('#17251d').font('Helvetica-Bold').fontSize(13).text(q.clientName, left, 203);
       if (q.clientCompany) doc.font('Helvetica').fontSize(10).fillColor('#526158').text(q.clientCompany, left, 222);
       if (q.clientEmail) doc.font('Helvetica').fontSize(9).fillColor('#526158').text(q.clientEmail, left, q.clientCompany ? 239 : 222);
+      if (q.clientCountry) doc.font('Helvetica').fontSize(9).fillColor('#526158').text(q.clientCountry, left, q.clientEmail ? (q.clientCompany ? 255 : 238) : (q.clientCompany ? 239 : 222));
       doc.fillColor('#18251e').font('Helvetica-Bold').fontSize(9).text('PROJECT', 350, 184);
       doc.fillColor('#17251d').font('Helvetica').fontSize(11).text(q.projectTitle, 350, 203, { width: 197 });
       doc.fillColor('#526158').fontSize(9).text('Valid until: ' + q.validUntil, 350, 239, { width: 197 });
@@ -112,9 +118,13 @@ function buildPdf(q) {
       doc.fillColor('#9ee8b6').font('Helvetica-Bold').fontSize(9).text('TOTAL', 362, y + 7);
       doc.fillColor('#ffffff').fontSize(12).text(money(q.total, q.currency), 420, y + 6, { width: 115, align: 'right' });
       y += 58;
-      if (y > 700) { doc.addPage(); y = 60; }
-      doc.fillColor('#18251e').font('Helvetica-Bold').fontSize(9).text('TERMS & CONDITIONS', left, y);
-      doc.fillColor('#526158').font('Helvetica').fontSize(9).text(q.terms, left, y + 18, { width, lineGap: 3 });
+      const section=(heading,content)=>{if(!content)return;if(y>690){doc.addPage();y=58;}doc.fillColor('#18251e').font('Helvetica-Bold').fontSize(9).text(heading.toUpperCase(),left,y);y+=16;doc.fillColor('#526158').font('Helvetica').fontSize(9).text(content,left,y,{width,lineGap:3});y+=doc.heightOfString(content,{width,lineGap:3})+15;};
+      section('Scope of work & deliverables',q.scope);
+      section('Estimated delivery timeline',q.timeline);
+      section('Payment milestones',q.terms);
+      section('Revision policy',q.revisions);
+      section('Exclusions & third-party costs',q.exclusions);
+      section('Terms & conditions','This quotation is valid until '+q.validUntil+'. Work begins after written approval and receipt of the agreed advance payment. Any work, features or revisions outside the approved scope require a written change request and may affect fees and delivery dates. Third-party services, licences, hosting, domains, taxes and payment-provider charges are excluded unless expressly listed. The client is responsible for providing accurate content, access and approvals in a timely manner. Delivery and acceptance are assessed against the agreed scope and deliverables.');
       doc.moveTo(left, 760).lineTo(right, 760).strokeColor('#dce7df').stroke();
       doc.fillColor('#526158').fontSize(8).text('Ovesh Malpura Cyber Labs  ·  Professional digital services', left, 772, { width, align: 'center' });
       doc.end();
