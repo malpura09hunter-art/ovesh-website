@@ -1,6 +1,6 @@
 /* ============================================================
    OV CLOUD — Quantum Field Hybrid
-   Visible everywhere. Soft opacity so text stays readable.
+   Login-only. Soft opacity so text stays readable.
    ============================================================ */
 (function () {
   'use strict';
@@ -22,6 +22,7 @@
   let t = 0, last = performance.now();
   let shapePhase = 0;
   let rafId = 0;
+  let running = true;
   const shockwaves = [];
 
   const STIFF = 18;
@@ -35,6 +36,12 @@
     [120, 145, 255],
     [180, 200, 255],
   ];
+
+  function isLoginVisible() {
+    const login = document.getElementById('loginView');
+    if (!login) return true;
+    return !login.classList.contains('hidden') && login.style.display !== 'none';
+  }
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -50,9 +57,9 @@
   function targetFor(i, phase) {
     const n = COUNT;
     const a = (i / n) * Math.PI * 2;
-    const cx = W * 0.42;
-    const cy = H * 0.48;
-    const R  = Math.min(W, H) * 0.30;
+    const cx = W * 0.36;
+    const cy = H * 0.52;
+    const R  = Math.min(W, H) * 0.28;
 
     const th = a;
     const ph = (i / n) * Math.PI;
@@ -103,7 +110,7 @@
         vx: 0, vy: 0,
         size: 1.1 + Math.random() * 1.8,
         color: COLORS[i % COLORS.length],
-        baseAlpha: 0.16 + Math.random() * 0.18,
+        baseAlpha: 0.18 + Math.random() * 0.22,
         wake: 0
       });
     }
@@ -171,14 +178,14 @@
   }
 
   function draw() {
-    ctx.fillStyle = 'rgba(5, 7, 13, 0.30)';
+    ctx.fillStyle = 'rgba(5, 7, 13, 0.32)';
     ctx.fillRect(0, 0, W, H);
 
     for (let s = 0; s < shockwaves.length; s++) {
       const sw = shockwaves[s];
       ctx.beginPath();
       ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(103, 232, 249, ${Math.max(0, sw.life * 0.18)})`;
+      ctx.strokeStyle = `rgba(103, 232, 249, ${Math.max(0, sw.life * 0.22)})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -187,7 +194,7 @@
       const p = particles[i];
       const [r, g, b] = p.color;
       const speed = Math.hypot(p.vx, p.vy);
-      const a = Math.min(0.38, p.baseAlpha + speed * 0.005 + p.wake * 0.22);
+      const a = Math.min(0.42, p.baseAlpha + speed * 0.006 + p.wake * 0.25);
       const sz = p.size * (1 + p.wake * 0.5);
 
       ctx.beginPath();
@@ -203,6 +210,18 @@
   }
 
   function loop(now) {
+    if (!isLoginVisible()) {
+      canvas.style.display = 'none';
+      running = false;
+      rafId = requestAnimationFrame(loop);
+      return;
+    }
+    if (!running) {
+      canvas.style.display = 'block';
+      running = true;
+      last = now;
+    }
+
     const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
     step(dt);
